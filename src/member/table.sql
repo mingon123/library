@@ -6,5 +6,5 @@ create table member(
  mem_email varchar2(50) not null, --이메일(test@test.com 형식)
  mem_date date default sysdate not null, --회원가입일(default sysdate)
  mem_mdate date, --회원 정보 수정일
- mem_delay_Date date --책 연체일
+ mem_stop_date date --책 연체일
 );
