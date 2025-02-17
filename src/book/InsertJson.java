@@ -15,7 +15,7 @@ public class InsertJson {
     public static void main(String[] args) {
         try {
             // JSON 파일 읽기
-            FileReader reader = new FileReader("C:\\Users\\SIST\\git\\Library_JAVA_TEAM_PR\\data\\book_volm_cnt.json");
+            FileReader reader = new FileReader("C:\\Class\\JavaClass\\Library_Java_PR\\data\\book_volm_cnt.json");
             JsonElement rootElement = JsonParser.parseReader(reader);
             
             // JSON이 배열 형태일 경우
@@ -45,7 +45,7 @@ public class InsertJson {
                         int rank = (rankStr == null || rankStr.isEmpty()) ? 0 : Integer.parseInt(rankStr);                 
                                                 
                         // SQL INSERT 구문
-                        String sql = "INSERT INTO book (num, title, author, publisher, publication_year, category, rank, volm_cnt, reg_date) "
+                        String sql = "INSERT INTO book (book_num, book_title, book_author, book_publisher, book_p_year, book_category, book_rank, book_volm_cnt, book_reg_date)"
                                    + "VALUES (book_seq.nextval, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
                         
                         // PreparedStatement로 데이터 삽입
