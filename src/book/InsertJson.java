@@ -15,7 +15,7 @@ public class InsertJson {
     public static void main(String[] args) {
         try {
             // JSON 파일 읽기
-            FileReader reader = new FileReader("C:\\Class\\JavaClass\\Library_Java_PR\\data\\book_volm_cnt.json");
+            FileReader reader = new FileReader("C:\\Users\\SIST\\git\\Library_JAVA_TEAM_PR\\data\\book_volm_cnt.json");
             JsonElement rootElement = JsonParser.parseReader(reader);
             
             // JSON이 배열 형태일 경우
@@ -35,7 +35,7 @@ public class InsertJson {
                         String author = jsonObject.get("AUTHOR_NM_INFO").getAsString().replace(';', ',');
                         if (author == null || author.isEmpty()) author = "저자 정보 없음";
                         String publicationYearStr = jsonObject.get("PUBLCATN_YY").getAsString();
-                        String title = jsonObject.get("BOOK_NM_INFO").getAsString();
+                        String title = jsonObject.get("BOOK_NM_INFO").getAsString(); 
                         String publisher = jsonObject.get("PUBLSHCMPY_NM").getAsString();
                         String category = jsonObject.get("category").getAsString();
                         String volmCntStr = jsonObject.get("VOLM_CNT").getAsString();
