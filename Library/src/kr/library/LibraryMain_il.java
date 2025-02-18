@@ -7,8 +7,8 @@ import java.io.InputStreamReader;
 /**
  * @author Lilly
  * @date 2025. 2. 18. - 오후 6:00:58
- * @subject	 관리자 페이지
- * @content 
+ * @subject	관리자 페이지
+ * @content update test2
  */
 public class LibraryMain_il {
 	private BufferedReader br;
