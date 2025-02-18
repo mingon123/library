@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+
 public class LibraryMain_jw {
 	private BufferedReader br;
 	private String me_id; // 로그인한 아이디 저장
@@ -13,6 +14,7 @@ public class LibraryMain_jw {
 	
 	public LibraryMain_jw() {
 		try {
+			dao = new BookDAO_Jw();
 			br = new BufferedReader(new InputStreamReader(System.in));
 			// 메뉴 호출
 			callMenu();

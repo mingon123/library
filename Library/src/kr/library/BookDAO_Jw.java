@@ -48,6 +48,7 @@ public class BookDAO_Jw {
 		int bookLength = 0;
 		
 		try {
+			
 			conn = DBUtil.getConnection();
 			sql = "SELECT COUNT(*) FROM book";
 			pstmt = conn.prepareStatement(sql);
@@ -55,11 +56,11 @@ public class BookDAO_Jw {
 			
 			if(rs.next()) bookLength = rs.getInt(1);
 			
-			while(hs.size() <= num ) {
-				hs.add((int) (Math.random() * num) + 1);
+			while(hs.size() < num ) {
+				hs.add((int) (Math.random() * bookLength) + 1);
 			}
 			
-			sql = "SELECT * FROM book WHERE num=?";
+			sql = "SELECT * FROM book WHERE BOOK_NUM=?";
 			pstmt = conn.prepareStatement(sql);
 			
 			for (int randNum : hs) {
@@ -70,7 +71,7 @@ public class BookDAO_Jw {
 					System.out.println("책번호 : " + rs.getInt("BOOK_NUM"));
 					System.out.println("제목 : " + rs.getString("BOOK_TITLE"));
 					System.out.println("저자 : " + rs.getString("BOOK_AUTHOR"));
-					/*
+					
 					String publisher = rs.getString("BOOK_PUBLISHER");
 					if(publisher == null) publisher = "";
 					System.out.println("출판사 : " + publisher);
@@ -87,11 +88,12 @@ public class BookDAO_Jw {
 					if(rank == null) rank = "";
 					System.out.println("추천순위 : " + rank);
 					
+					
 					String volm_cnt = rs.getString("BOOK_VOLM_CNT");
 					if(volm_cnt == null) volm_cnt = "";
 					System.out.println("남은 권수 : " + volm_cnt);
 					System.out.println("등록일 : " + rs.getDate("BOOK_REG_DATE"));
-					*/
+					
 				} else {
 					System.out.println("오류발생");
 				}
@@ -103,7 +105,7 @@ public class BookDAO_Jw {
 		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
-	} // selectInfo
+	} // randomBookInfo
 	
 	// 목록보기
 	public void selectInfo() {
