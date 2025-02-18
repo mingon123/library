@@ -90,7 +90,7 @@ create table review(
  foreign key(mem_id) references member(mem_id) on delete set null
 );
 create sequence review_seq;
-
+	
 
 
 create table wish_book(
