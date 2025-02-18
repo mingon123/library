@@ -46,7 +46,7 @@ create table book_order(
  is_add	number(1) default 0 not null, --연장 유무(1회만 가능, +7일)(0 or 1)
  is_return number(1) default 0 not null, --반납유무(0 or 1)
  
- foreign key(mem_id) references member(mem_id) on delete cascade, --회원 삭제 시 함께 삭제
+ foreign key(mem_id) references member(mem_id) on delete set null, --회원 삭제 시 함께 삭제
  foreign key(book_num) references book(book_num) on delete set null --책 삭제 시 null로 변경
 );
 create sequence book_order_seq;
@@ -84,8 +84,10 @@ create table review(
  review_content varchar2(4000) not null, --리뷰내용
  review_rate number(1) not null, --책 평점(1~5점)
  review_reg_date date default sysdate not null, --리뷰등록일
+ mem_id varchar2(12) not null,
  
- foreign key(book_num) references book(book_num) on delete cascade --책 삭제 시 리뷰도 함께 삭제
+ foreign key(book_num) references book(book_num) on delete cascade, --책 삭제 시 리뷰도 함께 삭제
+ foreign key(mem_id) references member(mem_id) on delete set null
 );
 create sequence review_seq;
 
