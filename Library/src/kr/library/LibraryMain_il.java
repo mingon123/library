@@ -4,6 +4,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+/**
+ * @author Lilly
+ * @date 2025. 2. 18. - 오후 6:00:58
+ * @subject	 
+ * @content 
+ */
 public class LibraryMain_il {
 	private BufferedReader br;
 	private String me_id; // 로그인한 아이디 저장
