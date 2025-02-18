@@ -7,7 +7,7 @@ import java.io.InputStreamReader;
 public class LibraryMain_jw {
 	private BufferedReader br;
 	private String me_id; // 로그인한 아이디 저장
-	private boolean flag; // 로그인 여부
+	private boolean flag; // 테스트테스트
 	
 	public LibraryMain_jw() {
 		try {
