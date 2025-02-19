@@ -418,9 +418,7 @@ public class BookDAO_Jw {
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT ORDER_NUM, BOOK_TITLE, ORDER_DATE, RETURN_DATE, "
-					+"CASE WHEN IS_ADD=1 THEN 'X' WHEN IS_ADD=0 THEN 'O' END AS CAN_ADD FROM BOOK_ORDER "
-					+ "JOIN BOOK USING(BOOK_NUM) WHERE mem_id = ? AND IS_RETURN = 0 ORDER BY ORDER_NUM";
+			sql = "SELECT RE_NUM, BOOK_TITLE FROM RESERVATION JOIN BOOK USING(BOOK_NUM) WHERE mem_id = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, mem_id);
 			rs = pstmt.executeQuery();
