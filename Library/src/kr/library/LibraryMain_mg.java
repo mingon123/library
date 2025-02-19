@@ -52,7 +52,7 @@ public class LibraryMain_mg {
 			}
 		}
 	}
-	
+	// 7번누르면 나오는 화면
 	private void showSevenMenu() throws IOException {
 		while(isSelectSeven) {
 			System.out.print("1.희망도서 2.Q&A 3.회원정보관리 4.뒤로가기\n > ");
@@ -73,6 +73,7 @@ public class LibraryMain_mg {
 			}
 		}
 	}
+	// 희망도서 관리
 	public void manageWishBook() throws NumberFormatException, IOException {
 		System.out.print("1.희망도서신청 2.희망도서신청내역확인 3.뒤로가기\n > ");
 		try {
@@ -94,6 +95,7 @@ public class LibraryMain_mg {
 			e.printStackTrace();
 		}
 	}
+	// 희망도서등록
 	public void insertWishBook() throws IOException {
 		System.out.println("희망도서 신청화면입니다. 뒤로가시길 원하시면 q(Q)를 입력하세요.");
 		System.out.print("희망도서 제목을 입력하세요: ");
@@ -107,10 +109,12 @@ public class LibraryMain_mg {
 		System.out.print("출판사를 입력하세요: ");
 		String publisher = br.readLine();
 		dao.insertWishBook(title, author, publisher);
-	}	
+	}
+	// 희망도서목록확인
 	public void selectWishBookInfo() {
 		dao.selectWishBookInfo();
 	}
+	// qna관리
 	public void manageQNA() throws NumberFormatException, IOException {
 		System.out.print("1.질문등록 2.질문내역확인 3.뒤로가기\n > ");
 		int no = Integer.parseInt(br.readLine());
@@ -125,6 +129,7 @@ public class LibraryMain_mg {
 		}
 		else System.out.println("잘못 입력하셨습니다.");
 	}
+	// qna등록
 	public void insertQNA() throws IOException {
 		System.out.println("질문 등록화면입니다. 뒤로가시길 원하시면 q(Q)를 입력하세요.");
 		System.out.print("질문 제목을 입력하세요.");
@@ -137,9 +142,11 @@ public class LibraryMain_mg {
 		String qnaContent = br.readLine();
 		dao.insertQNA(qnaTitle, qnaContent);
 	}
+	// qna목록확인
 	public void selectQNAInfo() {
 		dao.selectQNAInfo();
 	}
+	// 회원정보관리
 	public void manageMemberInfo() throws NumberFormatException, IOException {
 		System.out.print("1.회원정보조회 2.회원정보수정 3.회원탈퇴 4.뒤로가기\n > ");
 		try {
@@ -160,6 +167,7 @@ public class LibraryMain_mg {
 			e.printStackTrace();
 		}
 	}
+	// 회원정보수정
 	public void updateMemberInfo() throws IOException {
 		String memId = me_id;
 		System.out.printf("현재 계정은 %s입니다. 뒤로가기:q(Q)입력 \n",memId);
@@ -184,10 +192,12 @@ public class LibraryMain_mg {
 		}
 		dao.updateMemberInfo(memId, password, name, email);
 	}
+	// 이메일 유효성검사
 	private boolean isValidEmail(String email) {
 		String regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 		return Pattern.matches(regex, email);
 	}
+	// 회원탈퇴
 	public void deleteMemberInfo() throws IOException {
 		System.out.println("계정을 삭제하시겠습니까?");
 		System.out.print("1.회원탈퇴 2.뒤로가기\n > ");
@@ -216,6 +226,14 @@ public class LibraryMain_mg {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	private void checkUserNotifications() {
+		
+	}
+	
+	
+	
 	public static void main(String[] args) {
 		new LibraryMain_mg();
 	}

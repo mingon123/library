@@ -256,4 +256,43 @@ public class BookDAO_mg {
 		}
 	} // delete
 	
+	
+	// 정지상태알림
+	public boolean isMemStop(String memId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT mem_stop_date FROM member WHERE mem_id=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, memId);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				System.out.println("정지일");
+				do {
+					System.out.print(rs.getString("mem_id"));
+					System.out.print("\t");
+					System.out.println(rs.getDate("정지가 "+"mem_stop_date" + "일 남았습니다."));
+					return true;
+				} while(rs.next());
+			} else {
+				System.out.println("정지 상태가 아닙니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		return false;
+	}
+	// 연체알림
+	public boolean isOverReturn(String memId) {
+		
+		
+		return false;
+	}
+	
+	
 }
