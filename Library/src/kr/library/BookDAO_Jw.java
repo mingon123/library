@@ -9,6 +9,7 @@ import java.util.HashSet;
 import util.DBUtil;
 
 public class BookDAO_Jw {
+
 	// insert
 	public void insertInfo(String title,String author,String publisher,Integer publication_year,String category,Integer rank,Integer volm_cnt) {
 		Connection conn = null;
@@ -118,7 +119,7 @@ public class BookDAO_Jw {
 
 			if(rs.next()) bookCount = rs.getInt(1);
 
-			sql = "SELECT COUNT(*) FROM book_order WHERE mem_id=?";
+			sql = "SELECT COUNT(*) FROM book_order WHERE MEM_ID=? AND IS_RETURN = 0";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, mem_id);
 			rs = pstmt.executeQuery();
@@ -168,6 +169,62 @@ public class BookDAO_Jw {
 
 		return check;
 	}//checkBookNum
+
+	// 대여번호가 현황기록에 존재하는지 확인하는 함수- 존재:1 존재x:0 에러:-1
+	public int checkNowOrderNum(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int check = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND IS_RETURN=0";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) check = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+
+		if(check == -1)
+			System.out.println("에러 발생!");
+		return check;
+
+	}//checkNowOrderNum
+
+	// 대여번호가 연장이 가능한지 확인하는 함수
+	//	- 먼저 대여번호가 유효한지 체크하기때문에 연장유무만
+	public boolean checkOrderAdd(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int check = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND IS_ADD=0";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) check = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		if(check == -1) System.out.println("에러 발생!");
+		
+		return check == 1? true: false;
+		
+	}//checkNowOrderNum
 
 	// book_order 테이블에 insert - 대여 테이블 추가후 책 갯수 조정
 	public void insertBookOrder(String mem_id,int book_num) {
@@ -226,6 +283,169 @@ public class BookDAO_Jw {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
 	} // insertBookOrder
+
+	// 예약가능 여부 판별 함수. 예약가능:1 책남아있는 권수0이 아님:0 예약권수 다 참:-1
+	public int canReservation(String mem_id,int book_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int bookCount = -1;
+		int reserveCount = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT BOOK_VOLM_CNT FROM book WHERE BOOK_NUM=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, book_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) bookCount = rs.getInt(1);
+
+			sql = "SELECT COUNT(*) FROM reservation WHERE mem_id=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, mem_id);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) reserveCount = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		if(bookCount == -1 || reserveCount == -1)
+			System.out.println("에러발생!! 대여여부 판별 불가");
+
+		if(reserveCount < 2) {
+			if(bookCount == 0) {
+				return 1;
+			}else return 0;
+		}else return -1;
+	}//canReservation
+
+
+	// 로그인한 유저의 대여내역보기(현황 + 기록) - 1번 최신순, 2번 오래된순
+	public void selectUserOrderInfo(String mem_id, int selectNum) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT ORDER_NUM, BOOK_TITLE, ORDER_DATE, "
+					+ "CASE WHEN IS_RETURN=1 THEN 'O' WHEN IS_RETURN=0 THEN 'X' END AS RETURN "
+					+ "FROM BOOK_ORDER  JOIN BOOK USING(BOOK_NUM) WHERE mem_id = ? ORDER BY ORDER_NUM ";
+			if(selectNum == 1) sql += "DESC";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, mem_id);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) {
+				System.out.printf("%5s %30s \t\t%10s \t%5s\n", "번호", "책제목", "대여일자", "반납여부(O/X)");
+				//System.out.println("번호\t\t책제목\t\t대여일자\t\t반납여부(O/X)");
+				do {
+					/*
+					System.out.print(rs.getInt("ORDER_NUM"));
+					System.out.print("\t\t");
+					System.out.print(rs.getString("BOOK_TITLE"));
+					System.out.print("\t\t");
+					System.out.print(rs.getDate("ORDER_DATE"));
+					System.out.print("\t\t");
+					System.out.print(rs.getString("RETURN"));
+					System.out.println();
+					 */
+					System.out.printf("%5d %30s \t%7s \t%5s\n", 
+							rs.getInt("ORDER_NUM"),
+							rs.getString("BOOK_TITLE"),
+							rs.getDate("ORDER_DATE").toString(),
+							rs.getString("RETURN")
+							);
+
+				} while(rs.next());
+			} else {
+				System.out.println("표시할 데이터가 없습니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		} 
+	} // selectUserOrderInfo
+
+	// 로그인한 유저의 대여 현황만 출력
+	public void selectUserNowOrderInfo(String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT ORDER_NUM, BOOK_TITLE, ORDER_DATE, RETURN_DATE, "
+					+"CASE WHEN IS_ADD=1 THEN 'X' WHEN IS_ADD=0 THEN 'O' END AS CAN_ADD FROM BOOK_ORDER "
+					+ "JOIN BOOK USING(BOOK_NUM) WHERE mem_id = ? AND IS_RETURN = 0 ORDER BY ORDER_NUM";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, mem_id);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) {
+				System.out.printf("%5s %30s \t\t%10s \t%10s \t%5s\n", 
+						"대여번호", "책제목", "대여일자", "반납예정일자","연장가능");
+				do {
+					System.out.printf("%5s %30s \t%10s \t%10s %5s\n", 
+							rs.getInt("ORDER_NUM"),
+							rs.getString("BOOK_TITLE"),
+							rs.getDate("ORDER_DATE").toString(),
+							rs.getDate("RETURN_DATE").toString(),
+							rs.getString("CAN_ADD")
+							);
+				} while(rs.next());
+			} else {
+				System.out.println("표시할 데이터가 없습니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		} 
+	} // selectUserNowOrderInfo
+
+	// 로그인한 유저의 예약 현황만 출력 -- 예약순위 만드는 함수 이후 제작 
+	//TODO
+	public void selectUserNowReserveInfo(String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT ORDER_NUM, BOOK_TITLE, ORDER_DATE, RETURN_DATE, "
+					+"CASE WHEN IS_ADD=1 THEN 'X' WHEN IS_ADD=0 THEN 'O' END AS CAN_ADD FROM BOOK_ORDER "
+					+ "JOIN BOOK USING(BOOK_NUM) WHERE mem_id = ? AND IS_RETURN = 0 ORDER BY ORDER_NUM";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, mem_id);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) {
+				System.out.printf("%5s %30s \t\t%10s \t%10s \t%5s\n", 
+						"대여번호", "책제목", "대여일자", "반납예정일자","연장가능");
+				do {
+					System.out.printf("%5s %30s \t%10s \t%10s %5s\n", 
+							rs.getInt("ORDER_NUM"),
+							rs.getString("BOOK_TITLE"),
+							rs.getDate("ORDER_DATE").toString(),
+							rs.getDate("RETURN_DATE").toString(),
+							rs.getString("CAN_ADD")
+							);
+				} while(rs.next());
+			} else {
+				System.out.println("표시할 데이터가 없습니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		} 
+	} // selectUserNowOrderInfo
 
 	// 목록보기
 	public void selectInfo() {
