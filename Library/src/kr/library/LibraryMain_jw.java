@@ -4,11 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-/**
- * 처음화면에서 6.반납 / 5.대여예약-2.대여/예약 내역확인   =>2가지 구현
- * 이후 테스트후 수정
- */
-
 public class LibraryMain_jw {
 	private BufferedReader br;
 	private String mem_id = "test"; // 로그인한 아이디 저장
@@ -94,7 +89,7 @@ public class LibraryMain_jw {
 										String s;
 										do {
 											if(flag) {
-												System.out.println("Y/N/y/n 중 입력해주세요.");
+												System.out.println("Y/N(y/n) 중 입력해주세요.");
 											}
 											System.out.print("예약하시겠습니까?(Y/N) : ");
 											s = br.readLine();
@@ -131,7 +126,7 @@ public class LibraryMain_jw {
 										String s;
 										do {
 											if(flag) {
-												System.out.println("Y/N/y/n 중 입력해주세요.");
+												System.out.println("Y/N(y/n) 중 입력해주세요.");
 											}
 											System.out.print("대여하시겠습니까?(Y/N) : ");
 											s = br.readLine();
@@ -158,7 +153,7 @@ public class LibraryMain_jw {
 											String s;
 											do {
 												if(flag) {
-													System.out.println("Y/N/y/n 중 입력해주세요.");
+													System.out.println("Y/N(y/n) 중 입력해주세요.");
 												}
 												System.out.print("예약하시겠습니까?(Y/N) : ");
 												s = br.readLine();
@@ -208,16 +203,68 @@ public class LibraryMain_jw {
 								no = Integer.parseInt(br.readLine());
 								if(no==1) {
 									System.out.println("현황확인을 선택하셨습니다.");
-									//TODO // 예약순위는 어떡할 것인지.. ? ? - 따로 함수 구현필요.
+									//TODO // 예약순위- 따로 함수 구현필요.
 									System.out.println("-".repeat(90));
 									System.out.println("\t\t\t\t대여 현황");
 									System.out.println("-".repeat(90));
 									dao.selectUserNowOrderInfo(mem_id);
 									System.out.println("-".repeat(90));
 									//예약 현황 출력 - 순위 추가하려면 함수 만들고 만들어야함
-									//연장 가능 확인 - 예외처리 문제. 
-									//						따로 숫자나 배열만 입력받는 함수 만들고 예외처리하면서만들어야할듯
-									//연장 여부 물어 보고 연장추가함수
+									boolean flag = false; String s; int sNum = -1;
+									do {
+										if(flag) {
+											System.out.println("잘못 입력하셨습니다. 다시 입력해주세요.");
+										}
+										System.out.println("연장을 원하실 경우 대여번호, 뒤로가기를 원하실 경우 q(Q)를 입력해주세요\n > ");
+										s = br.readLine();
+										if(s.equals("Q") || s.equals("q")) {
+											System.out.println("뒤로가기를 선택하셨습니다.");
+											isSelectView = false;
+											continue;
+										}
+										else {
+											try {
+												flag = true;
+												sNum = Integer.parseInt(s);
+											} catch (NumberFormatException e) {
+												
+											}
+										}
+									} while (!dao.checkNowOrderNum(sNum) && !s.equals("q") && !s.equals("Q"));
+									System.out.println();
+									if(dao.checkOrderAdd(sNum)) {
+										System.out.println(sNum +"번은 연장이 가능합니다.");
+										flag = false;
+										do {
+											if(flag) {
+												System.out.println("Y/N(y/n) 중 입력해주세요.");
+											}
+											System.out.print("연장하시겠습니까?(Y/N) : ");
+											s = br.readLine();
+											if(s.equals("N")||s.equals("n")) {
+												System.out.println("연장을 취소하셨습니다.");
+												System.out.println("이전화면으로 돌아갑니다.");
+												isSelectView = false;
+												continue;
+											}else if(s.equals("Y")||s.equals("y")) {
+												System.out.println("연장을 진행합니다.");
+												dao.updateReturnDate(sNum);
+												System.out.println();
+												System.out.println("이전화면으로 돌아갑니다.");
+												isSelectView = false;
+												continue;
+											}else {
+												flag = true;
+											}
+											
+										} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
+									}
+									else {
+										System.out.println(sNum +"번은 연장이 불가능합니다.");
+										System.out.println("이전화면으로 돌아갑니다.");
+										isSelectView = false;
+										continue;
+									}
 								}else if(no==2) {
 									System.out.println("대여 내역확인을 선택하셨습니다.");
 									boolean allView = true;
