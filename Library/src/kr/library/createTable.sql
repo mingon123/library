@@ -39,10 +39,10 @@ create sequence notice_seq;
 
 create table book_order(
  order_num number primary key, --대여번호
- mem_id varchar2(12) not null, --회원ID(영문,숫자 최소 6~12자)
- book_num number not null, --책번호
+ mem_id varchar2(12), --회원ID(영문,숫자 최소 6~12자)
+ book_num number, --책번호
  order_date	date default sysdate not null, --대여일
- return_date date not null, --반납일
+ return_date date default sysdate+14 not null, --반납일
  is_add	number(1) default 0 not null, --연장 유무(1회만 가능, +7일)(0 or 1)
  is_return number(1) default 0 not null, --반납유무(0 or 1)
  
@@ -82,9 +82,9 @@ create table review(
  review_num number primary key, --리뷰번호
  book_num number not null, --책번호
  review_content varchar2(4000) not null, --리뷰내용
- review_rate number(1) not null, --책 평점(1~5점)
+ review_rate number(1) not null check (review_rate between 1 and 5), --책 평점(1~5점)
  review_reg_date date default sysdate not null, --리뷰등록일
- mem_id varchar2(12) not null,
+ mem_id varchar2(12),
  
  foreign key(book_num) references book(book_num) on delete cascade, --책 삭제 시 리뷰도 함께 삭제
  foreign key(mem_id) references member(mem_id) on delete set null
