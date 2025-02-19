@@ -112,7 +112,6 @@ public class BookDAO_mg {
 					System.out.print(rs.getString("qna_title"));
 					System.out.print("\t");
 					System.out.println(rs.getString("qna_content"));
-
 				} while(rs.next());
 			} else {
 				System.out.println("Q&A 내역이 없습니다.");
@@ -182,7 +181,7 @@ public class BookDAO_mg {
 		}
 		return count;
 	} // checkRecord
-	
+	// 비밀번호 확인
 	public int checkPassword(String memId, String password) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -228,7 +227,7 @@ public class BookDAO_mg {
 			pstmt.setString(++cnt, memId);
 			
 			int rows = pstmt.executeUpdate();
-			if(rows>0) System.out.println("회원 정보 수정 완료!");
+			if(rows>0) System.out.println("회원 정보 수정 완료했습니다.");
 			else System.out.println("회원 정보를 찾을 수 없습니다.");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -248,7 +247,7 @@ public class BookDAO_mg {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, memId);
 			int rows = pstmt.executeUpdate();
-			if(rows>0) System.out.println("회원 정보 삭제 완료!");
+			if(rows>0) System.out.println("회원탈퇴를 완료했습니다.");
 			else System.out.println("회원 정보를 찾을 수 없습니다.");
 		} catch (Exception e) {
 			e.printStackTrace();
