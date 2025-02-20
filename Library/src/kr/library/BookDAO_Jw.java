@@ -253,7 +253,7 @@ public class BookDAO_Jw {
 		return check >= 1? false: true; 
 	}//checkOrderAddReturnDate
 
-	// 정지상태인지 확인 ->  정지상태 : false , 정지X : true 
+	// 정지상태인지 확인 ->  정지상태 : false , 정지X : true //TODO
 	public boolean checkMemStop(String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -263,7 +263,7 @@ public class BookDAO_Jw {
 		try {
 			conn = DBUtil.getConnection();
 			//값이 양수여야 정지X
-			sql = "SELECT TRUNC(SYSDATE - MEM_STOP_DATE) FROM MEMBER WHERE MEM_ID=?";
+			sql = "SELECT TRUNC(SYSDATE - NVL(MEM_STOP_DATE, SYSDATE-1)) FROM MEMBER WHERE MEM_ID=?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, mem_id);
 			rs = pstmt.executeQuery();

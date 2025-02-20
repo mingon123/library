@@ -31,7 +31,7 @@ public class LibraryMain_jw {
 				System.out.print("5.대여/예약 6.반납 9.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
-					if(no==5 && !dao.checkMemStop(mem_id)) {
+					if(!dao.checkMemStop(mem_id) && no==5 ) {
 						System.out.println("현재 정지상태입니다. 대여/예약이 불가능합니다.");
 						System.out.println("홈화면으로 돌아갑니다.\n");
 						continue;
