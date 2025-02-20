@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 
 public class LibraryMain_jw {
 	private BufferedReader br;
-	private String mem_id = "test"; // 로그인한 아이디 저장
+	private String mem_id = "test3"; // 로그인한 아이디 저장
 	private boolean isSelectFive = false;
 	private boolean isStart = true;
 	private BookDAO_Jw dao;
@@ -35,10 +35,57 @@ public class LibraryMain_jw {
 						isStart = false;
 						isSelectFive = true;
 						System.out.println("\n대여/예약 메뉴를 선택하셨습니다.");
-
 					} else if(no==6) {
-						//TODO
 						// 반납
+						System.out.println("\n반납 메뉴를 선택하셨습니다.");
+						System.out.println("-".repeat(90));
+						System.out.println("\t\t\t\t\t\t대여 현황");
+						System.out.println("-".repeat(90));
+						dao.selectUserOrderInfo(mem_id, 2);
+						System.out.println("-".repeat(90));
+						
+						if(dao.checkZeroOrder(mem_id)) {
+							System.out.println("\n대여기록이 존재하지 않습니다.");
+							System.out.println("이전화면으로 돌아갑니다.\n");
+							continue;
+						};
+						
+						boolean flag = false; int book_num = -1; String s = "";
+						do {
+							try {
+								if(flag) {
+									System.out.println("\n올바르지않은 번호입력입니다.");
+								} 
+								System.out.println();
+								System.out.print("반납하실 대여번호를 입력해주세요 : ");
+								book_num = Integer.parseInt(br.readLine());
+								flag = true;
+							} catch (NumberFormatException e) {
+								System.out.println("[숫자만 입력 가능]");
+							}
+						} while (!dao.checkNowOrderNum(book_num));
+
+						System.out.println(book_num+"을 선택하셨습니다.");
+						do {
+							if(flag) {
+								System.out.println("Y/N(y/n) 중 입력해주세요.");
+							}
+							System.out.print("반납하시겠습니까?(Y/N) : ");
+							s = br.readLine();
+							if(s.equals("N")||s.equals("n")) {
+								System.out.println("\n반납을 취소하셨습니다.");
+								System.out.println("이전화면으로 돌아갑니다.");
+								continue;
+							}else if(s.equals("Y")||s.equals("y")) {
+								//TODO 
+								System.out.println("\n반납을 진행합니다.");
+								dao.updateOrderReturn(book_num);
+								// 연체일에 따라 MEMBER에 MEM_STOP_DATE 업데이트
+							}
+							System.out.println("이전화면으로 돌아갑니다.");
+							continue;
+						} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
+						//TODO 여까지임
 					} else if(no==9) {//완
 						// 종료
 						System.out.println("프로그램 종료");
@@ -53,7 +100,7 @@ public class LibraryMain_jw {
 			if(isSelectFive) {
 				System.out.print("1.대여/예약하기 2.대여/예약 내역확인 3.뒤로가기\n >");
 				int book_num = 0;
-				try {
+				try {//TODO 여기서 1번 메뉴는 정지일 경우 접근 불가하도록.
 					int no = Integer.parseInt(br.readLine());
 					if(no==1) {//완
 						boolean flag = false;
@@ -91,7 +138,6 @@ public class LibraryMain_jw {
 											if(flag) {
 												System.out.println("Y/N(y/n) 중 입력해주세요.");
 											}
-											//동일책 예약 가능 문제 //TODO
 											System.out.print("예약하시겠습니까?(Y/N) : ");
 											s = br.readLine();
 											if(s.equals("N")||s.equals("n")) {
@@ -100,8 +146,13 @@ public class LibraryMain_jw {
 												isOrder = false;
 												continue;
 											}else if(s.equals("Y")||s.equals("y")) {
-												System.out.println("\n예약을 진행합니다.");
-												dao.insertReserve(mem_id, book_num);
+												if(dao.isDuplicatedReserve(book_num, mem_id)) {
+													System.out.println("\n이미 해당 책을 예약하신 기록이 존재합니다.");
+												}
+												else {
+													System.out.println("\n예약을 진행합니다.");
+													dao.insertReserve(mem_id, book_num);		
+												}
 												System.out.println("이전화면으로 돌아갑니다.");
 												isOrder = false;
 												continue;
@@ -167,9 +218,13 @@ public class LibraryMain_jw {
 													isOrder = false;
 													continue;
 												}else if(s.equals("Y")||s.equals("y")) {
-													System.out.println("\n예약을 진행합니다.");
-													dao.insertReserve(mem_id, book_num);
-													System.out.println();
+													if(dao.isDuplicatedReserve(book_num, mem_id)) {
+														System.out.println("\n이미 해당 책을 예약하신 기록이 존재합니다.");
+													}
+													else {
+														System.out.println("\n예약을 진행합니다.");
+														dao.insertReserve(mem_id, book_num);		
+													}
 													System.out.println("이전화면으로 돌아갑니다.");
 													isOrder = false;
 													continue;
@@ -207,7 +262,6 @@ public class LibraryMain_jw {
 								no = Integer.parseInt(br.readLine());
 								if(no==1) {
 									System.out.println("\n현황확인을 선택하셨습니다.");
-									//TODO 
 									System.out.println("-".repeat(90));
 									System.out.println("\t\t\t\t\t\t대여 현황");
 									System.out.println("-".repeat(90));
@@ -222,6 +276,7 @@ public class LibraryMain_jw {
 										if(flag) {
 											System.out.println("잘못 입력하셨습니다. 다시 입력해주세요.");
 										}
+										//TODO 정지상태일 경우 연장 출력하지말고 뒤로가기만 출력하도록.
 										System.out.print("\n연장을 원하실 경우 대여번호, 뒤로가기를 원하실 경우 q(Q)를 입력해주세요\n > ");
 										s = br.readLine();
 										if(s.equals("Q") || s.equals("q")) {
@@ -234,7 +289,7 @@ public class LibraryMain_jw {
 												flag = true;
 												sNum = Integer.parseInt(s);
 											} catch (NumberFormatException e) {
-												
+
 											}
 										}
 									} while (!dao.checkNowOrderNum(sNum) && !s.equals("q") && !s.equals("Q"));
@@ -263,14 +318,17 @@ public class LibraryMain_jw {
 											}else {
 												flag = true;
 											}
-											
+
 										} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
 									}
-									else {
+									else if(sNum != -1 && !dao.checkOrderAdd(sNum)){
 										System.out.println(sNum +"번은 연장이 불가능합니다.");
 										System.out.println("이전화면으로 돌아갑니다.");
 										isSelectView = false;
 										continue;
+									}
+									else {
+										//
 									}
 								}else if(no==2) {
 									System.out.println("대여 내역확인을 선택하셨습니다.");

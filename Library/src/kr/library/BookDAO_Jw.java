@@ -170,7 +170,7 @@ public class BookDAO_Jw {
 		return check;
 	}//checkBookNum
 
-	// 대여번호가 현황기록에 존재하는지 확인하는 함수 - 존재:1 존재x:0 에러:-1
+	// 대여번호가 현황기록에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false
 	public boolean checkNowOrderNum(int order_num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -194,7 +194,7 @@ public class BookDAO_Jw {
 
 		if(check == -1)
 			System.out.println("에러 발생!");
-		return check == 1? true:false;
+		return check >= 1? true:false;
 
 	}//checkNowOrderNum
 
@@ -222,12 +222,12 @@ public class BookDAO_Jw {
 		}
 		if(check == -1) System.out.println("에러 발생!");
 
-		return check == 1? true: false;
+		return check >= 1? true: false; 
 
 	}//checkNowOrderNum
 
-	//이미 해당 유저가 같은 책을 예약했는지 확인 //TODO
-	public boolean checkSameReserve(int book_num, String mem_id) {
+	//이미 해당 유저가 같은 책을 예약했는지 확인  - 중복시 :true  중복 아닐시 :false
+	public boolean isDuplicatedReserve(int book_num, String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -235,9 +235,10 @@ public class BookDAO_Jw {
 		int check = -1;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND IS_ADD=0";
+			sql = "SELECT COUNT(*) FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
 			pstmt = conn.prepareStatement(sql);
-			//pstmt.setInt(1, order_num);
+			pstmt.setInt(1, book_num);
+			pstmt.setString(2, mem_id);
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) check = rs.getInt(1);
@@ -249,11 +250,11 @@ public class BookDAO_Jw {
 		}
 		if(check == -1) System.out.println("에러 발생!");
 
-		return check == 1? true: false;
+		return check >= 1? true: false;
 
 	}//checkNowOrderNum
 
-	// book_order 테이블에 insert - 대여 테이블 추가후 책 갯수 조정
+	// 대여(insert book_order) - 대여 추가후 책 갯수 조정
 	public void insertBookOrder(String mem_id,int book_num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -459,6 +460,86 @@ public class BookDAO_Jw {
 			DBUtil.executeClose(rs, pstmt, conn);
 		} 
 	} // selectUserNowReserveInfo
+
+	// 반납 진행 함수 - update is_return
+	public void updateOrderReturn(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE BOOK_ORDER SET IS_RETURN = 1 WHERE ORDER_NUM=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1,order_num);
+			int count = pstmt.executeUpdate();
+
+			sql = "UPDATE BOOK SET BOOK_VOLM_CNT = BOOK_VOLM_CNT + 1 WHERE BOOK_NUM IN "
+					+ "(SELECT BOOK_NUM FROM BOOK_ORDER WHERE ORDER_NUM = ?)";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			int count2 = pstmt.executeUpdate();
+
+			if(count > 0 && count2 > 0) System.out.println("반납을 성공했습니다.");
+		} catch (Exception e) {
+			System.out.println("에러발생");
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateOrderReturn
+
+	// 정지일수 update - 이전에 정지일수가 있는 경우 + , 새로 생길경우 그대로 //TODO
+	public void updateStopDate(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE MEMBER SET MEM_STOP_DATE = "
+					+ "CASE "
+					+ "WHEN MEM_STOP_DATE > SYSDATE "
+					+ "THEN MEM_STOP_DATE + (SYSDATE-RETURN_DATE) "
+					+ "ELSE SYSDATE + (SYSDATE-RETURN_DATE) "
+					+ "END "
+					+ "WHERE MEM_ID IN ("
+					+ "SELECT MEM_ID FROM BOOK_ORDER WHERE ORDER_NUM = ?)";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1,order_num);
+			int count = pstmt.executeUpdate();
+
+			if(count <= 0) System.out.println("갱신 실패");
+		} catch (Exception e) {
+			System.out.println("에러발생");
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateStopDate
+
+	//	해당 유저의 현재 대여 수 	0: true	1이상: false 
+	public boolean checkZeroOrder(String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int check = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE MEM_ID=? AND IS_ADD=0";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, mem_id);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) check = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		if(check == -1) System.out.println("에러 발생!");
+
+		return check >= 1? false: true; 
+
+	}//checkNowOrderNum
 
 	// 연장 진행 함수 - update return_date
 	public void updateReturnDate(int order_num) {
