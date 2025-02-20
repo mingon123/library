@@ -233,14 +233,18 @@ public class LibraryMain_mg {
 	
 	private void checkUserNotifications() {
 		System.out.println("정지상태/연체/반납일/예약도서알림");
-		dao.isMemStop(me_id);
-		System.out.println("-".repeat(90));
-		dao.isOverReturn(me_id);
-		System.out.println("-".repeat(90));
-		dao.isReturnDateNotification(me_id);
-		System.out.println("-".repeat(90));
-//		dao.isReservationNotification(me_id, 1, 1); // 수정		
-		System.out.println("-".repeat(90));
+		
+		boolean memStop = dao.isMemStop(me_id);
+		if(memStop) System.out.println("-".repeat(90));
+		
+		boolean overReturn = dao.isOverReturn(me_id);
+		if(overReturn) System.out.println("-".repeat(90));
+		
+		boolean returnDateNotification = dao.isReturnDateNotification(me_id);
+		if(returnDateNotification) System.out.println("-".repeat(90));
+		
+		boolean reservationNotification = dao.isReservationNotification(me_id);
+		if(reservationNotification) System.out.println("-".repeat(90));
 	}
 	
 	
