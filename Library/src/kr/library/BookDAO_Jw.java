@@ -10,35 +10,6 @@ import util.DBUtil;
 
 public class BookDAO_Jw {
 
-	// insert
-	public void insertInfo(String title,String author,String publisher,Integer publication_year,String category,Integer rank,Integer volm_cnt) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		String sql = null;
-		int cnt = 0;
-
-		try {
-			conn = DBUtil.getConnection();
-			sql = "INSERT INTO book VALUES (book_seq.nextval,?,?,NVL(?,''),?,NVL(?,'기타'),?,?,SYSDATE)";
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setString(++cnt, title);
-			pstmt.setString(++cnt, author);
-			pstmt.setString(++cnt, publisher);
-			pstmt.setObject(++cnt, (publication_year != null) ? publication_year : 0, Types.INTEGER);
-			pstmt.setString(++cnt, category);
-			pstmt.setObject(++cnt, (rank != null) ? rank : 0, Types.INTEGER);
-			pstmt.setObject(++cnt, (volm_cnt != null) ? volm_cnt : 0, Types.INTEGER);
-
-			int count = pstmt.executeUpdate();
-			System.out.println(count + "개의 행을 삽입했습니다.");
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			DBUtil.executeClose(null, pstmt, conn);
-		}
-	} // insertInfo
-
 	//랜덤 책 정보 - 숫자 입력받아 하나로 재사용
 	public void randomBookInfo(int num) { // 평점 정보 출력하게 추가?
 		Connection conn = null;
@@ -47,7 +18,6 @@ public class BookDAO_Jw {
 		String sql = null;
 		HashSet<Integer> hs = new HashSet<Integer>();
 		int bookLength = 0;
-
 		try {
 			conn = DBUtil.getConnection();
 			sql = "SELECT COUNT(*) FROM book";
@@ -102,6 +72,7 @@ public class BookDAO_Jw {
 		}
 	} // randomBookInfo
 
+	
 	// 대여가능 여부 판별 함수. 대여가능:1 책남아있는 권수0:0 대여권수 다 참:-1
 	public int canOrder(String mem_id,int book_num) {
 		Connection conn = null;
@@ -131,7 +102,6 @@ public class BookDAO_Jw {
 		} finally {
 			DBUtil.executeClose(rs, pstmt, conn);
 		}
-		//테스트용. 잘되면 이 부분 지우기
 		if(bookCount == -1 || orderCount == -1)
 			System.out.println("에러발생!! 대여여부 판별 불가");
 
@@ -142,6 +112,7 @@ public class BookDAO_Jw {
 		}else return 0;
 	}//canOrder
 
+	
 	// 책번호가 존재하는지 확인하는 함수- 존재:1 존재x:0 에러:-1
 	public int checkBookNum(int book_num) {
 		Connection conn = null;
@@ -195,10 +166,10 @@ public class BookDAO_Jw {
 		if(check == -1)
 			System.out.println("에러 발생!");
 		return check >= 1? true:false;
-
 	}//checkNowOrderNum
 
-	// 예약번호가 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false //TODO
+	
+	// 예약번호가 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
 	public boolean checkReserveNum(int re_num, String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -238,7 +209,7 @@ public class BookDAO_Jw {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, re_num);
 			int count = pstmt.executeUpdate();
-			if(count > 0) System.out.println("취소를 성공했습니다.");
+			if(count > 0) System.out.println("예약취소를 성공했습니다.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -301,6 +272,7 @@ public class BookDAO_Jw {
 		return check >= 1? false: true; 
 	}//checkOrderAddReturnDate
 
+	
 	// 정지상태인지 확인 ->  정지상태 : false , 정지X : true
 	public boolean checkMemStop(String mem_id) {
 		Connection conn = null;
@@ -317,7 +289,6 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) check = rs.getInt(1);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -328,6 +299,7 @@ public class BookDAO_Jw {
 		return check >= 1? true: false; 
 	}//checkMemStop
 
+	
 	//이미 해당 유저가 같은 책을 예약했는지 확인  - 중복시 :true  중복 아닐시 :false
 	public boolean isDuplicatedReserve(int book_num, String mem_id) {
 		Connection conn = null;
@@ -388,6 +360,7 @@ public class BookDAO_Jw {
 		}
 	} // insertBookOrder
 
+	
 	// reservation 테이블에 insert - 예약 테이블에 insert
 	public void insertReserve(String mem_id,int book_num) {
 		Connection conn = null;
@@ -414,6 +387,7 @@ public class BookDAO_Jw {
 		}
 	} // insertBookOrder
 
+	
 	// 예약가능 여부 판별 함수. 예약가능:1 책남아있는 권수0이 아님:0 예약권수 다 참:-1
 	public int canReservation(String mem_id,int book_num) {
 		Connection conn = null;

@@ -410,6 +410,7 @@ public class LibraryMain_jw {
 								System.out.println("뒤로가기를 선택하셨습니다.");
 								continue;
 							}
+							
 							else {
 								try {
 									flag = true;
@@ -426,12 +427,21 @@ public class LibraryMain_jw {
 								if(flag) System.out.println("Y/N(y/n) 중 입력해주세요.");
 								System.out.print(sNum + "번을 선택하셨습니다. \n정말 취소하시겠습니까?(Y/N) : ");
 								s = br.readLine();
+								if(s.equals("Y")||s.equals("y")) {
+									System.out.println("\n예약을 취소합니다.");
+									dao.deleteReserve(sNum);
+									System.out.println("이전화면으로 돌아갑니다.");
+									continue;
+								}else if(s.equals("N")||s.equals("n")) {
+									System.out.println("\n예약취소를 취소합니다.");
+									System.out.println("이전화면으로 돌아갑니다.");
+									continue;
+								}else {
+									flag = true;
+								}
 								
 							} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
 							
-							if(s.equals("N") || s.equals("n")) {
-								System.out.println("취소");
-							}
 						}
 						
 						
