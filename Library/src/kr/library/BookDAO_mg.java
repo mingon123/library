@@ -1,21 +1,28 @@
 package kr.library;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import util.DBUtil;
 
 public class BookDAO_mg {
+	private BookDAO_Jw jw;
 	// 희망도서신청
 	public void insertWishBook(String title,String author,String publisher) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
-		int cnt = 0;
-		
+		int cnt = 0;		
 		try {
 			conn = DBUtil.getConnection();
+			
+			if(isWishBook(title, author)) {
+				System.out.println("해당 도서는 보유중입니다.");
+				return;
+			}
+			
 			sql = "INSERT INTO wish_book(wish_num,wish_title,wish_author,wish_publisher,wish_date) VALUES (wish_book_seq.nextval,?,?,?,SYSDATE)";
 			pstmt = conn.prepareStatement(sql);
 			
@@ -31,7 +38,27 @@ public class BookDAO_mg {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
 	} // insertWishBook
-	
+	// 희망도서 신청 시 동일한 제목+저자인 도서가 있으면 알림
+	private boolean isWishBook(String title,String author) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM book WHERE book_title=? AND book_author=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, title);
+			pstmt.setString(2, author);
+			rs = pstmt.executeQuery();
+			if(rs.next()) return true;
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			DBUtil.executeClose(rs, pstmt, conn);	
+		}
+		return false;
+	}
 	// 희망도서 목록보기
 	public void selectWishBookInfo() {
 		Connection conn = null;
@@ -265,18 +292,16 @@ public class BookDAO_mg {
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT mem_stop_date FROM member WHERE mem_id=?";
+			sql = "SELECT mem_stop_date FROM member WHERE mem_id=? AND mem_stop_date IS NOT NULL";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, memId);
 			rs = pstmt.executeQuery();
 			if(rs.next()) {
-				System.out.println("정지일");
-				do {
-					System.out.print(rs.getString("mem_id"));
-					System.out.print("\t");
-					System.out.println(rs.getDate("정지가 "+"mem_stop_date" + "일 남았습니다."));
-					return true;
-				} while(rs.next());
+				do {					
+					System.out.print("정지 상태입니다. 정지해제일 : ");
+					System.out.println(rs.getDate("mem_stop_date"));
+				} while (rs.next());
+				return true;
 			} else {
 				System.out.println("정지 상태가 아닙니다.");
 			}
@@ -289,10 +314,107 @@ public class BookDAO_mg {
 	}
 	// 연체알림
 	public boolean isOverReturn(String memId) {
-		
-		
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT b.book_title,b.book_author,(SYSDATE-o.return_date) AS over_return FROM book_order o,book b WHERE b.book_num=o.book_num "
+					+ "AND mem_id=? AND is_return=0 AND return_date<SYSDATE ORDER BY o.return_date desc";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, memId);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				System.out.println("연체일\t\t책제목\t작가");
+				do {
+					Date overReturn = rs.getDate("over_return");
+					if(overReturn.getDay()<0) {
+						System.out.print(Math.abs(overReturn.getDay()));
+						System.out.print("\t");
+						System.out.print(rs.getString("b.book_title"));
+						System.out.print("\t");
+						System.out.println(rs.getString("b.book_author"));
+					}
+				} while (rs.next());
+				return true;
+			} else {
+				System.out.println("연체된 도서가 없습니다.");
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
 		return false;
 	}
-	
+	// 반납일 알림(가장 임박한 책의 반납일)
+	public boolean isReturnDateNotification(String numId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT book_title,book_author,return_date FROM (SELECT b.book_title,b.book_author,o.return_date FROM book b,book_order o WHERE b.book_num=o.book_num "
+					+ "AND o.mem_id=? AND o.is_return=0 ORDER BY o.return_date) WHERE ROWNUM = 1";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, numId);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				System.out.println("반납일\t\t책제목\t작가");
+				do {
+					System.out.print(rs.getDate("return_date"));
+					System.out.print("\t");
+					System.out.print(rs.getString("book_title"));
+					System.out.print("\t");
+					System.out.println(rs.getString("book_author"));
+				} while (rs.next());
+				return true;
+			} else {
+				System.out.println("대여중인 책이 없습니다.");
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		return false;
+	}
+	// 예약도서 대여 가능 알림
+	public boolean isReservationNotification(String memId, int bookNum, int reNum) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		
+		try {
+			conn = DBUtil.getConnection();
+			if(jw.canOrder(memId, bookNum)!=1) { // 대출가능
+				System.out.println("대출불가");
+				return false;
+			}
+			
+			sql = "SELECT mem_id FROM reservation WHERE book_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, bookNum);
+			rs = pstmt.executeQuery();
+			if(rs.next()) {
+				int allCount = jw.calcReserveRank(reNum, 1); // 총예약자수
+				int userRank = jw.calcReserveRank(reNum, 2); // 현재 사용자 예약순위
+				if(userRank==1 &&jw.canOrder(memId, bookNum)==1) {
+					System.out.println("예약중인 도서 대여 가능합니다.");
+					return true;
+				} else {
+					System.out.println("현재 예약순위 : "+ userRank+"/"+allCount);
+				}
+			} else System.out.println("이 도서는 예약된 상태가 아닙니다.");
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			DBUtil.executeClose(rs, pstmt, conn);	
+		}
+		return false;
+	}
 	
 }

@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class LibraryMain_mg {
 	private BufferedReader br;
-	private String me_id="mm"; // 로그인한 아이디 저장
+	private String me_id="test"; // 로그인한 아이디 저장
 	private boolean isSelectSeven = false;
 	private boolean isStart = true;
 	private BookDAO_mg dao;
@@ -28,10 +28,13 @@ public class LibraryMain_mg {
 	private void callMenu() throws IOException {
 		while(true) {
 			if(isStart) {
-				System.out.print("7.기타메뉴 9.종료\n > ");
+				System.out.print("1.사용자알림 7.기타메뉴 9.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
-					if(no==7) { // 완
+					if(no==1) {
+						checkUserNotifications();
+						isStart = false;
+					} else if(no==7) { // 완
 						isStart = false;
 						isSelectSeven = true;
 						System.out.println("기타 메뉴를 선택하셨습니다.");
@@ -229,7 +232,15 @@ public class LibraryMain_mg {
 	
 	
 	private void checkUserNotifications() {
-		
+		System.out.println("정지상태/연체/반납일/예약도서알림");
+		dao.isMemStop(me_id);
+		System.out.println("-".repeat(90));
+		dao.isOverReturn(me_id);
+		System.out.println("-".repeat(90));
+		dao.isReturnDateNotification(me_id);
+		System.out.println("-".repeat(90));
+//		dao.isReservationNotification(me_id, 1, 1); // 수정		
+		System.out.println("-".repeat(90));
 	}
 	
 	
