@@ -21,13 +21,9 @@ public class BookDAO_il {
 		ResultSet rs = null;		
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM member ORDER BY mem_name"; // 이름순으로 정렬
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
@@ -50,7 +46,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// 자원 정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectMember()
@@ -63,15 +58,10 @@ public class BookDAO_il {
 		String sql = null;		
 		int count = 0;		
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM member WHERE mem_id=?";
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//?에 데이터 바인딩
 			pstmt.setString(1, mem_id);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
 				count = 1; //레코드가 존재할 때 1 저장				
@@ -79,7 +69,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			count = -1; //오류 발생
 		} finally {
-			//자원정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		}		
 		return count; 
@@ -92,15 +81,10 @@ public class BookDAO_il {
 		ResultSet rs = null;
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM member WHERE mem_id=?";
-			//JDBC 수행 3단계 
 			pstmt = conn.prepareStatement(sql);
-			//?에 데이터 할당
 			pstmt.setString(1, mem_id);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
 				// 비밀번호만 미출력
@@ -117,10 +101,60 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			//자원정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		}		
-	} // selectDetailMembe
+	} // selectDetailMember
+
+	// 회원 정보 등록
+	public void InsertMember(String mem_id, String mem_pw, 
+			String mem_name, String mem_cell, String mem_email) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "INSERT INTO member (mem_id, mem_pw, mem_name, mem_cell, mem_email, mem_date, mem_mdate, mem_stop_date) "
+					+ "VALUES (?,?,?,?,?,SYSDATE,null,null)"; //전체를 넣을땐 컬럼명 생략 가능
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, mem_id);
+			pstmt.setString(++cnt, mem_pw); // 유효성 검사 추가요망
+			pstmt.setString(++cnt, mem_name);
+			pstmt.setString(++cnt, mem_cell);
+			pstmt.setString(++cnt, mem_email);				
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 회원정보를 등록했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // insertMember()
+
+	// 회원 정보 수정
+	public void updateMember(String mem_id, String mem_pw, 
+			String mem_name, String mem_cell, String mem_email) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE member SET mem_pw=?,mem_name=?,mem_cell=?,mem_email=?,mem_mdate=SYSDATE WHERE mem_id=?"; //전체를 넣을땐 컬럼명 생략 가능
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, mem_pw); // 유효성 검사 추가요망
+			pstmt.setString(++cnt, mem_name);
+			pstmt.setString(++cnt, mem_cell);
+			pstmt.setString(++cnt, mem_email);	
+			pstmt.setString(++cnt, mem_id);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 회원정보를 수정했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateMember()
 
 	// 회원 정보 삭제
 	public void deleteMember(String mem_id) {
@@ -128,15 +162,10 @@ public class BookDAO_il {
 		PreparedStatement pstmt = null;
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "DELETE FROM member WHERE mem_id=?";
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//?에 데이터 바인딩
 			pstmt.setString(1, mem_id);
-			//JDBC 수행 4단계
 			int count = pstmt.executeUpdate();
 			System.out.println(count + "개의 회원정보를 삭제했습니다.");
 		} catch (Exception e) {
@@ -154,13 +183,9 @@ public class BookDAO_il {
 		ResultSet rs = null;		
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM book WHERE book_num<=20 ORDER BY book_num DESC"; // 20개만 출력(랜덤으로 출력되게 수정요망)
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
@@ -183,7 +208,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// 자원 정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectBook()
@@ -196,15 +220,10 @@ public class BookDAO_il {
 		String sql = null;		
 		int count = 0;		
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM book WHERE book_num=?";
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//?에 데이터 바인딩
 			pstmt.setInt(1, book_num);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
 				count = 1; //레코드가 존재할 때 1 저장				
@@ -217,45 +236,40 @@ public class BookDAO_il {
 		}		
 		return count; 
 	} // checkBookRecord()
-		
+
 	//책 정보 상세보기
-		public void selectDetailBook(int book_num) {
-			Connection conn = null;
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			String sql = null;
-			try {
-				//JDBC 수행 1,2단계
-				conn = DBUtil.getConnection();
-				//SQL문 작성
-				sql = "SELECT * FROM book WHERE book_num=?";
-				//JDBC 수행 3단계 
-				pstmt = conn.prepareStatement(sql);
-				//?에 데이터 할당
-				pstmt.setInt(1, book_num);
-				//JDBC 수행 4단계
-				rs = pstmt.executeQuery();
-				if (rs.next()) {
-					System.out.println("책번호 : " + rs.getInt("book_num"));
-					System.out.println("제목 : " + rs.getString("book_title"));
-					System.out.println("저자" + rs.getString("book_author"));
-					System.out.println("출판사 : " + rs.getString("book_publisher"));
-					System.out.println("출판년도 : " + rs.getInt("book_p_year"));
-					System.out.println("카테고리 : " + rs.getString("book_category"));
-					System.out.println("추천순위 : " + rs.getInt("book_rank"));
-					System.out.println("보유권수 : " + rs.getInt("book_volm_cnt"));
-					System.out.println("등록일 : " + rs.getDate("book_reg_date"));		
-				} else {
-					System.out.println("검색된 정보가 없습니다.");
-				}			
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				//자원정리
-				DBUtil.executeClose(rs, pstmt, conn);	
-			}		
-		} // selectDetailBook()
-	
+	public void selectDetailBook(int book_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM book WHERE book_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, book_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				System.out.println("책번호 : " + rs.getInt("book_num"));
+				System.out.println("제목 : " + rs.getString("book_title"));
+				System.out.println("저자" + rs.getString("book_author"));
+				System.out.println("출판사 : " + rs.getString("book_publisher"));
+				System.out.println("출판년도 : " + rs.getInt("book_p_year"));
+				System.out.println("카테고리 : " + rs.getString("book_category"));
+				System.out.println("추천순위 : " + rs.getInt("book_rank"));
+				System.out.println("보유권수 : " + rs.getInt("book_volm_cnt"));
+				System.out.println("등록일 : " + rs.getDate("book_reg_date"));		
+			} else {
+				System.out.println("검색된 정보가 없습니다.");
+			}			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			//자원정리
+			DBUtil.executeClose(rs, pstmt, conn);	
+		}		
+	} // selectDetailBook()
+
 	//책 정보 등록
 	public void insertBook(String book_title, String book_author, String book_publisher, 
 			int book_p_year, String book_category, int book_rank, int book_volm_cnt) {
@@ -264,15 +278,11 @@ public class BookDAO_il {
 		String sql = null;
 		int cnt = 0;		
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "INSERT INTO book (book_num, book_title, book_author, book_publisher, "
 					+ "book_p_year, book_category, book_rank, book_volm_cnt, book_reg_date) "
 					+ "VALUES (book_seq.nextval,?,?,?,?,?,?,?,SYSDATE)"; //전체를 넣을땐 컬럼명 생략 가능
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//?에 데이터 바인딩
 			pstmt.setString(++cnt, book_title);
 			pstmt.setString(++cnt, book_author);
 			pstmt.setString(++cnt, book_publisher);
@@ -286,7 +296,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			//자원정리
 			DBUtil.executeClose(null, pstmt, conn);			
 		} 		
 	} // insertBook()
@@ -298,13 +307,9 @@ public class BookDAO_il {
 		ResultSet rs = null;		
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM book_order ORDER BY order_num";
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
@@ -327,7 +332,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// 자원 정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectOrder()
@@ -339,13 +343,9 @@ public class BookDAO_il {
 		ResultSet rs = null;		
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM reservation ORDER BY book_num, re_num"; // 1.책번호별 2.예약번호별 정렬 (test요망)
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
@@ -362,7 +362,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// 자원 정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectRSV()
@@ -374,13 +373,9 @@ public class BookDAO_il {
 		ResultSet rs = null;		
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM wish_book ORDER BY wish_num";
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {			
@@ -399,7 +394,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// 자원 정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectWish()
@@ -411,13 +405,9 @@ public class BookDAO_il {
 		ResultSet rs = null;		
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM review ORDER BY review_num";
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
@@ -437,7 +427,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// 자원 정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectReview()
@@ -449,13 +438,9 @@ public class BookDAO_il {
 		ResultSet rs = null;		
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM notice ORDER BY notice_num DESC";
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {			
@@ -474,7 +459,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// 자원 정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectNotice()
@@ -486,13 +470,9 @@ public class BookDAO_il {
 		ResultSet rs = null;		
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM qna ORDER BY qna_num"; // 수정요망
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
@@ -513,7 +493,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// 자원 정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectQnA()
@@ -525,13 +504,9 @@ public class BookDAO_il {
 		ResultSet rs = null;		
 		String sql = null;
 		try {
-			//JDBC 수행 1,2단계
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT * FROM qna ORDER BY qna_num"; // 수정요망!!!!!
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
@@ -548,7 +523,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			// 자원 정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectStatistics()
@@ -563,15 +537,11 @@ public class BookDAO_il {
 		boolean flag = false;
 
 		try {
-			//JDBC 수행 1,2단계			
 			conn = DBUtil.getConnection();
-			//SQL문 작성
 			sql = "SELECT mem_id FROM member WHERE mem_id=? AND mem_pw=?"; // SELECT * 해도 됨.
-			//JDBC 수행 3단계
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, mem_id);
 			pstmt.setString(2, mem_pw);
-			//JDBC 수행 4단계
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
 				flag = true; //로그인 성공
@@ -579,7 +549,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			//자원정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		}
 		return flag;	
