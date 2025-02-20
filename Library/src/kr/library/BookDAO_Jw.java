@@ -226,6 +226,33 @@ public class BookDAO_Jw {
 
 	}//checkNowOrderNum
 
+	//이미 해당 유저가 같은 책을 예약했는지 확인 //TODO
+	public boolean checkSameReserve(int book_num, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int check = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND IS_ADD=0";
+			pstmt = conn.prepareStatement(sql);
+			//pstmt.setInt(1, order_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) check = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		if(check == -1) System.out.println("에러 발생!");
+
+		return check == 1? true: false;
+
+	}//checkNowOrderNum
+
 	// book_order 테이블에 insert - 대여 테이블 추가후 책 갯수 조정
 	public void insertBookOrder(String mem_id,int book_num) {
 		Connection conn = null;
@@ -342,18 +369,7 @@ public class BookDAO_Jw {
 
 			if(rs.next()) {
 				System.out.printf("%5s %30s \t\t%10s \t%5s\n", "번호", "책제목", "대여일자", "반납여부(O/X)");
-				//System.out.println("번호\t\t책제목\t\t대여일자\t\t반납여부(O/X)");
 				do {
-					/*
-					System.out.print(rs.getInt("ORDER_NUM"));
-					System.out.print("\t\t");
-					System.out.print(rs.getString("BOOK_TITLE"));
-					System.out.print("\t\t");
-					System.out.print(rs.getDate("ORDER_DATE"));
-					System.out.print("\t\t");
-					System.out.print(rs.getString("RETURN"));
-					System.out.println();
-					 */
 					System.out.printf("%5d %30s \t%7s \t%5s\n", 
 							rs.getInt("ORDER_NUM"),
 							rs.getString("BOOK_TITLE"),
@@ -409,8 +425,7 @@ public class BookDAO_Jw {
 		} 
 	} // selectUserNowOrderInfo
 
-	// 로그인한 유저의 예약 현황만 출력 - 수정 쫙 해야함
-	//TODO
+	// 로그인한 유저의 예약 현황 출력
 	public void selectUserNowReserveInfo(String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -424,15 +439,15 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%30s \t\t%10s \t%10s", 
+				System.out.printf("%30s \t\t%10s \t%10s\n", 
 						"책제목", "총 예약인원", "예약순위");
+				int reNum = rs.getInt("RE_NUM");
+
 				do {
-					System.out.printf("%5s %30s \t%10s \t%10s %5s\n", 
-							rs.getInt("ORDER_NUM"),
+					System.out.printf("%30s \t%10d \t%10d\n", 
 							rs.getString("BOOK_TITLE"),
-							rs.getDate("ORDER_DATE").toString(),
-							rs.getDate("RETURN_DATE").toString(),
-							rs.getString("CAN_ADD")
+							calcReserveRank(reNum, 1),
+							calcReserveRank(reNum, 2)
 							);
 				} while(rs.next());
 			} else {
@@ -443,7 +458,7 @@ public class BookDAO_Jw {
 		} finally {
 			DBUtil.executeClose(rs, pstmt, conn);
 		} 
-	} // selectUserNowOrderInfo
+	} // selectUserNowReserveInfo
 
 	// 연장 진행 함수 - update return_date
 	public void updateReturnDate(int order_num) {
@@ -466,7 +481,7 @@ public class BookDAO_Jw {
 		}
 	} // updateReturnDate
 
-	// 예약 순위 계산 함수 - num==1 : 총 인원수, num==2 예약 순위
+	// 예약 순위 관련 함수 - num==1 : 총 인원수, num==2 예약 순위
 	public int calcReserveRank(int re_num, int num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -483,19 +498,19 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) allCount = rs.getInt(1);
-			
+
 			sql = "SELECT COUNT(*) FROM RESERVATION WHERE RE_NUM > ? AND "
 					+ "BOOK_NUM = (SELECT BOOK_NUM FROM RESERVATION WHERE RE_NUM = ?)";
-			
+
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, re_num);
 			pstmt.setInt(2, re_num);
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) lowCount = rs.getInt(1);
-			
+
 			if(lowCount == -1 || allCount == -1) System.out.println("에러발생!");
-			
+
 		} catch (Exception e) {
 			System.out.println("에러발생");
 		} finally {
@@ -505,7 +520,7 @@ public class BookDAO_Jw {
 		else if(num == 2) return allCount - lowCount;
 		else return -1;
 	} // calcReserveRank
-	
+
 
 	// 목록보기
 	public void selectInfo() {
