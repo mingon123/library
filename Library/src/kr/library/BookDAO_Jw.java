@@ -198,6 +198,54 @@ public class BookDAO_Jw {
 
 	}//checkNowOrderNum
 
+	// 예약번호가 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false //TODO
+	public boolean checkReserveNum(int re_num, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int check = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM RESERVATION WHERE RE_NUM=? AND MEM_ID=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, re_num);
+			pstmt.setString(2, mem_id);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) check = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+
+		if(check == -1)
+			System.out.println("에러 발생!");
+		return check >= 1? true:false;
+
+	}//checkReserveNum
+
+	// 예약테이블 행 삭제
+	public void deleteReserve(int re_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM RESERVATION WHERE RE_NUM=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, re_num);
+			int count = pstmt.executeUpdate();
+			if(count > 0) System.out.println("취소를 성공했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteReserve
+
 	// 대여번호가 연장이 가능한지 확인하는 함수
 	//	- 먼저 대여번호가 유효한지 체크하기때문에 연장유무만
 	public boolean checkOrderAdd(int order_num) {
@@ -253,7 +301,7 @@ public class BookDAO_Jw {
 		return check >= 1? false: true; 
 	}//checkOrderAddReturnDate
 
-	// 정지상태인지 확인 ->  정지상태 : false , 정지X : true //TODO
+	// 정지상태인지 확인 ->  정지상태 : false , 정지X : true
 	public boolean checkMemStop(String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -494,12 +542,13 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%30s \t\t%10s \t%10s\n", 
-						"책제목", "총 예약인원", "예약순위");
+				System.out.printf("%10s\t%30s \t\t%10s \t%10s\n", 
+						"번호","책제목", "총 예약인원", "예약순위");
 				int reNum = rs.getInt("RE_NUM");
 
 				do {
-					System.out.printf("%30s \t%10d \t%10d\n", 
+					System.out.printf("%10d\t%30s \t%10d \t%10d\n", 
+							rs.getInt("RE_NUM"),
 							rs.getString("BOOK_TITLE"),
 							calcReserveRank(reNum, 1),
 							calcReserveRank(reNum, 2)
@@ -514,6 +563,7 @@ public class BookDAO_Jw {
 			DBUtil.executeClose(rs, pstmt, conn);
 		} 
 	} // selectUserNowReserveInfo
+
 
 	// 반납 진행 함수 - update is_return
 	public void updateOrderReturn(int order_num) {

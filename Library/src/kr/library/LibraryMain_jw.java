@@ -6,11 +6,13 @@ import java.io.InputStreamReader;
 
 public class LibraryMain_jw {
 	private BufferedReader br;
-	private String mem_id = "test3"; // 로그인한 아이디 저장
+	private String mem_id = "test2"; // 로그인한 아이디 저장
 	private boolean isSelectFive = false;
 	private boolean isStart = true;
 	private BookDAO_Jw dao;
 
+	//TODO 예약도서 대여시 rank가 책 갯수이내(!=0)인지 확인하고 대여할때 예약테이블에서 삭제
+	
 	public LibraryMain_jw() {
 		try {
 			dao = new BookDAO_Jw();
@@ -105,10 +107,10 @@ public class LibraryMain_jw {
 					System.out.println("[숫자만 입력 가능]");
 				}
 			}
-			if(isSelectFive) {
-				System.out.print("1.대여/예약하기 2.대여/예약 내역확인 3.뒤로가기\n >");
+			if(isSelectFive) { 
+				System.out.print("1.대여/예약하기 2.대여/예약 내역확인 3.예약취소 4.뒤로가기\n >");
 				int book_num = 0;
-				try {//TODO 여기서 1번 메뉴는 정지일 경우 접근 불가하도록
+				try {
 					int no = Integer.parseInt(br.readLine());
 					if(no==1) {//완
 						boolean flag = false;
@@ -304,7 +306,9 @@ public class LibraryMain_jw {
 											}
 										}
 									} while (!dao.checkNowOrderNum(sNum) && !s.equals("q") && !s.equals("Q"));
+									
 									System.out.println();
+									
 									if(dao.checkOrderAdd(sNum)) {
 										if(!dao.checkOrderAddReturnDate(sNum)) {
 											System.out.println(sNum +"번의 반납기한이 지났으므로 연장이 불가능합니다.");
@@ -384,7 +388,54 @@ public class LibraryMain_jw {
 								System.out.println("[숫자만 입력 가능]");
 							}
 						} // while(isSelectView)
-					} else if(no==3) {//완
+					}else if(no==3) { 
+						System.out.println("\n예약취소를 선택하셨습니다.");
+						System.out.println("-".repeat(90));
+						System.out.println("\t\t\t\t\t\t예약 현황");
+						System.out.println("-".repeat(90));
+						dao.selectUserNowReserveInfo(mem_id);
+						System.out.println("-".repeat(90));
+						//TODO
+						// 예약도서에 해당 번호 있는지 확인
+						// 삭제
+						System.out.println();
+						boolean flag = false; String s; int sNum = -1;
+						do {
+							if(flag) {
+								System.out.println("\n잘못 입력하셨습니다. 다시 입력해주세요.");
+							}
+							System.out.print("예약취소하실 번호를 입력해주세요.\n뒤로가기를 원하실 경우 q(Q)를 입력해주세요\n > ");
+							s = br.readLine();
+							if(s.equals("Q") || s.equals("q")) {
+								System.out.println("뒤로가기를 선택하셨습니다.");
+								continue;
+							}
+							else {
+								try {
+									flag = true;
+									sNum = Integer.parseInt(s);
+								} catch (NumberFormatException e) {
+
+								}
+							}
+						} while (!dao.checkReserveNum(sNum,mem_id) && !s.equals("q") && !s.equals("Q"));
+						
+						flag = false;
+						if(dao.checkReserveNum(sNum,mem_id)) {
+							do {
+								if(flag) System.out.println("Y/N(y/n) 중 입력해주세요.");
+								System.out.print(sNum + "번을 선택하셨습니다. \n정말 취소하시겠습니까?(Y/N) : ");
+								s = br.readLine();
+								
+							} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
+							
+							if(s.equals("N") || s.equals("n")) {
+								System.out.println("취소");
+							}
+						}
+						
+						
+					}else if(no==4) {//완
 						// 뒤로가기
 						System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
 						isStart = true;
