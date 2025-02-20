@@ -31,7 +31,11 @@ public class LibraryMain_jw {
 				System.out.print("5.대여/예약 6.반납 9.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
-					if(no==5) { // 완
+					if(no==5 && !dao.checkMemStop(mem_id)) {
+						System.out.println("현재 정지상태입니다. 대여/예약이 불가능합니다.");
+						System.out.println("홈화면으로 돌아갑니다.\n");
+						continue;
+					}else if(no==5) { // 완
 						isStart = false;
 						isSelectFive = true;
 						System.out.println("\n대여/예약 메뉴를 선택하셨습니다.");
@@ -41,7 +45,7 @@ public class LibraryMain_jw {
 						System.out.println("-".repeat(90));
 						System.out.println("\t\t\t\t\t\t대여 현황");
 						System.out.println("-".repeat(90));
-						dao.selectUserOrderInfo(mem_id, 2);
+						dao.selectUserNowOrderInfo(mem_id);
 						System.out.println("-".repeat(90));
 						
 						if(dao.checkZeroOrder(mem_id)) {
@@ -50,7 +54,7 @@ public class LibraryMain_jw {
 							continue;
 						};
 						
-						boolean flag = false; int book_num = -1; String s = "";
+						boolean flag = false; int order_num = -1; String s = "";
 						do {
 							try {
 								if(flag) {
@@ -58,14 +62,16 @@ public class LibraryMain_jw {
 								} 
 								System.out.println();
 								System.out.print("반납하실 대여번호를 입력해주세요 : ");
-								book_num = Integer.parseInt(br.readLine());
+								order_num = Integer.parseInt(br.readLine());
 								flag = true;
 							} catch (NumberFormatException e) {
 								System.out.println("[숫자만 입력 가능]");
 							}
-						} while (!dao.checkNowOrderNum(book_num));
-
-						System.out.println(book_num+"을 선택하셨습니다.");
+						} while (!dao.checkNowOrderNum(order_num));
+						
+						System.out.println();
+						System.out.println(order_num+"번을 선택하셨습니다.");
+						flag = false;
 						do {
 							if(flag) {
 								System.out.println("Y/N(y/n) 중 입력해주세요.");
@@ -77,15 +83,17 @@ public class LibraryMain_jw {
 								System.out.println("이전화면으로 돌아갑니다.");
 								continue;
 							}else if(s.equals("Y")||s.equals("y")) {
-								//TODO 
-								System.out.println("\n반납을 진행합니다.");
-								dao.updateOrderReturn(book_num);
-								// 연체일에 따라 MEMBER에 MEM_STOP_DATE 업데이트
+								System.out.println();
+								dao.updateOrderReturn(order_num);
+								dao.updateStopDate(order_num);
+								dao.selectLateReturn(order_num);
+								
+								System.out.println("\n이전화면으로 돌아갑니다.");
+								continue;
 							}
-							System.out.println("이전화면으로 돌아갑니다.");
-							continue;
+							flag = true;
 						} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
-						//TODO 여까지임
+					
 					} else if(no==9) {//완
 						// 종료
 						System.out.println("프로그램 종료");
@@ -100,7 +108,7 @@ public class LibraryMain_jw {
 			if(isSelectFive) {
 				System.out.print("1.대여/예약하기 2.대여/예약 내역확인 3.뒤로가기\n >");
 				int book_num = 0;
-				try {//TODO 여기서 1번 메뉴는 정지일 경우 접근 불가하도록.
+				try {//TODO 여기서 1번 메뉴는 정지일 경우 접근 불가하도록
 					int no = Integer.parseInt(br.readLine());
 					if(no==1) {//완
 						boolean flag = false;
@@ -131,6 +139,10 @@ public class LibraryMain_jw {
 									if(res == 1) {//대여가능
 										System.out.println("\n대여가 가능합니다.");
 										dao.insertBookOrder(mem_id, book_num);
+										System.out.println("이전화면으로 돌아갑니다.");
+										System.out.println();
+										isOrder = false;
+										continue;
 									}else if(res == 0) {//책권수가 0
 										System.out.println("\n해당 번호의 책의 권수가 0권입니다.");
 										String s;
@@ -276,7 +288,6 @@ public class LibraryMain_jw {
 										if(flag) {
 											System.out.println("잘못 입력하셨습니다. 다시 입력해주세요.");
 										}
-										//TODO 정지상태일 경우 연장 출력하지말고 뒤로가기만 출력하도록.
 										System.out.print("\n연장을 원하실 경우 대여번호, 뒤로가기를 원하실 경우 q(Q)를 입력해주세요\n > ");
 										s = br.readLine();
 										if(s.equals("Q") || s.equals("q")) {
@@ -295,31 +306,38 @@ public class LibraryMain_jw {
 									} while (!dao.checkNowOrderNum(sNum) && !s.equals("q") && !s.equals("Q"));
 									System.out.println();
 									if(dao.checkOrderAdd(sNum)) {
-										System.out.println(sNum +"번은 연장이 가능합니다.");
-										flag = false;
-										do {
-											if(flag) {
-												System.out.println("Y/N(y/n) 중 입력해주세요.");
-											}
-											System.out.print("연장하시겠습니까?(Y/N) : ");
-											s = br.readLine();
-											if(s.equals("N")||s.equals("n")) {
-												System.out.println("\n연장을 취소하셨습니다.");
-												System.out.println("이전화면으로 돌아갑니다.");
-												isSelectView = false;
-												continue;
-											}else if(s.equals("Y")||s.equals("y")) {
-												System.out.println("\n연장을 진행합니다.");
-												dao.updateReturnDate(sNum);
-												System.out.println();
-												System.out.println("이전화면으로 돌아갑니다.");
-												isSelectView = false;
-												continue;
-											}else {
-												flag = true;
-											}
-
-										} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
+										if(!dao.checkOrderAddReturnDate(sNum)) {
+											System.out.println(sNum +"번의 반납기한이 지났으므로 연장이 불가능합니다.");
+											System.out.println("이전화면으로 돌아갑니다.");
+											isSelectView = false;
+											continue;
+										}else {
+											System.out.println(sNum +"번은 연장이 가능합니다.");
+											flag = false;
+											do {
+												if(flag) {
+													System.out.println("Y/N(y/n) 중 입력해주세요.");
+												}
+												System.out.print("연장하시겠습니까?(Y/N) : ");
+												s = br.readLine();
+												if(s.equals("N")||s.equals("n")) {
+													System.out.println("\n연장을 취소하셨습니다.");
+													System.out.println("이전화면으로 돌아갑니다.");
+													isSelectView = false;
+													continue;
+												}else if(s.equals("Y")||s.equals("y")) {
+													System.out.println("\n연장을 진행합니다.");
+													dao.updateReturnDate(sNum);
+													System.out.println();
+													System.out.println("이전화면으로 돌아갑니다.");
+													isSelectView = false;
+													continue;
+												}else {
+													flag = true;
+												}
+												
+											} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
+										}
 									}
 									else if(sNum != -1 && !dao.checkOrderAdd(sNum)){
 										System.out.println(sNum +"번은 연장이 불가능합니다.");

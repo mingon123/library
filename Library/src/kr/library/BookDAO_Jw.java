@@ -226,6 +226,60 @@ public class BookDAO_Jw {
 
 	}//checkNowOrderNum
 
+	//	연장 이전에 반납기한이 연장하려는 시기보다 같거나 커야함 
+	// 연장 불가능 : false , 연장 가능 : true 
+	public boolean checkOrderAddReturnDate(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int check = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT TRUNC(SYSDATE - RETURN_DATE) FROM BOOK_ORDER WHERE ORDER_NUM=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) check = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		if(check == -1) System.out.println("에러 발생!");
+
+		return check >= 1? false: true; 
+	}//checkOrderAddReturnDate
+
+	// 정지상태인지 확인 ->  정지상태 : false , 정지X : true 
+	public boolean checkMemStop(String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int check = -1;
+		try {
+			conn = DBUtil.getConnection();
+			//값이 양수여야 정지X
+			sql = "SELECT TRUNC(SYSDATE - MEM_STOP_DATE) FROM MEMBER WHERE MEM_ID=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, mem_id);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) check = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		if(check == -1) System.out.println("에러 발생!");
+
+		return check >= 1? true: false; 
+	}//checkMemStop
+
 	//이미 해당 유저가 같은 책을 예약했는지 확인  - 중복시 :true  중복 아닐시 :false
 	public boolean isDuplicatedReserve(int book_num, String mem_id) {
 		Connection conn = null;
@@ -479,7 +533,7 @@ public class BookDAO_Jw {
 			pstmt.setInt(1, order_num);
 			int count2 = pstmt.executeUpdate();
 
-			if(count > 0 && count2 > 0) System.out.println("반납을 성공했습니다.");
+			if(count > 0 && count2 > 0) System.out.println("반납 진행중입니다.");
 		} catch (Exception e) {
 			System.out.println("에러발생");
 		} finally {
@@ -487,28 +541,33 @@ public class BookDAO_Jw {
 		}
 	} // updateOrderReturn
 
-	// 정지일수 update - 이전에 정지일수가 있는 경우 + , 새로 생길경우 그대로 //TODO
+	// 정지일수 update - 이전에 정지일수가 있는 경우 + , 새로 생길경우 그대로
 	public void updateStopDate(int order_num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
+
 			sql = "UPDATE MEMBER SET MEM_STOP_DATE = "
 					+ "CASE "
-					+ "WHEN MEM_STOP_DATE > SYSDATE "
-					+ "THEN MEM_STOP_DATE + (SYSDATE-RETURN_DATE) "
-					+ "ELSE SYSDATE + (SYSDATE-RETURN_DATE) "
+					+ "WHEN (SELECT RETURN_DATE FROM BOOK_ORDER WHERE ORDER_NUM = ?) >= SYSDATE THEN MEM_STOP_DATE "  
+					+ "WHEN NVL(MEM_STOP_DATE, SYSDATE) > SYSDATE "
+					+ "THEN MEM_STOP_DATE + (SYSDATE - (SELECT RETURN_DATE FROM BOOK_ORDER WHERE ORDER_NUM = ?)) "
+					+ "ELSE SYSDATE + (SYSDATE - (SELECT RETURN_DATE FROM BOOK_ORDER WHERE ORDER_NUM = ?)) "
 					+ "END "
-					+ "WHERE MEM_ID IN ("
-					+ "SELECT MEM_ID FROM BOOK_ORDER WHERE ORDER_NUM = ?)";
+					+ "WHERE MEM_ID = (SELECT MEM_ID FROM BOOK_ORDER WHERE ORDER_NUM = ?)";
+
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1,order_num);
+			pstmt.setInt(2,order_num);
+			pstmt.setInt(3,order_num);
+			pstmt.setInt(4,order_num);
 			int count = pstmt.executeUpdate();
 
 			if(count <= 0) System.out.println("갱신 실패");
 		} catch (Exception e) {
-			System.out.println("에러발생");
+			System.out.println("에러발생!!!!");
 		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
@@ -523,7 +582,7 @@ public class BookDAO_Jw {
 		int check = -1;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE MEM_ID=? AND IS_ADD=0";
+			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE MEM_ID=? AND IS_RETURN=0";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, mem_id);
 			rs = pstmt.executeQuery();
@@ -539,7 +598,33 @@ public class BookDAO_Jw {
 
 		return check >= 1? false: true; 
 
-	}//checkNowOrderNum
+	}//checkZeroOrder
+
+	// 지정한 대여번호에 대한 연체일 알림 / 연체가 아닐 시 정상 반납 알림
+	public void selectLateReturn(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int res = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT TRUNC(SYSDATE - RETURN_DATE) AS res FROM BOOK_ORDER WHERE ORDER_NUM = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) res = rs.getInt("res");
+
+			if(res > 0) System.out.println(res+"일 연체되었습니다.");
+			else System.out.println("정상 반납 되었습니다.");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		} 
+	} // selectLateReturn
 
 	// 연장 진행 함수 - update return_date
 	public void updateReturnDate(int order_num) {
