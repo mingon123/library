@@ -10,7 +10,7 @@ import util.DBUtil;
 public class BookDAO_mg {
 	private BookDAO_Jw jw;
 	// 희망도서신청
-	public void insertWishBook(String title,String author,String publisher) {
+	public void insertWishBook(String title,String author,String publisher,String memId) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
@@ -23,12 +23,13 @@ public class BookDAO_mg {
 				return;
 			}
 			
-			sql = "INSERT INTO wish_book(wish_num,wish_title,wish_author,wish_publisher,wish_date) VALUES (wish_book_seq.nextval,?,?,?,SYSDATE)";
+			sql = "INSERT INTO wish_book(wish_num,wish_title,wish_author,wish_publisher,wish_date,mem_id) VALUES (wish_book_seq.nextval,?,?,?,SYSDATE,?)";
 			pstmt = conn.prepareStatement(sql);
 			
 			pstmt.setString(++cnt, title);
 			pstmt.setString(++cnt, author);
 			pstmt.setString(++cnt, publisher);
+			pstmt.setString(++cnt, memId);
 
 			pstmt.executeUpdate();
 			System.out.println("희망도서 신청 완료!");
@@ -37,7 +38,7 @@ public class BookDAO_mg {
 			e.printStackTrace();
 		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
-		} // insertWishBook
+		}
 	} // insertWishBook
 	// 희망도서 신청 시 동일한 제목+저자인 도서가 있으면 알림
 	private boolean isWishBook(String book_title,String book_author) {
@@ -74,7 +75,7 @@ public class BookDAO_mg {
 			sql = "SELECT wish_num,wish_title,wish_author,wish_publisher,wish_date FROM wish_book ORDER BY wish_date DESC";
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
-			System.out.println("-".repeat(50));
+			System.out.println("-".repeat(90));
 			
 			if(rs.next()) {
 				System.out.println("번호\t제목\t저자\t출판사\t신청일");
@@ -98,37 +99,76 @@ public class BookDAO_mg {
 			DBUtil.executeClose(rs, pstmt, conn);
 		} 
 	} // selectWishBookInfo
+	// 내 희망도서 목록
+	public boolean selectMyWishBookInfo(String memId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		boolean hasBook = false;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT wish_num,wish_title,wish_author,wish_publisher,wish_date FROM wish_book WHERE mem_id=? ORDER BY wish_date DESC";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, memId);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if(rs.next()) {
+				hasBook = true;
+				System.out.println("번호\t제목\t저자\t출판사\t신청일");
+				do {
+					System.out.print(rs.getInt("wish_num"));
+					System.out.print("\t");
+					System.out.print(rs.getString("wish_title"));
+					System.out.print("\t");
+					System.out.print(rs.getString("wish_author"));
+					System.out.print("\t");
+					System.out.print(rs.getString("wish_publisher"));
+					System.out.print("\t");
+					System.out.println(rs.getDate("wish_date"));
+				} while(rs.next());
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+		return hasBook;
+	} // selectMyWishBookInfo
 	// 희망도서삭제
-	public void deleteWishBookInfo(String memId) {
+	public void deleteWishBookInfo(String memId, int wishNum) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "DELETE FROM wish_book WHERE mem_id=?";
+			sql = "DELETE FROM wish_book WHERE mem_id=? AND wish_num=?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, memId);
+			pstmt.setInt(2, wishNum);
 			int rows = pstmt.executeUpdate();
-			if(rows>0) System.out.println("회원탈퇴를 완료했습니다.");
-			else System.out.println("회원 정보를 찾을 수 없습니다.");
+			if(rows>0) System.out.println("희망도서를 삭제했습니다.");
+			else System.out.println("희망도서를 삭제할 수 없습니다.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
 	} // deleteWishBookInfo
+	
 	// Q&A 질문 등록
-	public void insertQNA(String qnaTitle, String qnaContent) {
+	public void insertQNA(String qnaTitle, String qnaContent,String memId) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
 		int cnt = 0;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "INSERT INTO qna (qna_num,qna_title,qna_content,q_date) VALUES (qna_seq.nextval,?,?,SYSDATE)";
+			sql = "INSERT INTO qna (qna_num,qna_title,qna_content,q_date,mem_id) VALUES (qna_seq.nextval,?,?,SYSDATE,?)";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(++cnt, qnaTitle);
 			pstmt.setString(++cnt, qnaContent);
+			pstmt.setString(++cnt, memId);
 			pstmt.executeUpdate();
 			System.out.println("질문 등록 완료!");
 		} catch (Exception e) {
@@ -137,7 +177,6 @@ public class BookDAO_mg {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
 	} // insertQNA
-	
 	// Q&A 목록보기
 	public void selectQNAInfo() {
 		Connection conn = null;
@@ -149,9 +188,10 @@ public class BookDAO_mg {
 			sql = "SELECT qna_num,qna_title,qna_content,q_date FROM qna ORDER BY q_date DESC";
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
-			System.out.println("-".repeat(50));
+			System.out.println("-".repeat(90));
 			
 			if(rs.next()) {
+				System.out.println("Q&A 목록");
 				System.out.println("번호\t제목\t내용\t문의일");
 				do {
 					System.out.print(rs.getInt("qna_num"));
@@ -171,7 +211,64 @@ public class BookDAO_mg {
 			DBUtil.executeClose(rs, pstmt, conn);
 		} 
 	} // selectQNAInfo
-	
+	// 내 qna 목록보기
+	public boolean selectMyQNAInfo(String memId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		boolean hasQNA = false;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT qna_num,qna_title,q_date,qna_re,a_date FROM qna WHERE mem_id=? ORDER BY q_date DESC";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, memId);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if(rs.next()) {
+				hasQNA = true;
+				System.out.println("번호\t제목\t등록일\t답변\t답변일");
+				do {
+					System.out.print(rs.getInt("qna_num"));
+					System.out.print("\t");
+					System.out.print(rs.getString("qna_title"));
+					System.out.print("\t");
+					System.out.print(rs.getDate("q_date"));
+					System.out.print("\t");
+					System.out.print(rs.getString("qna_re"));
+					System.out.print("\t");
+					System.out.println(rs.getDate("a_date"));
+				} while(rs.next());
+			} else {
+				System.out.println("등록된 qna가 없습니다.");
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+		return hasQNA;
+	} // selectMyQNAInfo
+	// qna삭제
+	public void deleteQNA(String memId, int QNANum) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try { 
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM qna WHERE mem_id=? AND qna_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, memId);
+			pstmt.setInt(2, QNANum);
+			int rows = pstmt.executeUpdate();
+			if(rows>0) System.out.println("QNA를 삭제했습니다.");
+			else System.out.println("QNA를 삭제할 수 없습니다.");
+		} catch(Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteQNA		
 	// 회원정보 조회
 	public void selectMemberInfo(String memId) {
 		Connection conn = null;
@@ -184,7 +281,7 @@ public class BookDAO_mg {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, memId);
 			rs = pstmt.executeQuery();
-			System.out.println("-".repeat(50));
+			System.out.println("-".repeat(90));
 			
 			if(rs.next()) {
 				System.out.printf("현재 접속중인 계정은 %s입니다.\n",memId);
@@ -207,7 +304,6 @@ public class BookDAO_mg {
 			DBUtil.executeClose(rs, pstmt, conn);
 		} 
 	} // selectMemberInfo
-	
 	// 조회하는 레코드 존재 여부 체크
 	public int checkRecord(String memId) {
 		Connection conn = null;
@@ -253,7 +349,6 @@ public class BookDAO_mg {
 		}
 		return count;
 	} // checkPassword
-	
 	// 회원정보 수정
 	public void updateMemberInfo(String memId,String password,String newName,String newEmail){
 		Connection conn = null;
@@ -284,7 +379,6 @@ public class BookDAO_mg {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
 	} // updateMemberInfo
-	
 	// 회원정보 삭제
 	public void deleteMemberInfo(String memId) {
 		Connection conn = null;
@@ -432,5 +526,6 @@ public class BookDAO_mg {
 		}
 		return false;
 	} // isReservationNotification
+
 	
 }

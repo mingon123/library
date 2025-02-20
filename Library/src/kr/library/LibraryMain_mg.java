@@ -78,15 +78,17 @@ public class LibraryMain_mg {
 	} // showSevenMenu
 	// 희망도서 관리
 	public void manageWishBook() throws NumberFormatException, IOException {
-		System.out.print("1.희망도서신청 2.희망도서신청내역확인 3.뒤로가기\n > ");
+		System.out.print("1.희망도서신청 2.희망도서신청내역확인 3.희망도서신청취소 4.뒤로가기\n > ");
 		try {
 			int no = Integer.parseInt(br.readLine());
 			if(no==1) insertWishBook();
 			else if(no==2) {
 				selectWishBookInfo();
-				System.out.println("-".repeat(50));
-			}
-			else if(no==3) {
+				System.out.println("-".repeat(90));
+			} else if(no==3) {
+				deleteWishBook();
+				System.out.println("-".repeat(90));
+			} else if(no==4) {
 				System.out.println("뒤로가기를 선택하셨습니다.");
 				showSevenMenu();
 			}
@@ -105,28 +107,55 @@ public class LibraryMain_mg {
 		String title = br.readLine();
 		if(title.equalsIgnoreCase("q")) {
 			System.out.println("이전 화면으로 돌아갑니다.");
-			manageWishBook();
+			return;
 		}
 		System.out.print("저자를 입력하세요: ");
 		String author = br.readLine();
 		System.out.print("출판사를 입력하세요: ");
 		String publisher = br.readLine();
-		dao.insertWishBook(title, author, publisher);
+		dao.insertWishBook(title, author, publisher, me_id);
 	} // insertWishBook
 	// 희망도서목록확인
 	public void selectWishBookInfo() {
 		dao.selectWishBookInfo();
 	} // selectWishBookInfo
+	// 내 희망도서신청목록 확인
+	public void selctMyWishBookInfo() {
+		dao.selectMyWishBookInfo(me_id);
+	} // selctMyWishBookInfo
+	// 희망도서 삭제
+	public void deleteWishBook() throws IOException {
+		boolean hasWishBook = dao.selectMyWishBookInfo(me_id);
+		if(!hasWishBook) {
+			System.out.println("신청한 희망도서가 없습니다.");
+			return;
+		}
+		try {
+			System.out.print("삭제할 번호를 입력하세요: ");
+			int num = Integer.parseInt(br.readLine());
+			int count = dao.checkRecord(me_id);
+			if(count==1) dao.deleteWishBookInfo(me_id, num);
+			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
+			else System.out.println("정보 처리 중 오류 발생");
+		} catch (NumberFormatException e) {
+			System.out.println("[숫자만 입력 가능]");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	} // deleteWishBook
+	
 	// qna관리
 	public void manageQNA() throws NumberFormatException, IOException {
-		System.out.print("1.질문등록 2.질문내역확인 3.뒤로가기\n > ");
+		System.out.print("1.질문등록 2.질문내역확인 3.질문삭제 4.뒤로가기\n > ");
 		int no = Integer.parseInt(br.readLine());
 		if(no==1) insertQNA();
 		else if(no==2) {
 			selectQNAInfo();
-			System.out.println("-".repeat(50));
-		}
-		else if(no==3) {
+			System.out.println("-".repeat(90));
+		} else if(no==3) {
+			deleteQNA();
+			System.out.println("-".repeat(90));
+		} else if(no==4) {
 			System.out.println("뒤로가기를 선택하셨습니다.");
 			showSevenMenu();
 		}
@@ -143,12 +172,37 @@ public class LibraryMain_mg {
 		}
 		System.out.print("질문 내용을 입력하세요.");
 		String qnaContent = br.readLine();
-		dao.insertQNA(qnaTitle, qnaContent);
+		dao.insertQNA(qnaTitle, qnaContent, me_id);
 	} // insertQNA
 	// qna목록확인
 	public void selectQNAInfo() {
 		dao.selectQNAInfo();
 	} // selectQNAInfo
+	// 내가 등록한 qna 목록 확인
+	public void selectMyQNAInfo() {
+		dao.selectMyQNAInfo(me_id);
+	}
+	// qna 삭제
+	public void deleteQNA() throws IOException {
+		boolean hasQNA = dao.selectMyQNAInfo(me_id);
+		if(!hasQNA) {
+			System.out.println("등록한 Q&A가 없습니다.");
+			return;
+		}
+		try {
+			System.out.print("삭제할 번호를 입력하세요: ");
+			int num = Integer.parseInt(br.readLine());
+			int count = dao.checkRecord(me_id);
+			if(count==1) dao.deleteQNA(me_id, num);
+			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
+			else System.out.println("정보 처리 중 오류 발생");
+		} catch (NumberFormatException e) {
+			System.out.println("[숫자만 입력 가능]");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	} // deleteQNA
+	
 	// 회원정보관리
 	public void manageMemberInfo() throws NumberFormatException, IOException {
 		System.out.print("1.회원정보조회 2.회원정보수정 3.회원탈퇴 4.뒤로가기\n > ");
@@ -156,7 +210,8 @@ public class LibraryMain_mg {
 			int no = Integer.parseInt(br.readLine());
 			if(no==1) {
 				dao.selectMemberInfo(me_id);
-				System.out.println("-".repeat(50));
+				System.out.println("-".repeat(90));
+				System.out.println("");
 			}
 			else if(no==2) updateMemberInfo();
 			else if(no==3) deleteMemberInfo();
