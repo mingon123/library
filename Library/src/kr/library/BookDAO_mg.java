@@ -32,14 +32,15 @@ public class BookDAO_mg {
 
 			pstmt.executeUpdate();
 			System.out.println("희망도서 신청 완료!");
+			System.out.println("-".repeat(90));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
-		}
+		} // insertWishBook
 	} // insertWishBook
 	// 희망도서 신청 시 동일한 제목+저자인 도서가 있으면 알림
-	private boolean isWishBook(String title,String author) {
+	private boolean isWishBook(String book_title,String book_author) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -48,17 +49,20 @@ public class BookDAO_mg {
 			conn = DBUtil.getConnection();
 			sql = "SELECT COUNT(*) FROM book WHERE book_title=? AND book_author=?";
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, title);
-			pstmt.setString(2, author);
+			pstmt.setString(1, book_title);
+			pstmt.setString(2, book_author);
 			rs = pstmt.executeQuery();
-			if(rs.next()) return true;
+			if(rs.next()) {
+				int count = rs.getInt(1);
+				if(count>0)	return true;
+			}
 		}catch (Exception e) {
 			e.printStackTrace();
 		}finally {
 			DBUtil.executeClose(rs, pstmt, conn);	
 		}
 		return false;
-	}
+	} // isWishBook
 	// 희망도서 목록보기
 	public void selectWishBookInfo() {
 		Connection conn = null;
@@ -94,7 +98,25 @@ public class BookDAO_mg {
 			DBUtil.executeClose(rs, pstmt, conn);
 		} 
 	} // selectWishBookInfo
-	
+	// 희망도서삭제
+	public void deleteWishBookInfo(String memId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM wish_book WHERE mem_id=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, memId);
+			int rows = pstmt.executeUpdate();
+			if(rows>0) System.out.println("회원탈퇴를 완료했습니다.");
+			else System.out.println("회원 정보를 찾을 수 없습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteWishBookInfo
 	// Q&A 질문 등록
 	public void insertQNA(String qnaTitle, String qnaContent) {
 		Connection conn = null;
@@ -148,7 +170,7 @@ public class BookDAO_mg {
 		} finally {
 			DBUtil.executeClose(rs, pstmt, conn);
 		} 
-	} // selectInfoQNA
+	} // selectQNAInfo
 	
 	// 회원정보 조회
 	public void selectMemberInfo(String memId) {
@@ -281,7 +303,7 @@ public class BookDAO_mg {
 		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
-	} // delete
+	} // deleteMemberInfo
 	
 	
 	// 정지상태알림
@@ -309,7 +331,7 @@ public class BookDAO_mg {
 			DBUtil.executeClose(rs, pstmt, conn);
 		}
 		return false;
-	}
+	} // isMemStop
 	// 연체알림
 	public boolean isOverReturn(String memId) {
 		Connection conn = null;
@@ -341,7 +363,7 @@ public class BookDAO_mg {
 			DBUtil.executeClose(rs, pstmt, conn);
 		}
 		return false;
-	}
+	} // isOverReturn
 	// 반납일 알림(가장 임박한 책의 반납일)
 	public boolean isReturnDateNotification(String numId) {
 		Connection conn = null;
@@ -371,7 +393,7 @@ public class BookDAO_mg {
 			DBUtil.executeClose(rs, pstmt, conn);
 		}
 		return false;
-	}
+	} // isReturnDateNotification
 	// 예약도서 대여 가능 알림
 	public boolean isReservationNotification(String memId) {
 		Connection conn = null;
@@ -392,7 +414,7 @@ public class BookDAO_mg {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.print("책제목/책권수 : ");
+				System.out.print("예약도서 - 책제목/책권수 : ");
 				do {
 					System.out.print(rs.getString("book_title"));
 					System.out.print(" / ");
@@ -401,7 +423,6 @@ public class BookDAO_mg {
 				System.out.println("예약도서 대여 가능!");
 				return true;
 			} else {
-				System.out.println("예약도서가 없습니다.");
 				return false;
 			}
 		}catch (Exception e) {
@@ -410,6 +431,6 @@ public class BookDAO_mg {
 			DBUtil.executeClose(rs, pstmt, conn);	
 		}
 		return false;
-	}
+	} // isReservationNotification
 	
 }
