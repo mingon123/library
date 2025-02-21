@@ -171,12 +171,11 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			//자원정리
 			DBUtil.executeClose(null, pstmt, conn);
 		}
 	} // deleteMember()
 
-	//도서 관리 -> OK: 도서 목록 조회(우선 20개만) / TODO: 상세보기,등록,수정,삭제 기능
+	//도서 관리 -> OK: 도서 목록 조회(우선 20개만-> 조회 범위 재검토요망) / TODO: 상세보기,등록,수정,삭제 기능
 	public void selectBook() {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -231,7 +230,6 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			count = -1; //오류 발생
 		} finally {
-			//자원정리
 			DBUtil.executeClose(rs, pstmt, conn);			
 		}		
 		return count; 
@@ -252,7 +250,7 @@ public class BookDAO_il {
 			if (rs.next()) {
 				System.out.println("책번호 : " + rs.getInt("book_num"));
 				System.out.println("제목 : " + rs.getString("book_title"));
-				System.out.println("저자" + rs.getString("book_author"));
+				System.out.println("저자 : " + rs.getString("book_author"));
 				System.out.println("출판사 : " + rs.getString("book_publisher"));
 				System.out.println("출판년도 : " + rs.getInt("book_p_year"));
 				System.out.println("카테고리 : " + rs.getString("book_category"));
@@ -265,14 +263,14 @@ public class BookDAO_il {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			//자원정리
 			DBUtil.executeClose(rs, pstmt, conn);	
 		}		
 	} // selectDetailBook()
 
 	//책 정보 등록
+	//추천순위 정보 안받음.
 	public void insertBook(String book_title, String book_author, String book_publisher, 
-			int book_p_year, String book_category, int book_rank, int book_volm_cnt) {
+			int book_p_year, String book_category, int book_volm_cnt) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
@@ -280,15 +278,14 @@ public class BookDAO_il {
 		try {
 			conn = DBUtil.getConnection();
 			sql = "INSERT INTO book (book_num, book_title, book_author, book_publisher, "
-					+ "book_p_year, book_category, book_rank, book_volm_cnt, book_reg_date) "
-					+ "VALUES (book_seq.nextval,?,?,?,?,?,?,?,SYSDATE)"; //전체를 넣을땐 컬럼명 생략 가능
+					+ "book_p_year, book_category, book_volm_cnt, book_reg_date) "
+					+ "VALUES (book_seq.nextval,?,?,?,?,?,?,SYSDATE)"; 
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(++cnt, book_title);
 			pstmt.setString(++cnt, book_author);
 			pstmt.setString(++cnt, book_publisher);
 			pstmt.setInt(++cnt, book_p_year);	
-			pstmt.setString(++cnt, book_category);
-			pstmt.setInt(++cnt, book_rank);	
+			pstmt.setString(++cnt, book_category);			
 			pstmt.setInt(++cnt, book_volm_cnt);				
 			//JDBC 수행 4단계
 			int count = pstmt.executeUpdate();			
@@ -299,6 +296,54 @@ public class BookDAO_il {
 			DBUtil.executeClose(null, pstmt, conn);			
 		} 		
 	} // insertBook()
+
+	// 책 정보 수정
+	// 추천순위 정보까지 다 받음.??? book_rank
+	public void updateBook(int book_num, String book_title, String book_author, String book_publisher, 
+			int book_p_year, String book_category, int book_rank, int book_volm_cnt) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE book SET book_title=?,book_author=?,book_publisher=?,book_p_year=?,book_category=?, book_rank=?, book_volm_cnt=? WHERE book_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, book_title); // 유효성 검사 추가요망
+			pstmt.setString(++cnt, book_author);
+			pstmt.setString(++cnt, book_publisher);
+			pstmt.setInt(++cnt, book_p_year);	
+			pstmt.setString(++cnt, book_category);
+			pstmt.setInt(++cnt, book_rank);
+			pstmt.setInt(++cnt, book_volm_cnt);
+			pstmt.setInt(++cnt, book_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 도서정보를 수정했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateBook()
+
+	// 책 정보 삭제
+	public void deleteBook(int book_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM book WHERE book_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, book_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 도서정보를 삭제했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteBook()
 
 	// 대여 관리
 	public void selectOrder() {
