@@ -3,6 +3,7 @@ package kr.library;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import util.DBUtil;
 
@@ -175,7 +176,7 @@ public class BookDAO_il {
 		}
 	} // deleteMember()
 
-	//도서 관리 -> OK: 도서 목록 조회(우선 20개만-> 조회 범위 재검토요망) / TODO: 상세보기,등록,수정,삭제 기능
+	//도서 목록 조회(우선 20개만-> 조회 범위 재검토요망)
 	public void selectBook() {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -345,7 +346,7 @@ public class BookDAO_il {
 		}
 	} // deleteBook()
 
-	// 대여 관리
+	// 대여정보 조회
 	public void selectOrder() {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -380,6 +381,111 @@ public class BookDAO_il {
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectOrder()
+
+	//조회하는 대여 레코드 존재 여부 체크
+	public int checkOrderRecord(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM book_order WHERE order_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkOrderRecord()
+	
+	//대여 정보 상세보기
+	public void selectDetailOrder(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM book_order WHERE order_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) { 
+				System.out.println("대여번호 : " + rs.getInt("order_num"));
+				System.out.println("회원아이디 : " + rs.getString("mem_id"));
+				System.out.println("책번호 : " + rs.getInt("book_num"));
+				System.out.println("대여일 : " + rs.getDate("order_date"));
+				System.out.println("반납일 : " + rs.getDate("return_date"));			
+				String is_add = rs.getInt("is_add")==1 ? "O" : "X";	
+				System.out.println("연장유무 : " + rs.getInt(is_add)); // 연장여부 O,X로 출력	
+				String is_return = rs.getInt("is_return")==1 ? "O" : "X";
+				System.out.println("반납유무 : " + rs.getInt(is_return)); // 반납여부 O,X로 출력		
+			} else {
+				System.out.println("검색된 정보가 없습니다.");
+			}			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);	
+		}		
+	} // selectDetailOrder()
+
+	// 대여정보 등록
+	public void insertOrder(String mem_id, int book_num) {
+		Connection conn = null;
+		PreparedStatement pstmt1 = null;
+		PreparedStatement pstmt2 = null;
+		String sql = null;		
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();				
+			
+			//트랜잭션을 수동으로 처리하기 위해 auto commit 해제
+			conn.setAutoCommit(false);
+			
+			sql = "INSERT INTO book_order (order_num, mem_id, book_num, order_date, return_date, is_add, is_return) "
+					+ "VALUES (book_order_seq.nextval,?,?,SYSDATE,SYSDATE+14,0,0)";
+			
+			pstmt1 = conn.prepareStatement(sql);
+			pstmt1.setString(++cnt, mem_id);			
+			pstmt1.setInt(++cnt, book_num);				
+			
+			int count = pstmt1.executeUpdate();
+			System.out.println(count + "개의 대여정보를 등록했습니다.");	
+			
+			// 대여정보 추가시 해당도서 재고 -1;
+			sql = "UPDATE book SET book_volm_cnt = book_volm_cnt-1 WHERE book_num=?";
+			pstmt2 = conn.prepareStatement(sql);
+			pstmt2.setInt(1, book_num);
+			
+			count = pstmt2.executeUpdate();
+			System.out.println(count + "개의 도서재고정보를 수정했습니다.");	
+			
+			//정상적으로 작업 완료되면 commit
+			conn.commit();
+			System.out.println("작업 완료!!");			
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			// 하나라도 예외가 발생했을 경우 rollback
+			try {
+				conn.rollback();	
+			} catch (SQLException se) {
+				se.printStackTrace();
+			}
+		} finally { //자원정리(역순으로)
+			DBUtil.executeClose(null, pstmt2, null);
+			DBUtil.executeClose(null, pstmt1, conn);
+		}
+	} // insertOrder()
 
 	// 예약 관리
 	public void selectRSV() {

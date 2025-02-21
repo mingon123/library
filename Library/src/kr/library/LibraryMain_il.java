@@ -133,9 +133,7 @@ public class LibraryMain_il {
 							}
 						} while (num!=1||num!=2||num!=3||num!=4||num!=5||num!=6);
 
-					} else if (no==2) { // 도서 관리			
-						// dao.selectBook();
-						// 수정,등록,삭제 기능 추가요망
+					} else if (no==2) { // 도서 관리					
 						int num=0;
 						do {
 							System.out.print("1.도서 목록보기, 2.도서 상세정보 확인, 3.도서정보 등록, 4.도서정보 수정, 5.도서정보 삭제, 6.뒤로가기\n"
@@ -231,7 +229,114 @@ public class LibraryMain_il {
 						} while (num!=1||num!=2||num!=3||num!=4||num!=5||num!=6);
 
 					} else if (no==3) { // 대여 관리				
-						dao.selectOrder();
+						// dao.selectOrder();
+						//dao.insertBookOrder(mem_id, book_num);
+						
+					//  대여정보 테이블 book_order
+//						order_num        number          대여번호     시퀀스
+//						mem_id           varchar2        회원아이디	
+//						book_num         number          책번호
+//						order_date       date            대여일		sysdate
+//						return_date      date            반납일		sysdate+14
+//						is_add           number          연장유무	 defalut 0
+//						is_return        number          반납유무	 defalut 0
+						
+						int num=0;
+						do {
+							System.out.print("1.대여 목록보기, 2.대여 상세정보 확인, 3.대여정보 등록, 4.대여정보 수정, 5.대여정보 삭제, 6.뒤로가기\n"
+									+ "번호를 입력하세요.> ");
+							try {
+								num = Integer.parseInt(br.readLine());				
+								if (num==1) { // 3-1.대여 목록보기
+									dao.selectOrder();
+								} else if (num==2) { // 3-2.대여 상세정보 확인
+									dao.selectOrder();		
+									System.out.print("조회할 대여번호 입력: ");
+									int order_num = Integer.parseInt(br.readLine());
+									int count = dao.checkOrderRecord(order_num);						
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("대여번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											order_num = Integer.parseInt(br.readLine());
+											count = dao.checkOrderRecord(order_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);
+									dao.selectDetailOrder(order_num);
+								} else if (num==3) { //3-3.대여정보 등록
+									System.out.print("회원아이디: ");
+									String mem_id = br.readLine(); 
+									int count = dao.checkMemberRecord(mem_id); // 회원아이디 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("회원ID를 잘못 입력했습니다. 다시입력하세요.: ");										
+											mem_id = br.readLine();
+											count = dao.checkMemberRecord(mem_id);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);							
+									System.out.print("책번호: "); 
+									int book_num = Integer.parseInt(br.readLine());
+									count = dao.checkBookRecord(book_num); // 책번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("책번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											book_num = Integer.parseInt(br.readLine());
+											count = dao.checkBookRecord(book_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);									
+									dao.insertOrder(mem_id, book_num); //대여정보 추가시 해당도서 재고 -1 필요!!!!!
+									
+								} else if (num==4) { //3-4.대여정보 수정 (수정 전)
+									dao.selectBook();		
+									System.out.print("수정할 대여번호 입력: ");
+									int order_num = Integer.parseInt(br.readLine());
+									int count = dao.checkBookRecord(order_num);
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("대여번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											order_num = Integer.parseInt(br.readLine());
+											count = dao.checkOrderRecord(order_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);
+									//수정요망
+//									System.out.print("제목: ");		
+//									String book_title = br.readLine();
+//									System.out.print("저자: ");		
+//									String book_author = br.readLine();
+									
+									//dao.updateOrder(); --> 작성요망
+								} else if (num==5) { //3-5.대여정보 삭제 (수정 전)	 
+									dao.selectBook();		
+									System.out.print("삭제할 대여번호 입력: ");
+									int book_num = Integer.parseInt(br.readLine());
+									int count = dao.checkBookRecord(book_num);
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("대여번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											book_num = Integer.parseInt(br.readLine());
+											count = dao.checkBookRecord(book_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);
+									//dao.deleteOrder(order_num); -->작성요망
+								} else if (num==6) { //3-6.뒤로가기	
+									callAdminMenu(); break out; // admin 메뉴 완전히 빠져나감
+								} else {
+									System.out.println("잘못 입력했습니다. 출력된 메뉴 번호 중 하나를 입력하세요.");
+								}								
+							} catch (NumberFormatException e) {
+								System.out.println("[숫자만 입력 가능] 다시 입력하세요.");
+							}							
+						} while (num!=1||num!=2||num!=3||num!=4||num!=5||num!=6);					
+					
 					} else if (no==4) { // 예약 관리
 						dao.selectRSV();
 					} else if (no==5) { // 희망도서 관리
