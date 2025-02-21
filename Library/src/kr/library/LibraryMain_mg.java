@@ -9,6 +9,7 @@ public class LibraryMain_mg {
 	private BufferedReader br;
 	private String me_id="test"; // 로그인한 아이디 저장
 	private boolean isSelectSeven = false;
+	private boolean isSelectTwo = false;
 	private boolean isStart = true;
 	private BookDAO_mg dao;
 	private BookDAO_il il;
@@ -36,6 +37,8 @@ public class LibraryMain_mg {
 					if(no==1) {
 						checkUserNotifications();
 					} else if(no==2) {
+						isStart = false;
+						isSelectTwo = true;
 						showTwoMenu();
 					} else if(no==4) {
 						dao.selectReviewInfo();
@@ -62,22 +65,25 @@ public class LibraryMain_mg {
 	
 	// 2번누르면 나오는 화면
 	private void showTwoMenu() throws IOException {
-		System.out.println("도서목록 확인");
-		System.out.print("1.카테고리별 2.추천순위 3.신간책 4.대여베스트 5.뒤로가기\n > ");
-		try {
-			int no = Integer.parseInt(br.readLine());
-			if(no==1) selectCategoryOfBook();
-			else if(no==2) dao.selectRankOfBook();
-			else if(no==3) dao.selectNewOfBook();
-			else if(no==4) dao.selectOrderBestOfBook();
-			else if(no==5) { //뒤로가기
-				System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
-				callMenu();
-			} else System.out.println("잘못 입력하셨습니다.");
-		} catch (NumberFormatException e) {
-			System.out.println("[숫자만 입력 가능]");
-		} catch(Exception e) {
-			e.printStackTrace();
+		while (isSelectTwo) {			
+			System.out.println("도서목록 확인");
+			System.out.print("1.카테고리별 2.추천순위 3.신간책 4.대여베스트 5.뒤로가기\n > ");
+			try {
+				int no = Integer.parseInt(br.readLine());
+				if(no==1) selectCategoryOfBook();
+				else if(no==2) dao.selectRankOfBook();
+				else if(no==3) dao.selectNewOfBook();
+				else if(no==4) dao.selectOrderBestOfBook();
+				else if(no==5) { //뒤로가기
+					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
+					isStart = true;
+					isSelectTwo = false;
+				} else System.out.println("잘못 입력하셨습니다.");
+			} catch (NumberFormatException e) {
+				System.out.println("[숫자만 입력 가능]");
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
 		}
 	} // showTwoMenu
 	// 카테고리별 책목록 표시
