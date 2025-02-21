@@ -17,6 +17,7 @@ public class LibraryMain_mg {
 	public LibraryMain_mg() {
 		try {
 			dao = new BookDAO_mg();
+			il = new BookDAO_il();
 			br = new BufferedReader(new InputStreamReader(System.in));
 			// 메뉴 호출
 			callMenu();
@@ -41,7 +42,7 @@ public class LibraryMain_mg {
 						isSelectTwo = true;
 						showTwoMenu();
 					} else if(no==4) {
-						dao.selectReviewInfo();
+						selectDetailReview();
 					} else if(no==7) { // 완
 						isStart = false;
 						isSelectSeven = true;
@@ -63,17 +64,47 @@ public class LibraryMain_mg {
 		}
 	} // callMenu
 	
-	// 2번누르면 나오는 화면
-	private void showTwoMenu() throws IOException {
+	// 1번선택 시 나오는 화면
+	private void checkUserNotifications() throws IOException {
+		System.out.println("정지상태/연체/반납일/예약도서알림");
+		System.out.println("-".repeat(90));
+		boolean memStop = dao.isMemStop(me_id);
+		boolean overReturn = dao.isOverReturn(me_id);
+		boolean returnDateNotification = dao.isReturnDateNotification(me_id);
+		boolean reservationNotification = dao.isReservationNotification(me_id);
+
+		if((memStop||overReturn||returnDateNotification||reservationNotification)) {
+			if(memStop)
+			if(overReturn)
+			if(returnDateNotification)
+			if(reservationNotification) System.out.println();
+		} else {
+			System.out.println("알림이 없습니다.");
+			System.out.println("-".repeat(90));
+		}
+		callMenu();
+	} // checkUserNotifications
+	
+	// 2번선택 시 나오는 화면
+	public void showTwoMenu() throws IOException {
 		while (isSelectTwo) {			
 			System.out.println("도서목록 확인");
 			System.out.print("1.카테고리별 2.추천순위 3.신간책 4.대여베스트 5.뒤로가기\n > ");
 			try {
 				int no = Integer.parseInt(br.readLine());
 				if(no==1) selectCategoryOfBook();
-				else if(no==2) dao.selectRankOfBook();
-				else if(no==3) dao.selectNewOfBook();
-				else if(no==4) dao.selectOrderBestOfBook();
+				else if(no==2) {
+					dao.selectRankOfBook();
+					selectDetailBook();
+				}
+				else if(no==3) {
+					dao.selectNewOfBook();
+					selectDetailBook();
+				}
+				else if(no==4) {
+					dao.selectOrderBestOfBook();
+					selectDetailBook();
+				}
 				else if(no==5) { //뒤로가기
 					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
 					isStart = true;
@@ -93,15 +124,25 @@ public class LibraryMain_mg {
 			int no = Integer.parseInt(br.readLine());
 			if(no==1) {
 				dao.selectCategoryOfBook("자기계발");
-			} else if(no==2) {
+				selectDetailBook();
+			}
+			else if(no==2) {
 				dao.selectCategoryOfBook("소설");
-			} else if(no==3) {
+				selectDetailBook();
+			}
+			else if(no==3) {
 				dao.selectCategoryOfBook("과학");
-			} else if(no==4) {
+				selectDetailBook();
+			}
+			else if(no==4) {
 				dao.selectCategoryOfBook("역사");
-			} else if(no==5) {
+				selectDetailBook();
+			}
+			else if(no==5) {
 				dao.selectCategoryOfBook("기타");
-			} else if(no==6) {
+				selectDetailBook();
+			}
+			else if(no==6) {
 				System.out.println("뒤로가기를 선택하셨습니다.");
 				showTwoMenu();
 			} else System.out.println("잘못 입력하셨습니다.");
@@ -111,9 +152,47 @@ public class LibraryMain_mg {
 			e.printStackTrace();
 		}
 	}
+	// 책 상세정보 확인
+	private void selectDetailBook() throws NumberFormatException, IOException {
+		System.out.print("조회할 책번호 입력 : ");
+		int num = Integer.parseInt(br.readLine());
+		int count = il.checkBookRecord(num);
+		do {
+			if(count==0) {
+				System.out.print("책번호를 잘못 입력했습니다. 다시입력하세요 : ");
+				num = Integer.parseInt(br.readLine());
+				count = il.checkBookRecord(num);
+			} else if (count!=1) {
+				System.out.println("정보 처리 중 오류 발생");
+			} 
+		} while(count!=1);
+		il.selectDetailBook(num);
+		System.out.println("-".repeat(90));
+	}
 	
-	// 7번누르면 나오는 화면
-	private void showSevenMenu() throws IOException {
+	// 리뷰 상세정보 확인
+	private void selectDetailReview() throws NumberFormatException, IOException {
+		dao.selectReviewInfo();
+		System.out.print("조회할 리뷰번호 입력 : ");
+		int num = Integer.parseInt(br.readLine());
+		int count = dao.checkReviewRecord(num);
+		do {
+			if(count==0) {
+				System.out.print("리뷰번호를 잘못 입력했습니다. 다시입력하세요 : ");
+				num = Integer.parseInt(br.readLine());
+				count = il.checkBookRecord(num);
+			} else if (count!=1) {
+				System.out.println("정보 처리 중 오류 발생");
+			}
+		} while(count!=1);
+		dao.selectDetailReview(num);
+		System.out.println("-".repeat(90));
+	}
+
+
+	
+	// 7번선택 시 나오는 화면
+	public void showSevenMenu() throws IOException {
 		while(isSelectSeven) {
 			System.out.print("1.희망도서 2.Q&A 3.회원정보관리 4.뒤로가기\n > ");
 			try {
@@ -217,7 +296,7 @@ public class LibraryMain_mg {
 	// qna등록
 	private void insertQNA() throws IOException {
 		System.out.println("질문 등록화면입니다. 뒤로가시길 원하시면 q(Q)를 입력하세요.");
-		System.out.print("질문 제목을 입력하세요.");
+		System.out.print("질문 제목을 입력하세요 : ");
 		String qnaTitle = br.readLine();
 		if(qnaTitle.equalsIgnoreCase("q")) {
 			System.out.println("이전화면으로 돌아갑니다.");
@@ -285,7 +364,7 @@ public class LibraryMain_mg {
 			if(isValidPassword(password)) break;
 			else if(password.equalsIgnoreCase("q")) {
 				System.out.println("이전화면으로 돌아갑니다.");
-				manageMemberInfo();
+				return;
 			} else System.out.println("비밀번호 형식이 올바르지 않습니다.");			
 		}
 		System.out.print("변경할 이름을 입력하세요: ");
@@ -297,7 +376,7 @@ public class LibraryMain_mg {
 			if(isValidEmail(email)) break;
 			else if(email.equalsIgnoreCase("q")) {
 				System.out.println("이전화면으로 돌아갑니다.");
-				manageMemberInfo();
+				return;
 			}
 			else System.out.println("이메일 형식이 올바르지 않습니다.");
 		}
@@ -343,25 +422,7 @@ public class LibraryMain_mg {
 		}
 	} // deleteMemberInfo
 	
-	// 1번 선택 시 나오는 화면
-	private void checkUserNotifications() throws IOException {
-		System.out.println("정지상태/연체/반납일/예약도서알림");
-		boolean memStop = dao.isMemStop(me_id);
-		boolean overReturn = dao.isOverReturn(me_id);
-		boolean returnDateNotification = dao.isReturnDateNotification(me_id);
-		boolean reservationNotification = dao.isReservationNotification(me_id);
 
-		if((memStop||overReturn||returnDateNotification||reservationNotification)) {
-			if(memStop) System.out.println("-".repeat(90));
-			if(overReturn) System.out.println("-".repeat(90));
-			if(returnDateNotification) System.out.println("-".repeat(90));
-			if(reservationNotification) System.out.println("-".repeat(90));
-		} else {
-			System.out.println("알림이 없습니다.");
-			System.out.println("-".repeat(90));
-		}
-		callMenu();
-	} // checkUserNotifications
 	
 	
 	

@@ -61,6 +61,9 @@ create table qna(
  qna_re	varchar2(1000),	--qna답변내용
  q_date	date default sysdate not null, --질문 날짜
  a_date date --답변 날짜
+ mem_id varchar2(12),
+ 
+ foreign key(mem_id) references member(mem_id) on delete cascade
 );
 create sequence qna_seq;
 
@@ -99,6 +102,9 @@ create table wish_book(
  wish_author varchar2(2000)	not null, --희망도서 저자
  wish_publisher	varchar2(2000), --희망도서 출판사	
  wish_date date default sysdate not null --희망도서 신청일
+ mem_id varchar2(12),
+ 
+ foreign key(mem_id) references member(mem_id) on delete cascade
 );
 create sequence wish_book_seq;
 
