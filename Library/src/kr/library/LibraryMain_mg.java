@@ -188,7 +188,7 @@ public class LibraryMain_mg {
 		dao.selectDetailReview(num);
 		System.out.println("-".repeat(90));
 	}
-
+    
 
 	
 	// 7번선택 시 나오는 화면

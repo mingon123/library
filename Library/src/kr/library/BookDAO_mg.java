@@ -761,7 +761,6 @@ public class BookDAO_mg {
 		} finally {
 			DBUtil.executeClose(rs, pstmt, conn);
 		}
-		
 	}
 
 	//조회하는 리뷰 레코드 존재 여부 체크
