@@ -11,6 +11,7 @@ public class LibraryMain_mg {
 	private boolean isSelectSeven = false;
 	private boolean isStart = true;
 	private BookDAO_mg dao;
+	private BookDAO_il il;
 	
 	public LibraryMain_mg() {
 		try {
@@ -24,22 +25,25 @@ public class LibraryMain_mg {
 			if(br!=null) try {br.close();} catch(IOException e) {}	
 		}
 	} // LibraryMain_mg
+	
 	// 메뉴 호출
 	private void callMenu() throws IOException {
 		while(true) {
 			if(isStart) {
-				System.out.print("1.사용자알림 7.기타메뉴 9.종료\n > ");
+				System.out.print("1.사용자알림 2.도서목록 4.리뷰확인 7.기타메뉴 9.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
 					if(no==1) {
 						checkUserNotifications();
-						isStart = false;
+					} else if(no==2) {
+						showTwoMenu();
+					} else if(no==4) {
+						dao.selectReviewInfo();
 					} else if(no==7) { // 완
 						isStart = false;
 						isSelectSeven = true;
 						System.out.println("기타 메뉴를 선택하셨습니다.");
 						showSevenMenu();
-
 					} else if(no==9) {//완
 						// 종료
 						System.out.println("프로그램 종료");
@@ -55,6 +59,53 @@ public class LibraryMain_mg {
 			}
 		}
 	} // callMenu
+	
+	// 2번누르면 나오는 화면
+	private void showTwoMenu() throws IOException {
+		System.out.println("도서목록 확인");
+		System.out.print("1.카테고리별 2.추천순위 3.신간책 4.대여베스트 5.뒤로가기\n > ");
+		try {
+			int no = Integer.parseInt(br.readLine());
+			if(no==1) selectCategoryOfBook();
+			else if(no==2) dao.selectRankOfBook();
+			else if(no==3) dao.selectNewOfBook();
+			else if(no==4) dao.selectOrderBestOfBook();
+			else if(no==5) { //뒤로가기
+				System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
+				callMenu();
+			} else System.out.println("잘못 입력하셨습니다.");
+		} catch (NumberFormatException e) {
+			System.out.println("[숫자만 입력 가능]");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	} // showTwoMenu
+	// 카테고리별 책목록 표시
+	private void selectCategoryOfBook() {
+		System.out.print("1.자기계발 2.소설 3.과학 4.역사 5.기타 6.뒤로가기\n > ");
+		try {
+			int no = Integer.parseInt(br.readLine());
+			if(no==1) {
+				dao.selectCategoryOfBook("자기계발");
+			} else if(no==2) {
+				dao.selectCategoryOfBook("소설");
+			} else if(no==3) {
+				dao.selectCategoryOfBook("과학");
+			} else if(no==4) {
+				dao.selectCategoryOfBook("역사");
+			} else if(no==5) {
+				dao.selectCategoryOfBook("기타");
+			} else if(no==6) {
+				System.out.println("뒤로가기를 선택하셨습니다.");
+				showTwoMenu();
+			} else System.out.println("잘못 입력하셨습니다.");
+		} catch (NumberFormatException e) {
+			System.out.println("[숫자만 입력 가능]");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	// 7번누르면 나오는 화면
 	private void showSevenMenu() throws IOException {
 		while(isSelectSeven) {
@@ -77,7 +128,7 @@ public class LibraryMain_mg {
 		}
 	} // showSevenMenu
 	// 희망도서 관리
-	public void manageWishBook() throws NumberFormatException, IOException {
+	private void manageWishBook() throws NumberFormatException, IOException {
 		System.out.print("1.희망도서신청 2.희망도서신청내역확인 3.희망도서신청취소 4.뒤로가기\n > ");
 		try {
 			int no = Integer.parseInt(br.readLine());
@@ -101,7 +152,7 @@ public class LibraryMain_mg {
 		}
 	} // manageWishBook
 	// 희망도서등록
-	public void insertWishBook() throws IOException {
+	private void insertWishBook() throws IOException {
 		System.out.println("희망도서 신청화면입니다. 뒤로가시길 원하시면 q(Q)를 입력하세요.");
 		System.out.print("희망도서 제목을 입력하세요: ");
 		String title = br.readLine();
@@ -116,15 +167,11 @@ public class LibraryMain_mg {
 		dao.insertWishBook(title, author, publisher, me_id);
 	} // insertWishBook
 	// 희망도서목록확인
-	public void selectWishBookInfo() {
+	private void selectWishBookInfo() {
 		dao.selectWishBookInfo();
 	} // selectWishBookInfo
-	// 내 희망도서신청목록 확인
-	public void selctMyWishBookInfo() {
-		dao.selectMyWishBookInfo(me_id);
-	} // selctMyWishBookInfo
 	// 희망도서 삭제
-	public void deleteWishBook() throws IOException {
+	private void deleteWishBook() throws IOException {
 		boolean hasWishBook = dao.selectMyWishBookInfo(me_id);
 		if(!hasWishBook) {
 			System.out.println("신청한 희망도서가 없습니다.");
@@ -145,7 +192,7 @@ public class LibraryMain_mg {
 	} // deleteWishBook
 	
 	// qna관리
-	public void manageQNA() throws NumberFormatException, IOException {
+	private void manageQNA() throws NumberFormatException, IOException {
 		System.out.print("1.질문등록 2.질문내역확인 3.질문삭제 4.뒤로가기\n > ");
 		int no = Integer.parseInt(br.readLine());
 		if(no==1) insertQNA();
@@ -162,7 +209,7 @@ public class LibraryMain_mg {
 		else System.out.println("잘못 입력하셨습니다.");
 	} // manageQNA
 	// qna등록
-	public void insertQNA() throws IOException {
+	private void insertQNA() throws IOException {
 		System.out.println("질문 등록화면입니다. 뒤로가시길 원하시면 q(Q)를 입력하세요.");
 		System.out.print("질문 제목을 입력하세요.");
 		String qnaTitle = br.readLine();
@@ -175,15 +222,11 @@ public class LibraryMain_mg {
 		dao.insertQNA(qnaTitle, qnaContent, me_id);
 	} // insertQNA
 	// qna목록확인
-	public void selectQNAInfo() {
+	private void selectQNAInfo() {
 		dao.selectQNAInfo();
 	} // selectQNAInfo
-	// 내가 등록한 qna 목록 확인
-	public void selectMyQNAInfo() {
-		dao.selectMyQNAInfo(me_id);
-	}
 	// qna 삭제
-	public void deleteQNA() throws IOException {
+	private void deleteQNA() throws IOException {
 		boolean hasQNA = dao.selectMyQNAInfo(me_id);
 		if(!hasQNA) {
 			System.out.println("등록한 Q&A가 없습니다.");
@@ -193,7 +236,7 @@ public class LibraryMain_mg {
 			System.out.print("삭제할 번호를 입력하세요: ");
 			int num = Integer.parseInt(br.readLine());
 			int count = dao.checkRecord(me_id);
-			if(count==1) dao.deleteQNA(me_id, num);
+			if(count==1) dao.deleteQNAInfo(me_id, num);
 			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
 			else System.out.println("정보 처리 중 오류 발생");
 		} catch (NumberFormatException e) {
@@ -204,7 +247,7 @@ public class LibraryMain_mg {
 	} // deleteQNA
 	
 	// 회원정보관리
-	public void manageMemberInfo() throws NumberFormatException, IOException {
+	private void manageMemberInfo() throws NumberFormatException, IOException {
 		System.out.print("1.회원정보조회 2.회원정보수정 3.회원탈퇴 4.뒤로가기\n > ");
 		try {
 			int no = Integer.parseInt(br.readLine());
@@ -226,7 +269,7 @@ public class LibraryMain_mg {
 		}
 	} // manageMemberInfo
 	// 회원정보수정
-	public void updateMemberInfo() throws IOException {
+	private void updateMemberInfo() throws IOException {
 		String memId = me_id;
 		System.out.printf("현재 계정은 %s입니다. 뒤로가기:q(Q)입력 \n",memId);
 		String password;
@@ -265,7 +308,7 @@ public class LibraryMain_mg {
 		return Pattern.matches(regex, email);
 	} // isValidEmail
 	// 회원탈퇴
-	public void deleteMemberInfo() throws IOException {
+	private void deleteMemberInfo() throws IOException {
 		System.out.println("계정을 삭제하시겠습니까?");
 		System.out.print("1.회원탈퇴 2.뒤로가기\n > ");
 		try {
@@ -294,7 +337,7 @@ public class LibraryMain_mg {
 		}
 	} // deleteMemberInfo
 	
-	
+	// 1번 선택 시 나오는 화면
 	private void checkUserNotifications() throws IOException {
 		System.out.println("정지상태/연체/반납일/예약도서알림");
 		boolean memStop = dao.isMemStop(me_id);

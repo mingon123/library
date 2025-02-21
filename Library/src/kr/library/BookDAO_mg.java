@@ -9,6 +9,7 @@ import util.DBUtil;
 
 public class BookDAO_mg {
 	private BookDAO_Jw jw;
+	private BookDAO_il il; //checkBookRecord(int book_num) 사용
 	// 희망도서신청
 	public void insertWishBook(String title,String author,String publisher,String memId) {
 		Connection conn = null;
@@ -250,7 +251,7 @@ public class BookDAO_mg {
 		return hasQNA;
 	} // selectMyQNAInfo
 	// qna삭제
-	public void deleteQNA(String memId, int QNANum) {
+	public void deleteQNAInfo(String memId, int QNANum) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
@@ -400,6 +401,7 @@ public class BookDAO_mg {
 	} // deleteMemberInfo
 	
 	
+	
 	// 정지상태알림
 	public boolean isMemStop(String memId) {
 		Connection conn = null;
@@ -528,4 +530,180 @@ public class BookDAO_mg {
 	} // isReservationNotification
 
 	
+	// 카테고리별 책
+	public void selectCategoryOfBook(String category) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql  = "SELECT * FROM ("
+					+ "SELECT book_num,book_title,book_author,book_category FROM book WHERE book_category=?"
+					+ "ORDER BY DBMS_RANDOM.VALUE) WHERE ROWNUM <= 10";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, category);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if(rs.next()) {
+				System.out.println("책번호\t카테고리\t책제목\t\t\t저자");
+				do {
+					System.out.print(rs.getInt("book_num")+"\t");
+					System.out.print(rs.getString("book_category")+"\t");
+					System.out.print(rs.getString("book_title")+"\t");
+					System.out.println(rs.getString("book_author")+"\t");
+				} while(rs.next());
+			} else {
+				System.out.println("표시할 정보가 없습니다.");
+			}
+			System.out.println("-".repeat(90));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+	} // categoryOfBook
+	
+	// 추천순위별 책
+	public void selectRankOfBook() {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql  = "SELECT * FROM ("
+					+ "SELECT book_num,book_title,book_author,book_rank FROM book WHERE book_rank<=200 "
+					+ "ORDER BY DBMS_RANDOM.VALUE) WHERE ROWNUM <= 10 ORDER BY book_rank";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if(rs.next()) {
+				System.out.println("책번호\t책제목\t\t\t저자");
+				do {
+					System.out.print(rs.getInt("book_num")+"\t");
+//					System.out.print(rs.getInt("book_rank")+"\t");
+					System.out.print(rs.getString("book_title")+"\t");
+					System.out.println(rs.getString("book_author")+"\t");
+				} while(rs.next());
+			} else {
+				System.out.println("표시할 정보가 없습니다.");
+			}
+			System.out.println("-".repeat(90));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+	} // rankOfBook
+	
+	// 신간책별 책
+	public void selectNewOfBook() {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+	        sql = "SELECT * FROM ("
+	                + "SELECT book_num, book_title, book_author, book_category, book_p_year "
+	                + "FROM book "
+	                + "WHERE TO_NUMBER(book_p_year) >= TO_NUMBER(TO_CHAR(ADD_MONTHS(SYSDATE, -24), 'YYYY')) "
+	                + "ORDER BY DBMS_RANDOM.VALUE) "
+	                + "WHERE ROWNUM <= 10";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if(rs.next()) {
+				System.out.println("책번호\t출판년도\t카테고리\t책제목\t\t\t저자");
+				do {
+					System.out.print(rs.getInt("book_num")+"\t");
+					System.out.print(rs.getString("book_p_year")+"\t");
+					System.out.print(rs.getString("book_category")+"\t");
+					System.out.print(rs.getString("book_title")+"\t");
+					System.out.println(rs.getString("book_author")+"\t");
+				} while(rs.next());
+			} else {
+				System.out.println("표시할 정보가 없습니다.");
+			}
+			System.out.println("-".repeat(90));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+	} // newOfBook
+	
+	// 대여베스트별 책
+	public void selectOrderBestOfBook() {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql  = "SELECT * FROM ("
+					+ "SELECT b.book_num,b.book_title,b.book_author,b.book_category,count(o.book_num) AS cnt "
+					+ "FROM book_order o JOIN book b ON b.book_num=o.book_num "
+					+ "GROUP BY b.book_num,book_title, book_author, book_category ORDER BY cnt DESC)"
+					+ "WHERE ROWNUM <= 10";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if(rs.next()) {
+				System.out.println("책번호\t대여횟수\t카테고리\t책제목\t\t\t저자");
+				do {
+					System.out.print(rs.getInt("book_num")+"\t");
+					System.out.print(rs.getInt("cnt")+"\t");
+					System.out.print(rs.getString("book_category")+"\t");
+					System.out.print(rs.getString("book_title")+"\t");
+					System.out.println(rs.getString("book_author")+"\t");
+				} while(rs.next());
+			} else {
+				System.out.println("표시할 정보가 없습니다.");
+			}
+			System.out.println("-".repeat(90));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+	} // orderBestOfBook
+	
+	// 리뷰 화면 
+	public void selectReviewInfo() {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;		
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT r.review_num,b.book_num,b.book_title,r.review_content,r.review_rate,r.review_reg_date "
+					+ "FROM review r, book b WHERE r.book_num=b.book_num "
+					+ "ORDER BY review_num";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if (rs.next()) {
+				System.out.println("리뷰번호\t책번호\t평점\t리뷰등록일\t\t책제목\t\t\t리뷰내용\t");			
+				do {
+					System.out.print(rs.getInt("review_num")+"\t");							
+					System.out.print(rs.getInt("book_num")+"\t");
+					System.out.print(rs.getInt("review_rate")+"\t");
+					System.out.print(rs.getDate("review_reg_date")+"\t");
+					System.out.print(rs.getString("book_title")+"\t");
+					System.out.println(rs.getString("review_content")+"\t");
+				} while (rs.next());
+			} else {
+				System.out.println("표시할 데이터가 없습니다.");	
+			} //if-else
+			System.out.println("-".repeat(90));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		} 	
+	} // selectReviewInfo
+
+
 }
