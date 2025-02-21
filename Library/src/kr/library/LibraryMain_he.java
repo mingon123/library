@@ -14,7 +14,6 @@ public class LibraryMain_he {
 		try {
 			br = new BufferedReader(new InputStreamReader(System.in));
 			dao= new BookDAO_he ();
-
 			//메뉴 호출
 			callMenu();
 		} catch (Exception e) {
@@ -29,16 +28,44 @@ public class LibraryMain_he {
 	private void callMenu()throws IOException {
 		//로그인 체크 영역
 		while(true) {
-			System.out.print("1.로그인, 2.회원가입, 3.도서목록 4.도서검색 5.공지사항 6.종료:");
+			System.out.print("3.공지사항확인 4.회원가입 5.로그인 6.종료:");
 			try {
 				int no= Integer.parseInt(br.readLine());
-				if(no ==1) {
+				
+				if (no==3) {
+					//공지사항
+					dao.selectNotice();
+					System.out.print("선택한 글의 번호:");
+					int num = Integer.parseInt(br.readLine());
+					System.out.println("-".repeat(90));
+					dao.selectDetailNotice(num);
+				} else if (no==4) {
+					//회원가입
+					System.out.println("회원가입 페이지입니다.");
+					System.out.print("아이디 (영문,숫자 최소 6~12자):");
+					String id = br.readLine();
+
+					System.out.print("비밀번호 (영문,숫자,특수문자 최소8 이상):");
+					String passwd = br.readLine();
+
+					System.out.print("이름 (한글, 영문만 입력 가능):");
+					String name = br.readLine();
+
+					System.out.print("전화번호 (숫자만 입력 가능):");
+					String cell  = br.readLine();
+
+					System.out.print("이메일:");
+					String email = br.readLine();
+					
+					dao.insertInfo(id, passwd, name, cell, email);
+
+				} else if(no ==5) {
 					//로그인
-					System.out.print("아이디(입력취소:0):");
+					System.out.print("아이디(입력취소:q):");
 					mem_id = br.readLine();
 					
 					//0이면 입력 취소
-					if(mem_id.equals("0")) continue;
+					if(mem_id.equalsIgnoreCase("q")) continue;
 					
 					System.out.print("비밀번호:");
 					String mem_pw = br.readLine();
@@ -46,50 +73,15 @@ public class LibraryMain_he {
 					flag = dao.loginCheck(mem_id, mem_pw);
 					if(flag) {
 						System.out.println(mem_id + "님 로그인 되었습니다.");
-					break;
+						callMenu();
 					}
 					System.out.println("아이디 또는 비밀번호가 불일치합니다.");				
 						
-				}else if (no==2) {
-					//회원가입
-					System.out.print("아이디:");
-					String id = br.readLine();
-
-					System.out.print("비밀번호:");
-					String passwd = br.readLine();
-
-					System.out.print("이름:");
-					String name = br.readLine();
-
-					System.out.print("전화번호:");
-					String cell  = br.readLine();
-
-					System.out.print("이메일:");
-					String email = br.readLine();
-					
-					dao.insertInfo(id, passwd, name, cell, email);
-				}else if (no==3) {
-					dao.selectInfo();
-					//도서 목록
-					
-				}else if (no==4) {
-					dao.selectInfo();
-					//도서 검색
-					
-				}else if (no==5) {
-					
-					//공지사항
-					dao.selectNotice();
-					System.out.print("선택한 글의 번호:");
-					int num = Integer.parseInt(br.readLine());
-					System.out.println("---------------");
-					dao.selectDetailNotice(num);
-				}else if (no==6) {
-					
+				} else if (no==6) {
 					//종료
 					System.out.println("프로그램 종료");
 					break;
-				}else {
+				} else {
 					System.out.println("잘못 입력했습니다.");
 				}
 			} catch (NumberFormatException e) {
