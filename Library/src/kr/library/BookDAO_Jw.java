@@ -72,7 +72,7 @@ public class BookDAO_Jw {
 		}
 	} // randomBookInfo
 
-	
+
 	// 대여가능 여부 판별 함수. 대여가능:1 책남아있는 권수0:0 대여권수 다 참:-1
 	public int canOrder(String mem_id,int book_num) {
 		Connection conn = null;
@@ -112,7 +112,7 @@ public class BookDAO_Jw {
 		}else return 0;
 	}//canOrder
 
-	
+
 	// 책번호가 존재하는지 확인하는 함수- 존재:1 존재x:0 에러:-1
 	public int checkBookNum(int book_num) {
 		Connection conn = null;
@@ -168,9 +168,41 @@ public class BookDAO_Jw {
 		return check >= 1? true:false;
 	}//checkNowOrderNum
 
-	
+
+	// 책번호가 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
+	public boolean checkReserveBookNum(int book_num, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int check = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, book_num);			
+			pstmt.setString(2, mem_id);
+
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) check = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+
+		if(check == -1)
+			System.out.println("에러 발생!");
+		return check > 0? true:false;
+
+	}//checkReserveBookNum
+
+
 	// 예약번호가 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
-	public boolean checkReserveNum(int re_num, String mem_id) {
+	public boolean checkReserveReNum(int re_num, String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -179,6 +211,7 @@ public class BookDAO_Jw {
 		try {
 			conn = DBUtil.getConnection();
 			sql = "SELECT COUNT(*) FROM RESERVATION WHERE RE_NUM=? AND MEM_ID=?";
+
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, re_num);
 			pstmt.setString(2, mem_id);
@@ -196,10 +229,11 @@ public class BookDAO_Jw {
 			System.out.println("에러 발생!");
 		return check >= 1? true:false;
 
-	}//checkReserveNum
+	}//checkReserveReNum
 
-	// 예약테이블 행 삭제
-	public void deleteReserve(int re_num) {
+
+	// 예약테이블 행 삭제 - 예약테이블 num
+	public void deleteReserveReNum(int re_num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
@@ -208,14 +242,40 @@ public class BookDAO_Jw {
 			sql = "DELETE FROM RESERVATION WHERE RE_NUM=?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, re_num);
+
 			int count = pstmt.executeUpdate();
 			if(count > 0) System.out.println("예약취소를 성공했습니다.");
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
-	} // deleteReserve
+	} // deleteReserveReNum
+
+
+	// 예약테이블 행 삭제 - book num
+	public void deleteReserveBookNum(int book_num, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, book_num);
+			pstmt.setString(2, mem_id);
+
+			int count = pstmt.executeUpdate();
+			if(count > 0) System.out.println("예약한 책의 대여로 인해 예약목록에서 해당 책을 삭제합니다.");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteReserveBookNum
+
 
 	// 대여번호가 연장이 가능한지 확인하는 함수
 	//	- 먼저 대여번호가 유효한지 체크하기때문에 연장유무만
@@ -272,7 +332,7 @@ public class BookDAO_Jw {
 		return check >= 1? false: true; 
 	}//checkOrderAddReturnDate
 
-	
+
 	// 정지상태인지 확인 ->  정지상태 : false , 정지X : true
 	public boolean checkMemStop(String mem_id) {
 		Connection conn = null;
@@ -299,7 +359,7 @@ public class BookDAO_Jw {
 		return check >= 1? true: false; 
 	}//checkMemStop
 
-	
+
 	//이미 해당 유저가 같은 책을 예약했는지 확인  - 중복시 :true  중복 아닐시 :false
 	public boolean isDuplicatedReserve(int book_num, String mem_id) {
 		Connection conn = null;
@@ -328,31 +388,86 @@ public class BookDAO_Jw {
 
 	}//checkNowOrderNum
 
+
+	// book_num으로 book_volm_cnt 구하는 함수
+	public int selectBookCount(int book_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int res = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT BOOK_VOLM_CNT FROM BOOK WHERE BOOK_NUM=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, book_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) res = rs.getInt(1);
+
+		} catch (Exception e) {
+			System.out.println("에러 발생!");
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		if(res == -1) System.out.println("에러 발생!");
+
+		return res;
+
+	}//checkNowOrderNum
+
+
 	// 대여(insert book_order) - 대여 추가후 책 갯수 조정
 	public void insertBookOrder(String mem_id,int book_num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
 		try {
-			conn = DBUtil.getConnection();
-			sql = "INSERT INTO book_order (ORDER_NUM, MEM_ID, BOOK_NUM)VALUES(book_order_seq.nextval,?,?)";
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, mem_id);
-			pstmt.setInt(2, book_num);
-			int count = pstmt.executeUpdate();
+			boolean bookReserve = checkReserveBookNum(book_num, mem_id);
 
-			sql = "UPDATE book SET book_volm_cnt = (SELECT book_volm_cnt FROM book WHERE book_num = ?) - 1 WHERE book_num = ?";
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, book_num);
-			pstmt.setInt(2, book_num);
-			int count2 = pstmt.executeUpdate();
+			if(bookReserve) {
+				int re_num = selectBookNumToReNum(book_num, mem_id);
+				int rank = calcReserveRank(re_num, 2);
+				int bookCount = selectBookCount(book_num);
+				
+				if(rank <= bookCount) { // 예약 중인 책이 있고, 예약 순위가 높아서 대여 가능한 경우
+					conn = DBUtil.getConnection();
+					sql = "INSERT INTO book_order (ORDER_NUM, MEM_ID, BOOK_NUM)VALUES(book_order_seq.nextval,?,?)";
+					pstmt = conn.prepareStatement(sql);
+					pstmt.setString(1, mem_id);
+					pstmt.setInt(2, book_num);
+					
+					int count = pstmt.executeUpdate();	
+					
+					if(count > 0) {
+						System.out.println(book_num+"번책 대여 성공!");
+						updateBookCount(book_num, -1);
+						deleteReserveBookNum(book_num, mem_id);
+					}
+				} else {
+					System.out.println("예약 순위가 낮은 관계로 대여가 불가능합니다.");
+				}
+				
 
-			if(count > 0 && count2 > 0 ) {
-				System.out.println(book_num+"번책 대여 성공!");
+			//}else if(!bookReserve) { 
+			// 해당 책을 예약한 기록이 없는 경우  -> 예약 안했는데 갑자기 책 빌려가게 되면 어떡하지? TODO 
+			//	-> 예약이 생길경우 책 테이블에 isReserve ? 같은 컬럼 추가?
+			
+			}else {
+				conn = DBUtil.getConnection();
+				sql = "INSERT INTO book_order (ORDER_NUM, MEM_ID, BOOK_NUM)VALUES(book_order_seq.nextval,?,?)";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, mem_id);
+				pstmt.setInt(2, book_num);
+				
+				int count = pstmt.executeUpdate();	
+				
+				if(count > 0) {
+					System.out.println(book_num+"번책 대여 성공!");
+					updateBookCount(book_num, -1);
+				}
 			}
-			else {
-				System.out.println("대여 중 오류발생!");
-			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -360,7 +475,34 @@ public class BookDAO_Jw {
 		}
 	} // insertBookOrder
 
-	
+
+	// 책갯수 조정 함수 (book_volm_cnt + k)
+	public void updateBookCount(int book_num, int k) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+
+			sql = "UPDATE book SET book_volm_cnt = book_volm_cnt + ? WHERE book_num = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, k);
+			pstmt.setInt(2, book_num);
+			int count = pstmt.executeUpdate();
+
+			if(count <= 0) {
+				System.out.println("책갯수 조정 중 오류발생!");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+
+	} // updateBookCount
+
+
 	// reservation 테이블에 insert - 예약 테이블에 insert
 	public void insertReserve(String mem_id,int book_num) {
 		Connection conn = null;
@@ -387,7 +529,7 @@ public class BookDAO_Jw {
 		}
 	} // insertBookOrder
 
-	
+
 	// 예약가능 여부 판별 함수. 예약가능:1 책남아있는 권수0이 아님:0 예약권수 다 참:-1
 	public int canReservation(String mem_id,int book_num) {
 		Connection conn = null;
@@ -465,6 +607,7 @@ public class BookDAO_Jw {
 		} 
 	} // selectUserOrderInfo
 
+
 	// 로그인한 유저의 대여 현황만 출력
 	public void selectUserNowOrderInfo(String mem_id) {
 		Connection conn = null;
@@ -501,6 +644,7 @@ public class BookDAO_Jw {
 			DBUtil.executeClose(rs, pstmt, conn);
 		} 
 	} // selectUserNowOrderInfo
+
 
 	// 로그인한 유저의 예약 현황 출력
 	public void selectUserNowReserveInfo(String mem_id) {
@@ -565,6 +709,7 @@ public class BookDAO_Jw {
 		}
 	} // updateOrderReturn
 
+
 	// 정지일수 update - 이전에 정지일수가 있는 경우 + , 새로 생길경우 그대로
 	public void updateStopDate(int order_num) {
 		Connection conn = null;
@@ -597,6 +742,7 @@ public class BookDAO_Jw {
 		}
 	} // updateStopDate
 
+
 	//	해당 유저의 현재 대여 수 	0: true	1이상: false 
 	public boolean checkZeroOrder(String mem_id) {
 		Connection conn = null;
@@ -623,6 +769,7 @@ public class BookDAO_Jw {
 		return check >= 1? false: true; 
 
 	}//checkZeroOrder
+
 
 	// 지정한 대여번호에 대한 연체일 알림 / 연체가 아닐 시 정상 반납 알림
 	public void selectLateReturn(int order_num) {
@@ -671,7 +818,34 @@ public class BookDAO_Jw {
 		}
 	} // updateReturnDate
 
-	// 예약 순위 관련 함수 - num==1 : 총 인원수, num==2 예약 순위
+
+	// Book_num 이랑 Mem_id 로 Re_num 구하는 함수
+	public int selectBookNumToReNum(int book_num, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int res = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT RE_NUM FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, book_num);
+			pstmt.setString(2, mem_id);
+
+			rs = pstmt.executeQuery();
+			if(rs.next()) res = rs.getInt("RE_NUM");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		} 
+		return res;
+	} // selectBookNumToReNum
+
+
+	// 예약 순위 관련 함수 - num==1 : 총 인원수, num==2 예약 순위 //TODO
 	public int calcReserveRank(int re_num, int num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
