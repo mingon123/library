@@ -6,12 +6,13 @@ import java.io.InputStreamReader;
 
 public class LibraryMain_jw {
 	private BufferedReader br;
-	private String mem_id = "test2"; // 로그인한 아이디 저장
+	private String mem_id = "aasd"; // 로그인한 아이디 저장
 	private boolean isSelectFive = false;
 	private boolean isStart = true;
 	private BookDAO_Jw dao;
 
-	//TODO 예약도서 대여시 rank가 책 갯수이내(!=0)인지 확인하고 대여할때 예약테이블에서 삭제
+	//TODO 예약도서 대여시 rank가 책 갯수이내(!=0)인지 확인하고 대여할때 예약테이블에서 삭제 
+	// 예약테이블 삭제까진 테스트 완 - 예약순위에 따라 동작 잘 하는지 테스트 필요
 	
 	public LibraryMain_jw() {
 		try {
@@ -377,6 +378,7 @@ public class LibraryMain_jw {
 											System.out.println("[숫자만 입력 가능]");
 										}
 									}// while(allView) - 대여내역 확인
+									
 								}else if(no==3) {
 									System.out.println("뒤로가기를 선택하셨습니다.");
 									isSelectView = false;
@@ -388,16 +390,16 @@ public class LibraryMain_jw {
 								System.out.println("[숫자만 입력 가능]");
 							}
 						} // while(isSelectView)
+						
 					}else if(no==3) { 
 						System.out.println("\n예약취소를 선택하셨습니다.");
 						System.out.println("-".repeat(90));
 						System.out.println("\t\t\t\t\t\t예약 현황");
 						System.out.println("-".repeat(90));
+						
 						dao.selectUserNowReserveInfo(mem_id);
+						
 						System.out.println("-".repeat(90));
-						//TODO
-						// 예약도서에 해당 번호 있는지 확인
-						// 삭제
 						System.out.println();
 						boolean flag = false; String s; int sNum = -1;
 						do {
@@ -419,17 +421,17 @@ public class LibraryMain_jw {
 
 								}
 							}
-						} while (!dao.checkReserveNum(sNum,mem_id) && !s.equals("q") && !s.equals("Q"));
+						} while (!dao.checkReserveReNum(sNum,mem_id) && !s.equals("q") && !s.equals("Q"));
 						
 						flag = false;
-						if(dao.checkReserveNum(sNum,mem_id)) {
+						if(dao.checkReserveReNum(sNum,mem_id)) {
 							do {
 								if(flag) System.out.println("Y/N(y/n) 중 입력해주세요.");
 								System.out.print(sNum + "번을 선택하셨습니다. \n정말 취소하시겠습니까?(Y/N) : ");
 								s = br.readLine();
 								if(s.equals("Y")||s.equals("y")) {
 									System.out.println("\n예약을 취소합니다.");
-									dao.deleteReserve(sNum);
+									dao.deleteReserveReNum(sNum);
 									System.out.println("이전화면으로 돌아갑니다.");
 									continue;
 								}else if(s.equals("N")||s.equals("n")) {
