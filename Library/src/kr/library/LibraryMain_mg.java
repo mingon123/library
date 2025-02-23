@@ -7,17 +7,20 @@ import java.util.regex.Pattern;
 
 public class LibraryMain_mg {
 	private BufferedReader br;
-	private String me_id="test"; // 로그인한 아이디 저장
+	private String mem_id="aasd"; // 로그인한 아이디 저장
 	private boolean isSelectSeven = false;
 	private boolean isSelectTwo = false;
+	private boolean isSelectThree = false;
 	private boolean isStart = true;
 	private BookDAO_mg dao;
 	private BookDAO_il il;
+	private BookDAO_Jw jw;
 	
 	public LibraryMain_mg() {
 		try {
 			dao = new BookDAO_mg();
 			il = new BookDAO_il();
+			jw = new BookDAO_Jw();
 			br = new BufferedReader(new InputStreamReader(System.in));
 			// 메뉴 호출
 			callMenu();
@@ -32,16 +35,20 @@ public class LibraryMain_mg {
 	private void callMenu() throws IOException {
 		while(true) {
 			if(isStart) {
-				System.out.print("1.사용자알림 2.도서목록 4.리뷰확인 7.기타메뉴 9.종료\n > ");
+				System.out.print("1.사용자알림 2.도서목록 3.도서검색 4.리뷰확인 7.기타메뉴 9.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
-					if(no==1) {
+					if(no==1) { // 완
 						checkUserNotifications();
-					} else if(no==2) {
+					} else if(no==2) { // 완
 						isStart = false;
 						isSelectTwo = true;
 						showTwoMenu();
-					} else if(no==4) {
+					} else if(no==3) { // 대여/예약 추가
+						isStart = false;
+						isSelectThree = true;
+						showThreeMemu();
+					} else if(no==4) { // 범위 지정해야함
 						selectDetailReview();
 					} else if(no==7) { // 완
 						isStart = false;
@@ -68,10 +75,10 @@ public class LibraryMain_mg {
 	private void checkUserNotifications() throws IOException {
 		System.out.println("정지상태/연체/반납일/예약도서알림");
 		System.out.println("-".repeat(90));
-		boolean memStop = dao.isMemStop(me_id);
-		boolean overReturn = dao.isOverReturn(me_id);
-		boolean returnDateNotification = dao.isReturnDateNotification(me_id);
-		boolean reservationNotification = dao.isReservationNotification(me_id);
+		boolean memStop = dao.isMemStop(mem_id);
+		boolean overReturn = dao.isOverReturn(mem_id);
+		boolean returnDateNotification = dao.isReturnDateNotification(mem_id);
+		boolean reservationNotification = dao.isReservationNotification(mem_id);
 
 		if((memStop||overReturn||returnDateNotification||reservationNotification)) {
 			if(memStop)
@@ -86,7 +93,7 @@ public class LibraryMain_mg {
 	} // checkUserNotifications
 	
 	// 2번선택 시 나오는 화면
-	public void showTwoMenu() throws IOException {
+	private void showTwoMenu() throws IOException {
 		while (isSelectTwo) {			
 			System.out.println("도서목록 확인");
 			System.out.print("1.카테고리별 2.추천순위 3.신간책 4.대여베스트 5.뒤로가기\n > ");
@@ -168,9 +175,84 @@ public class LibraryMain_mg {
 		} while(count!=1);
 		il.selectDetailBook(num);
 		System.out.println("-".repeat(90));
+
+		System.out.print("이 책을 대여하시겠습니까? (Y입력) : ");
+		String order = br.readLine().trim();
+		if(order.equalsIgnoreCase("Y")) {
+			if(jw.canOrder(mem_id, num)==1) {
+				jw.insertBookOrder(mem_id, num);
+				System.out.println("대여가 완료되었습니다.");
+			} else {
+				System.out.println("대여가 불가능합니다.");
+			}
+		} else System.out.println("대여를 취소하였습니다.");
 	}
 	
-	// 리뷰 상세정보 확인
+	// 3번 선택 시 나오는 메뉴
+	private void showThreeMemu() throws IOException {
+		while(isSelectThree) {
+			System.out.println("도서 검색");
+			System.out.print("1.제목 2.저자 3.뒤로가기\n > ");
+			try {
+				int no = Integer.parseInt(br.readLine());
+				if(no==1) {
+					selectSearchBookTitle();
+					selectDetailBook();
+				}
+				else if(no==2) {
+					selectSearchBookAuthor();
+					selectDetailBook();
+				}
+				else if(no==3) { //뒤로가기
+					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
+					isStart = true;
+					isSelectThree = false;
+				} else System.out.println("잘못 입력하셨습니다.");
+			} catch (NumberFormatException e) {
+				System.out.println("[숫자만 입력 가능]");
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	// 제목으로 도서 검색
+	private void selectSearchBookTitle() throws IOException {
+		System.out.print("검색할 책 제목 검색 : ");
+		String title = br.readLine();
+		int count = dao.checkBookTitleRecord(title);
+		do {
+			if(count==0) {
+				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 : ");
+				title = br.readLine();
+				count = dao.checkBookTitleRecord(title);
+			} else if (count!=1) {
+				System.out.println("정보 처리 중 오류 발생");
+			}
+		} while(count!=1);
+		dao.selectSearchBookTitle(title);
+		System.out.println("-".repeat(90));
+	}
+	
+	// 저자로 도서 검색
+	private void selectSearchBookAuthor() throws IOException {
+		System.out.print("검색할 책 저자 검색 : ");
+		String author = br.readLine();
+		int count = dao.checkBookAuthorRecord(author);
+		do {
+			if(count==0) {
+				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 : ");
+				author = br.readLine();
+				count = dao.checkBookAuthorRecord(author);
+			} else if(count!=1) {
+				System.out.println("정보 처리 중 오류 발생");
+			}
+		} while(count!=1);
+		dao.selectSearchBookAuthor(author);
+		System.out.println("-".repeat(90));
+	}
+	
+	// 4.리뷰 상세정보 확인
 	private void selectDetailReview() throws NumberFormatException, IOException {
 		dao.selectReviewInfo();
 		System.out.print("조회할 리뷰번호 입력 : ");
@@ -192,7 +274,7 @@ public class LibraryMain_mg {
 
 	
 	// 7번선택 시 나오는 화면
-	public void showSevenMenu() throws IOException {
+	private void showSevenMenu() throws IOException {
 		while(isSelectSeven) {
 			System.out.print("1.희망도서 2.Q&A 3.회원정보관리 4.뒤로가기\n > ");
 			try {
@@ -249,7 +331,7 @@ public class LibraryMain_mg {
 		String author = br.readLine();
 		System.out.print("출판사를 입력하세요: ");
 		String publisher = br.readLine();
-		dao.insertWishBook(title, author, publisher, me_id);
+		dao.insertWishBook(title, author, publisher, mem_id);
 	} // insertWishBook
 	// 희망도서목록확인
 	private void selectWishBookInfo() {
@@ -257,7 +339,7 @@ public class LibraryMain_mg {
 	} // selectWishBookInfo
 	// 희망도서 삭제
 	private void deleteWishBook() throws IOException {
-		boolean hasWishBook = dao.selectMyWishBookInfo(me_id);
+		boolean hasWishBook = dao.selectMyWishBookInfo(mem_id);
 		if(!hasWishBook) {
 			System.out.println("신청한 희망도서가 없습니다.");
 			return;
@@ -265,8 +347,8 @@ public class LibraryMain_mg {
 		try {
 			System.out.print("삭제할 번호를 입력하세요: ");
 			int num = Integer.parseInt(br.readLine());
-			int count = dao.checkRecord(me_id);
-			if(count==1) dao.deleteWishBookInfo(me_id, num);
+			int count = dao.checkRecord(mem_id);
+			if(count==1) dao.deleteWishBookInfo(mem_id, num);
 			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
 			else System.out.println("정보 처리 중 오류 발생");
 		} catch (NumberFormatException e) {
@@ -304,7 +386,7 @@ public class LibraryMain_mg {
 		}
 		System.out.print("질문 내용을 입력하세요.");
 		String qnaContent = br.readLine();
-		dao.insertQNA(qnaTitle, qnaContent, me_id);
+		dao.insertQNA(qnaTitle, qnaContent, mem_id);
 	} // insertQNA
 	// qna목록확인
 	private void selectQNAInfo() {
@@ -312,7 +394,7 @@ public class LibraryMain_mg {
 	} // selectQNAInfo
 	// qna 삭제
 	private void deleteQNA() throws IOException {
-		boolean hasQNA = dao.selectMyQNAInfo(me_id);
+		boolean hasQNA = dao.selectMyQNAInfo(mem_id);
 		if(!hasQNA) {
 			System.out.println("등록한 Q&A가 없습니다.");
 			return;
@@ -320,8 +402,8 @@ public class LibraryMain_mg {
 		try {
 			System.out.print("삭제할 번호를 입력하세요: ");
 			int num = Integer.parseInt(br.readLine());
-			int count = dao.checkRecord(me_id);
-			if(count==1) dao.deleteQNAInfo(me_id, num);
+			int count = dao.checkRecord(mem_id);
+			if(count==1) dao.deleteQNAInfo(mem_id, num);
 			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
 			else System.out.println("정보 처리 중 오류 발생");
 		} catch (NumberFormatException e) {
@@ -337,7 +419,7 @@ public class LibraryMain_mg {
 		try {
 			int no = Integer.parseInt(br.readLine());
 			if(no==1) {
-				dao.selectMemberInfo(me_id);
+				dao.selectMemberInfo(mem_id);
 				System.out.println("-".repeat(90));
 				System.out.println("");
 			}
@@ -355,7 +437,7 @@ public class LibraryMain_mg {
 	} // manageMemberInfo
 	// 회원정보수정
 	private void updateMemberInfo() throws IOException {
-		String memId = me_id;
+		String memId = mem_id;
 		System.out.printf("현재 계정은 %s입니다. 뒤로가기:q(Q)입력 \n",memId);
 		String password;
 		while(true) {
@@ -406,7 +488,7 @@ public class LibraryMain_mg {
 					System.out.println("이전화면으로 돌아갑니다.");
 					manageMemberInfo();
 				}else if(s.equalsIgnoreCase("y")) {
-					dao.deleteMemberInfo(me_id);
+					dao.deleteMemberInfo(mem_id);
 					System.out.println("첫화면으로 돌아갑니다.");
 					showSevenMenu();
 				} else System.out.println("잘못 입력하셨습니다.");

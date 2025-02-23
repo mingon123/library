@@ -20,7 +20,7 @@ public class BookDAO_mg {
 		try {
 			conn = DBUtil.getConnection();
 			
-			if(isWishBook(title, author)) {
+			if(checkWishBook(title, author)) {
 				System.out.println("해당 도서는 보유중입니다.");
 				return;
 			}
@@ -44,7 +44,7 @@ public class BookDAO_mg {
 	} // insertWishBook
 	
 	// 희망도서 신청 시 동일한 제목+저자인 도서가 있으면 알림
-	private boolean isWishBook(String book_title,String book_author) {
+	private boolean checkWishBook(String book_title,String book_author) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -772,7 +772,7 @@ public class BookDAO_mg {
 		int count = 0;		
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT * FROM review WHERE review_num=?";
+			sql = "SELECT COUNT(*) FROM review WHERE review_num=?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, reviewNum);
 			rs = pstmt.executeQuery();
@@ -787,4 +787,117 @@ public class BookDAO_mg {
 		}		
 		return count; 
 	} // checkReviewRecord()
+	
+	// 책 제목 기준 검색
+	public void selectSearchBookTitle(String bookTitle) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql  = "SELECT book_num,book_title,book_author,book_publisher,book_category FROM BOOK "
+					+ "WHERE book_title LIKE ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%" + bookTitle + "%");
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if(rs.next()) {
+				System.out.println("책번호\t카테고리\t책제목\t\t\t저자");
+				do {
+					System.out.print(rs.getInt("book_num")+"\t");
+					System.out.print(rs.getString("book_category")+"\t");
+					System.out.print(rs.getString("book_title")+"\t");
+					System.out.println(rs.getString("book_author")+"\t");
+				} while(rs.next());
+			} else {
+				System.out.println("표시할 정보가 없습니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+	}
+	//조회하는 책 레코드 존재 여부 체크(제목 기준)
+	public int checkBookTitleRecord(String bookTitle) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM book WHERE book_title like ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%"+bookTitle+"%");
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkBookTitleRecord()	
+	
+	// 책 저자기준 검색
+	public void selectSearchBookAuthor(String bookAuthor) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql  = "SELECT book_num,book_title,book_author,book_publisher,book_category FROM BOOK "
+					+ "WHERE book_author LIKE ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%" + bookAuthor + "%");
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if(rs.next()) {
+				System.out.println("책번호\t카테고리\t책제목\t\t\t저자");
+				do {
+					System.out.print(rs.getInt("book_num")+"\t");
+					System.out.print(rs.getString("book_category")+"\t");
+					System.out.print(rs.getString("book_title")+"\t");
+					System.out.println(rs.getString("book_author")+"\t");
+				} while(rs.next());
+			} else {
+				System.out.println("표시할 정보가 없습니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+	}
+	
+	//조회하는 책 레코드 존재 여부 체크(저자 기준)
+	public int checkBookAuthorRecord(String bookAuthor) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM book WHERE book_author like ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%"+bookAuthor+"%");
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkBookTitleRecord()	
+	
+	
 }
