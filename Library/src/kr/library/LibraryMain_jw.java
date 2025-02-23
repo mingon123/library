@@ -6,13 +6,12 @@ import java.io.InputStreamReader;
 
 public class LibraryMain_jw {
 	private BufferedReader br;
-	private String mem_id = "aasd"; // 로그인한 아이디 저장
+	private String mem_id = "test5"; // 로그인한 아이디 저장
 	private boolean isSelectFive = false;
 	private boolean isStart = true;
 	private BookDAO_Jw dao;
 
-	//TODO 예약도서 대여시 rank가 책 갯수이내(!=0)인지 확인하고 대여할때 예약테이블에서 삭제 
-	// 예약테이블 삭제까진 테스트 완 - 예약순위에 따라 동작 잘 하는지 테스트 필요
+	// TODO 반납시 리뷰 작성 기능 추가 필요 - 진행중
 	
 	public LibraryMain_jw() {
 		try {
@@ -90,6 +89,33 @@ public class LibraryMain_jw {
 								dao.updateOrderReturn(order_num);
 								dao.updateStopDate(order_num);
 								dao.selectLateReturn(order_num);
+								
+								String answer="";
+								flag = false;
+								do {
+									if(flag) {
+										System.out.println("Y/N(y/n) 중 입력해주세요.");
+									}
+									System.out.print("반납하신 책에 대한 리뷰를 작성하시겠습니까?(Y/N) : ");
+									answer = br.readLine();
+									
+									if(answer.equals("N")||answer.equals("n")) {
+										System.out.println("\n리뷰작성을 취소하셨습니다.");
+										continue;
+									}else if(answer.equals("Y")||answer.equals("y")) {
+										System.out.println("\n리뷰작성을 선택하셨습니다.");
+										// TODO
+										System.out.print("다음의 책에 대한 리뷰를 작성합니다.\n\n");
+										System.out.println("-*".repeat(60));
+										// 리뷰하려는 책 제목, 저자 띄우기
+										dao.selectOrderNumToBookInfo(order_num);
+										System.out.println("-*".repeat(60));
+										// 내용 입력받기 - 내용, 별점(1~5)
+										// 리뷰테이블에 insert
+										continue;
+									}
+									
+								} while (!answer.equals("N") && !answer.equals("n") && !answer.equals("Y") && !answer.equals("y"));
 								
 								System.out.println("\n이전화면으로 돌아갑니다.");
 								continue;
