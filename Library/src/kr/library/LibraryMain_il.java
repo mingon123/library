@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Date;
+import java.sql.SQLIntegrityConstraintViolationException;
 
 /**
  * @author Lilly
@@ -582,17 +583,310 @@ public class LibraryMain_il {
 							}							
 						} while (num!=1||num!=2||num!=3||num!=4||num!=5);
 
-					} else if (no==6) { // 리뷰 관리
-						dao.selectReview();
+					} else if (no==6) { // 리뷰 관리						
+						int num=0;
+						do {
+							System.out.print("1.리뷰 목록보기, 2.리뷰정보 상세보기 3.리뷰정보 등록, 4.리뷰정보 수정, 5.리뷰정보 삭제, 6.뒤로가기\n"
+									+ "번호를 입력하세요.> ");
+							try {
+								num = Integer.parseInt(br.readLine());				
+								if (num==1) { //5-1.리뷰 목록보기
+									dao.selectReview();
+									
+								} else if (num==2) { // 5-2.리뷰정보 상세보기
+									dao.selectReview();
+									System.out.print("조회할 리뷰번호 입력: "); 
+									int review_num = Integer.parseInt(br.readLine());
+									int count = dao.checkReviewRecord(review_num); // 리뷰번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("리뷰번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											review_num = Integer.parseInt(br.readLine());
+											count = dao.checkReviewRecord(review_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);		
+									dao.selectDetailReview(review_num);									
+									
+									//review 테이블
+//									review_num		number               리뷰번호
+//									book_num		number               책번호
+//									review_content	varchar2(4000 byte)  리뷰내용
+//									review_rate		number(1,0)          평점
+//									review_reg_date	date                 리뷰등록일
+//									mem_id			varchar2(12 byte)    회원아이디
+								} else if (num==3) { // 5-3.리뷰정보 등록									
+									System.out.print("책번호: "); 
+									int book_num = Integer.parseInt(br.readLine());
+									int count = dao.checkBookRecord(book_num); // 책번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("책번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											book_num = Integer.parseInt(br.readLine());
+											count = dao.checkBookRecord(book_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									System.out.print("리뷰내용: "); 
+									String review_content = br.readLine();									
+									System.out.print("평점: ");
+									// 1~5만 입력받도록 조건 추가 필요 (SQLIntegrityConstraintViolationException 예외처리 필요)
+									int review_rate = Integer.parseInt(br.readLine());																
+									System.out.print("회원아이디: "); 
+									String mem_id = br.readLine(); 
+									count = dao.checkMemberRecord(mem_id); // 회원아이디 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("회원ID를 잘못 입력했습니다. 다시입력하세요.: ");										
+											mem_id = br.readLine();
+											count = dao.checkMemberRecord(mem_id);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									dao.InsertReview(book_num, review_content, review_rate, mem_id);
+									
+								} else if (num==4) { // 5-4.리뷰정보 수정
+									dao.selectReview();
+									System.out.print("수정할 리뷰번호 입력: ");
+									int review_num = Integer.parseInt(br.readLine());
+									int count = dao.checkReviewRecord(review_num); // 리뷰번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("리뷰번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											review_num = Integer.parseInt(br.readLine());
+											count = dao.checkReviewRecord(review_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									System.out.print("책번호: "); 
+									int book_num = Integer.parseInt(br.readLine());
+									count = dao.checkBookRecord(book_num); // 책번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("책번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											book_num = Integer.parseInt(br.readLine());
+											count = dao.checkBookRecord(book_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									System.out.print("리뷰내용: "); 
+									String review_content = br.readLine();									
+									System.out.print("평점: ");
+									// 1~5만 입력받도록 조건 추가 필요 (SQLIntegrityConstraintViolationException 예외처리 필요)
+									int review_rate = Integer.parseInt(br.readLine());																
+									System.out.print("회원아이디: "); 
+									String mem_id = br.readLine(); 
+									count = dao.checkMemberRecord(mem_id); // 회원아이디 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("회원ID를 잘못 입력했습니다. 다시입력하세요.: ");										
+											mem_id = br.readLine();
+											count = dao.checkMemberRecord(mem_id);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									dao.updateReview(review_num, book_num, review_content, review_rate, mem_id);
+								} else if (num==5) { // 5-5.리뷰정보 삭제
+									dao.selectReview();
+									System.out.print("삭제할 리뷰번호 입력: ");
+									int review_num = Integer.parseInt(br.readLine());
+									int count = dao.checkReviewRecord(review_num); // 리뷰번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("리뷰번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											review_num = Integer.parseInt(br.readLine());
+											count = dao.checkReviewRecord(review_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									dao.deleteReview(review_num);
+								} else if (num==6) { // 5-5.뒤로가기	
+									callAdminMenu(); break out; // admin 메뉴 완전히 빠져나감
+								} else {
+									System.out.println("잘못 입력했습니다. 출력된 메뉴 번호 중 하나를 입력하세요.");
+								}								
+							} catch (NumberFormatException e) {
+								System.out.println("[숫자만 입력 가능] 다시 입력하세요.");
+							}							
+						} while (num!=1||num!=2||num!=3||num!=4||num!=5||num!=6);
 
 					} else if (no==7) { // 공지사항 관리
-						dao.selectNotice();
+						int num=0;
+						do {				
+							System.out.print("1.공지사항 목록보기, 2.공지사항 상세정보 확인, 3.공지사항 등록, 4.공지사항 수정, 5.공지사항 삭제, 6.뒤로가기\n"
+									+ "번호를 입력하세요.> ");
+							try {
+								num = Integer.parseInt(br.readLine());				
+								if (num==1) { //7-1.공지사항 목록보기
+									dao.selectNotice();
 
-					} else if (no==8) { // Q&A 관리
-						dao.selectQnA();
+								} else if (num==2) { //7-2.공지사항 상세정보 확인
+									dao.selectNotice();
+									System.out.print("조회할 공지사항 번호 입력: ");
+									int notice_num = Integer.parseInt(br.readLine());
+									int count = dao.checkNoticeRecord(notice_num); // 공지사항 번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("공지사항 번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											notice_num = Integer.parseInt(br.readLine());
+											count = dao.checkNoticeRecord(notice_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									dao.selectDetailNotice(notice_num);
+									
+								} else if (num==3) { //7-3.공지사항 등록									
+									System.out.print("공지사항 제목: "); 
+									String notice_title = br.readLine();
+									System.out.print("공지사항 내용: "); 
+									String notice_content = br.readLine();		
+									dao.InsertNotice(notice_title, notice_content);									
+									
+								} else if (num==4) { //7-4.공지사항 수정
+									dao.selectNotice();
+									System.out.print("수정할 공지사항 번호 입력: ");
+									int notice_num = Integer.parseInt(br.readLine());
+									int count = dao.checkNoticeRecord(notice_num); // 공지사항 번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("공지사항 번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											notice_num = Integer.parseInt(br.readLine());
+											count = dao.checkNoticeRecord(notice_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									System.out.print("공지사항 제목: "); 
+									String notice_title = br.readLine();
+									System.out.print("공지사항 내용: "); 
+									String notice_content = br.readLine();	
+									dao.updateNotice(notice_num, notice_title, notice_content);
+									
+								} else if (num==5) { //7-5.공지사항 삭제
+									dao.selectNotice();
+									System.out.print("삭제할 공지사항 번호 입력: ");
+									int notice_num = Integer.parseInt(br.readLine());
+									int count = dao.checkNoticeRecord(notice_num); // 리뷰번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("공지사항 번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											notice_num = Integer.parseInt(br.readLine());
+											count = dao.checkNoticeRecord(notice_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									dao.deleteNotice(notice_num);
+									
+								} else if (num==6) { //7-6.뒤로가기	
+									callAdminMenu(); break out; // admin 메뉴 완전히 빠져나감
+								} else {
+									System.out.println("잘못 입력했습니다. 출력된 메뉴 번호 중 하나를 입력하세요.");
+								}								
+							} catch (NumberFormatException e) {
+								System.out.println("[숫자만 입력 가능] 다시 입력하세요.");
+							}							
+						} while (num!=1||num!=2||num!=3||num!=4||num!=5||num!=6);
 
-					} else if (no==9) { // 통계 관리
-						System.out.println("통계 관리: 작성 요망");
+					} else if (no==8) { // Q&A 관리						
+						int num=0;
+						do {				
+							System.out.print("1.Q&A 목록보기, 2.Q&A 상세정보 확인, 3.Q&A 답변 등록, 4.Q&A 삭제, 5.뒤로가기\n"
+									+ "번호를 입력하세요.> ");
+							try {
+								num = Integer.parseInt(br.readLine());				
+								if (num==1) { //8-1.Q&A 목록보기
+									dao.selectQnA();
+								} else if (num==2) { //8-2.Q&A 상세정보 확인
+									dao.selectQnA();
+									System.out.print("조회할 qna번호 입력: ");
+									int qna_num = Integer.parseInt(br.readLine());
+									int count = dao.checkQnARecord(qna_num); // qna번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("공지사항 번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											qna_num = Integer.parseInt(br.readLine());
+											count = dao.checkQnARecord(qna_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									dao.selectDetailQnA(qna_num);
+									
+								} else if (num==3) { //8-3.Q&A 답변 등록
+									dao.selectQnA();
+									System.out.print("답변할 qna번호 입력: ");
+									int qna_num = Integer.parseInt(br.readLine());
+									int count = dao.checkQnARecord(qna_num); // 리뷰번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("qna 번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											qna_num = Integer.parseInt(br.readLine());
+											count = dao.checkQnARecord(qna_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									System.out.print("답변내용 입력: ");
+									String qna_re = br.readLine();								
+									dao.updateQnA(qna_num, qna_re);
+									
+								} else if (num==4) { //8-4.Q&A 삭제
+									dao.selectQnA();
+									System.out.print("삭제할 qna번호 입력: ");
+									int qna_num = Integer.parseInt(br.readLine());
+									int count = dao.checkQnARecord(qna_num); // 리뷰번호 존재하는지 확인
+									do { //잘못 입력하면 다시 입력받음
+										if (count==0) {
+											System.out.print("qna번호를 잘못 입력했습니다. 다시입력하세요.: ");										
+											qna_num = Integer.parseInt(br.readLine());
+											count = dao.checkQnARecord(qna_num);
+										} else if (count!=1) {
+											System.out.println("정보 처리 중 오류 발생");
+										} // if
+									} while (count!=1);	
+									dao.deleteQnA(qna_num);
+									
+								} else if (num==5) { //8-5.뒤로가기	
+									callAdminMenu(); break out; // admin 메뉴 완전히 빠져나감
+								} else {
+									System.out.println("잘못 입력했습니다. 출력된 메뉴 번호 중 하나를 입력하세요.");
+								}								
+							} catch (NumberFormatException e) {
+								System.out.println("[숫자만 입력 가능] 다시 입력하세요.");
+							}							
+						} while (num!=1||num!=2||num!=3||num!=4||num!=5);
+						
+					} else if (no==9) { // 통계 관리				
+						int num=0;
+						do {				
+							System.out.print("1.도서별 대여 횟수 2.회원별 대여 횟수, 3.회원별 리뷰 횟수, 4.뒤로가기\n"
+									+ "번호를 입력하세요.> ");
+							try {
+								num = Integer.parseInt(br.readLine());				
+								if (num==1) { //8-1.도서별 대여 횟수
+									dao.selectBookOrderStats();
+								} else if (num==2) { //8-2.회원별 대여 횟수
+									dao.selectMemberOrderStats();
+								} else if (num==3) { //8-3.회원별 리뷰 횟수
+									dao.selectMemberReviewStats();
+								} else if (num==4) { //8-4.뒤로가기	
+									callAdminMenu(); break out; // admin 메뉴 완전히 빠져나감
+								} else {
+									System.out.println("잘못 입력했습니다. 출력된 메뉴 번호 중 하나를 입력하세요.");
+								}								
+							} catch (NumberFormatException e) {
+								System.out.println("[숫자만 입력 가능] 다시 입력하세요.");
+							}							
+						} while (num!=1||num!=2||num!=3||num!=4);
 
 					} else if (no==10) { // 프로그램 종료 
 						System.out.println("프로그램 종료");
