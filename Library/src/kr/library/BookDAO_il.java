@@ -405,7 +405,7 @@ public class BookDAO_il {
 		}		
 		return count; 
 	} // checkOrderRecord()
-	
+
 	//대여 정보 상세보기
 	public void selectDetailOrder(int order_num) {
 		Connection conn = null;
@@ -423,11 +423,11 @@ public class BookDAO_il {
 				System.out.println("회원아이디 : " + rs.getString("mem_id"));
 				System.out.println("책번호 : " + rs.getInt("book_num"));
 				System.out.println("대여일 : " + rs.getDate("order_date"));
-				System.out.println("반납일 : " + rs.getDate("return_date"));			
+				System.out.println("반납기한일 : " + rs.getDate("return_date"));			
 				String is_add = rs.getInt("is_add")==1 ? "O" : "X";	
-				System.out.println("연장유무 : " + rs.getInt(is_add)); // 연장여부 O,X로 출력	
+				System.out.println("연장유무 : " + is_add); // 연장여부 O,X로 출력	
 				String is_return = rs.getInt("is_return")==1 ? "O" : "X";
-				System.out.println("반납유무 : " + rs.getInt(is_return)); // 반납여부 O,X로 출력		
+				System.out.println("반납유무 : " + is_return); // 반납여부 O,X로 출력		
 			} else {
 				System.out.println("검색된 정보가 없습니다.");
 			}			
@@ -446,37 +446,29 @@ public class BookDAO_il {
 		String sql = null;		
 		int cnt = 0;
 		try {
-			conn = DBUtil.getConnection();				
-			
+			conn = DBUtil.getConnection();		
 			//트랜잭션을 수동으로 처리하기 위해 auto commit 해제
-			conn.setAutoCommit(false);
-			
+			conn.setAutoCommit(false); 
 			sql = "INSERT INTO book_order (order_num, mem_id, book_num, order_date, return_date, is_add, is_return) "
 					+ "VALUES (book_order_seq.nextval,?,?,SYSDATE,SYSDATE+14,0,0)";
-			
 			pstmt1 = conn.prepareStatement(sql);
 			pstmt1.setString(++cnt, mem_id);			
 			pstmt1.setInt(++cnt, book_num);				
-			
 			int count = pstmt1.executeUpdate();
 			System.out.println(count + "개의 대여정보를 등록했습니다.");	
-			
 			// 대여정보 추가시 해당도서 재고 -1;
 			sql = "UPDATE book SET book_volm_cnt = book_volm_cnt-1 WHERE book_num=?";
 			pstmt2 = conn.prepareStatement(sql);
 			pstmt2.setInt(1, book_num);
-			
 			count = pstmt2.executeUpdate();
 			System.out.println(count + "개의 도서재고정보를 수정했습니다.");	
-			
-			//정상적으로 작업 완료되면 commit
+			// 정상적으로 작업 완료되면 commit
 			conn.commit();
 			System.out.println("작업 완료!!");			
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 			// 하나라도 예외가 발생했을 경우 rollback
-			try {
+			try {				
 				conn.rollback();	
 			} catch (SQLException se) {
 				se.printStackTrace();
@@ -487,7 +479,87 @@ public class BookDAO_il {
 		}
 	} // insertOrder()
 
+	//	order_num	number
+	//	mem_id	varchar2(12 byte)
+	//	book_num	number
+	//	order_date	date
+	//	return_date	date
+	//	is_add	number(1,0)
+	//	is_return	number(1,0)		
+	// 대여정보 수정 (수정 필요)
+	public void updateOrder(int order_num, String mem_id, int book_num, java.sql.Date order_date, 
+			java.sql.Date return_date, int is_add, int is_return) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE book_order SET mem_id=?,book_num=?,order_date=?,return_date=?,"
+					+ "is_add=?, is_return=? WHERE order_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, mem_id); // 유효성 검사 추가요망
+			pstmt.setInt(++cnt, book_num);
+			pstmt.setDate(++cnt, order_date);
+			pstmt.setDate(++cnt, return_date);	
+			pstmt.setInt(++cnt, is_add);
+			pstmt.setInt(++cnt, is_return);			
+			pstmt.setInt(++cnt, order_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 대여정보를 수정했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateOrder()
+
+	// 대여 정보 삭제
+	public void deleteOrder(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt1 = null;
+		PreparedStatement pstmt2 = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+
+			//트랜잭션을 수동으로 처리하기 위해 auto commit 해제
+			conn.setAutoCommit(false);
+
+			// 대여정보삭제 전 해당 책 재고 정보 +1 필요 (반납X인 경우만 조건 추가 요망)
+			sql = "UPDATE book SET book_volm_cnt = book_volm_cnt+1 "
+					+ "WHERE book_num=(SELECT book_num FROM book_order WHERE order_num=?)";	
+			//반납여부 X일때만 삭제하도록 수정 필요
+			pstmt1 = conn.prepareStatement(sql);
+			pstmt1.setInt(1, order_num);
+			int count = pstmt1.executeUpdate();
+			System.out.println(count + "개의 도서재고정보를 수정했습니다.");	
+
+			sql = "DELETE FROM book_order WHERE order_num=?";
+			pstmt2 = conn.prepareStatement(sql);
+			pstmt2.setInt(1, order_num);
+			count = pstmt2.executeUpdate();
+			System.out.println(count + "개의 대여정보를 삭제했습니다."); 
+
+			// 정상적으로 작업 완료되면 commit
+			conn.commit();
+			System.out.println("작업 완료!!");			
+		} catch (Exception e) {
+			e.printStackTrace();
+			// 하나라도 예외가 발생했을 경우 rollback
+			try {				
+				conn.rollback();	
+			} catch (SQLException se) {
+				se.printStackTrace();
+			}
+		} finally { //자원정리(역순으로)
+			DBUtil.executeClose(null, pstmt2, null);
+			DBUtil.executeClose(null, pstmt1, conn);
+		}
+	} // DeleteOrder()	
+
 	// 예약 관리
+	// 예약정보 조회
 	public void selectRSV() {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -517,7 +589,100 @@ public class BookDAO_il {
 		} 	
 	} // selectRSV()
 
+
+	//조회하는 예약 레코드 존재 여부 체크
+	public int checkRSVRecord(int re_num) { // re_num로 조회
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM reservation WHERE re_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, re_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkRSVRecord	
+
+	// 예약 정보 등록 (수정 필요)
+	public void InsertRSV(String mem_id, int book_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "INSERT INTO reservation (re_num, mem_id, book_num) "
+					+ "VALUES (reservation_seq.nextval,?,?)"; //전체를 넣을땐 컬럼명 생략 가능
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, mem_id);
+			pstmt.setInt(++cnt, book_num); // 재고 있는 책 입력시 예약 못하도록 조건 추가해야함!!!			
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 예약정보를 등록했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // insertRSV()
+
+	//reservation 테이블
+	//	re_num		number		not	예약번호
+	//	mem_id		varchar2(12)not	회원아이디
+	//	book_num	number		not	책번호		
+	// 예약정보 수정
+	public void updateRSV(int re_num, String mem_id, int book_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE reservation SET mem_id=?,book_num=? WHERE re_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, mem_id); // 유효성 검사 추가요망
+			pstmt.setInt(++cnt, book_num);
+			pstmt.setInt(++cnt, re_num);			
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 예약정보를 수정했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateRSV()
+
+	// 예약 정보 삭제
+	public void deleteRSV(int re_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM reservation WHERE re_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, re_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 예약정보를 삭제했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteRSV()
+
 	// 희망도서 관리
+	// 희망도서정보 조회
 	public void selectWish() {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -530,13 +695,14 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {			
-				System.out.println("희망도서번호\t제목\t저자\t출판사\t희망도서신청일");				
+				System.out.println("희망도서번호\t제목\t저자\t출판사\t희망도서신청일\t회원아이디");				
 				do {
 					System.out.print(rs.getInt("wish_num")+"\t\t");							
 					System.out.print(rs.getString("wish_title")+"\t");
 					System.out.print(rs.getString("wish_author")+"\t");
 					System.out.print(rs.getString("wish_publisher")+"\t");
-					System.out.println(rs.getDate("wish_date")+"\t");
+					System.out.print(rs.getDate("wish_date")+"\t");
+					System.out.println(rs.getString("mem_id"));
 				} while (rs.next());
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");	
@@ -548,6 +714,105 @@ public class BookDAO_il {
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectWish()
+
+	//조회하는 희망도서 레코드 존재 여부 체크
+	public int checkWishRecord(int wish_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM wish_book WHERE wish_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, wish_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkWishRecord()
+
+
+	//희망도서정보 등록(이미 존재하는 책 넣지 못하도록 수정 필요)
+	public void InsertWish(String wish_title, String wish_author, String wish_publisher, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "INSERT INTO wish_book (wish_num, wish_title, wish_author, wish_publisher, wish_date, mem_id)"
+					+ "VALUES (wish_book_seq.nextval,?,?,?,SYSDATE,?)"; //전체를 넣을땐 컬럼명 생략 가능
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, wish_title);
+			pstmt.setString(++cnt, wish_author); 
+			pstmt.setString(++cnt, wish_publisher); 
+			pstmt.setString(++cnt, mem_id); 
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 희망도서 정보를 등록했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // insertWish()
+
+	//wish_book 테이블
+	//	wish_num		number                 희망도서 번호
+	//	wish_title		varchar2(2000 byte)    제목
+	//	wish_author		varchar2(2000 byte)    저자
+	//	wish_publisher	varchar2(2000 byte)    출판사
+	//	wish_date		date                   희망도서 신청일
+	//	mem_id			varchar2(12 byte)      회원 아이디	
+	// 희망도서정보 수정 
+	public void updateWish(String wish_title, String wish_author, String wish_publisher, String mem_id, int wish_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE wish_book SET wish_title=?, wish_author=?, wish_publisher=?, mem_id=? WHERE wish_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, wish_title);
+			pstmt.setString(++cnt, wish_author); 
+			pstmt.setString(++cnt, wish_publisher); 
+			pstmt.setString(++cnt, mem_id); 
+			pstmt.setInt(++cnt, wish_num); 
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 희망도서 정보를 수정했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateWish()
+
+	// 희망도서정보 삭제
+	public void deleteWish(int wish_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM wish_book WHERE wish_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, wish_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 희망도서정보를 삭제했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteWish()
 
 	// 리뷰 관리
 	public void selectReview() {
