@@ -141,6 +141,7 @@ public class BookDAO_Jw {
 		return check;
 	}//checkBookNum
 
+
 	// 대여번호가 현황기록에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false
 	public boolean checkNowOrderNum(int order_num) {
 		Connection conn = null;
@@ -305,6 +306,7 @@ public class BookDAO_Jw {
 
 	}//checkNowOrderNum
 
+
 	//	연장 이전에 반납기한이 연장하려는 시기보다 같거나 커야함 
 	// 연장 불가능 : false , 연장 가능 : true 
 	public boolean checkOrderAddReturnDate(int order_num) {
@@ -429,16 +431,16 @@ public class BookDAO_Jw {
 				int re_num = selectBookNumToReNum(book_num, mem_id);
 				int rank = calcReserveRank(re_num, 2);
 				int bookCount = selectBookCount(book_num);
-				
+
 				if(rank <= bookCount) { // 예약 중인 책이 있고, 예약 순위가 높아서 대여 가능한 경우
 					conn = DBUtil.getConnection();
 					sql = "INSERT INTO book_order (ORDER_NUM, MEM_ID, BOOK_NUM)VALUES(book_order_seq.nextval,?,?)";
 					pstmt = conn.prepareStatement(sql);
 					pstmt.setString(1, mem_id);
 					pstmt.setInt(2, book_num);
-					
+
 					int count = pstmt.executeUpdate();	
-					
+
 					if(count > 0) {
 						System.out.println(book_num+"번책 대여 성공!");
 						updateBookCount(book_num, -1);
@@ -447,21 +449,21 @@ public class BookDAO_Jw {
 				} else {
 					System.out.println("예약 순위가 낮은 관계로 대여가 불가능합니다.");
 				}
-				
 
-			//}else if(!bookReserve) { 
-			// 해당 책을 예약한 기록이 없는 경우  -> 예약 안했는데 갑자기 책 빌려가게 되면 어떡하지? TODO 
-			//	-> 예약이 생길경우 책 테이블에 isReserve ? 같은 컬럼 추가?
-			
+
+				//}else if(!bookReserve) { 
+				// 해당 책을 예약한 기록이 없는 경우  -> 예약 안했는데 갑자기 책 빌려가게 되면 어떡하지? TODO 
+				//	-> 예약이 생길경우 책 테이블에 isReserve ? 같은 컬럼 추가?
+
 			}else {
 				conn = DBUtil.getConnection();
 				sql = "INSERT INTO book_order (ORDER_NUM, MEM_ID, BOOK_NUM)VALUES(book_order_seq.nextval,?,?)";
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setString(1, mem_id);
 				pstmt.setInt(2, book_num);
-				
+
 				int count = pstmt.executeUpdate();	
-				
+
 				if(count > 0) {
 					System.out.println(book_num+"번책 대여 성공!");
 					updateBookCount(book_num, -1);
@@ -845,7 +847,7 @@ public class BookDAO_Jw {
 	} // selectBookNumToReNum
 
 
-	// 예약 순위 관련 함수 - num==1 : 총 인원수, num==2 예약 순위 //TODO
+	// 예약 순위 관련 함수 - num==1 : 총 인원수, num==2 예약 순위
 	public int calcReserveRank(int re_num, int num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -884,6 +886,62 @@ public class BookDAO_Jw {
 		else if(num == 2) return allCount - lowCount;
 		else return -1;
 	} // calcReserveRank
+
+
+	// order_num -> 책이름, 저자 출력 //TODO
+	public void selectOrderNumToBookInfo(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT BOOK_TITLE, BOOK_AUTHOR FROM book WHERE BOOK_NUM = "
+					+ "(SELECT BOOK_NUM FROM BOOK_ORDER WHERE ORDER_NUM = ?)";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) {
+				System.out.println("제목 : " + rs.getString("BOOK_TITLE"));
+				System.out.println("저자 : " + rs.getString("BOOK_AUTHOR"));
+			} else {
+				System.out.println("책 정보를 불러오는 것에 실패했습니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // selectOrderNumToBookInfo
+
+
+	// 리뷰 작성 TODO
+	public void insertReviewInfo(int book_num, String content, int rate, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "INSERT INTO REVIEW(REVIEW_NUM,BOOK_NUM,REVIEW_CONTENT,REVIEW_RATE,MEM_ID) VALUES (review_seq.nextval,?,?,?,?)";
+			pstmt= conn.prepareStatement(sql);
+			pstmt.setInt(1, book_num);
+			pstmt.setString(2, content);
+			pstmt.setInt(3, rate);
+			pstmt.setString(4, mem_id);
+			
+			int count = pstmt.executeUpdate();
+			
+			if(count > 0) System.out.println("리뷰등록이 완료되었습니다.");
+			else System.out.println("리뷰 등록 오류!");
+		} catch (Exception e) {
+			//e.printStackTrace();
+			System.out.println("리뷰 등록 오류");
+		}finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	}
 
 
 	// 목록보기
