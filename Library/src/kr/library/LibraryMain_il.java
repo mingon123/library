@@ -865,9 +865,28 @@ public class LibraryMain_il {
 							}							
 						} while (num!=1||num!=2||num!=3||num!=4||num!=5);
 						
-					} else if (no==9) { // 통계 관리
-						System.out.println("통계 관리: 작성 요망");
-						
+					} else if (no==9) { // 통계 관리				
+						int num=0;
+						do {				
+							System.out.print("1.도서별 대여 횟수 2.회원별 대여 횟수, 3.회원별 리뷰 횟수, 4.뒤로가기\n"
+									+ "번호를 입력하세요.> ");
+							try {
+								num = Integer.parseInt(br.readLine());				
+								if (num==1) { //8-1.도서별 대여 횟수
+									dao.selectBookOrderStats();
+								} else if (num==2) { //8-2.회원별 대여 횟수
+									dao.selectMemberOrderStats();
+								} else if (num==3) { //8-3.회원별 리뷰 횟수
+									dao.selectMemberReviewStats();
+								} else if (num==4) { //8-4.뒤로가기	
+									callAdminMenu(); break out; // admin 메뉴 완전히 빠져나감
+								} else {
+									System.out.println("잘못 입력했습니다. 출력된 메뉴 번호 중 하나를 입력하세요.");
+								}								
+							} catch (NumberFormatException e) {
+								System.out.println("[숫자만 입력 가능] 다시 입력하세요.");
+							}							
+						} while (num!=1||num!=2||num!=3||num!=4);
 
 					} else if (no==10) { // 프로그램 종료 
 						System.out.println("프로그램 종료");

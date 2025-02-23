@@ -1229,23 +1229,25 @@ public class BookDAO_il {
 
 
 	// 통계 관리
-	public void selectStatistics() {
+	//도서별 대여 횟수
+	public void selectBookOrderStats() {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;		
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT * FROM qna ORDER BY qna_num"; // 수정요망!!!!!
+			sql = "SELECT book_num, (SELECT book_title FROM book WHERE book_num=bo.book_num) 책제목, "
+					+ "COUNT(*) AS 대여횟수 FROM book_order bo GROUP BY book_num ORDER BY 대여횟수 DESC, book_num";
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("항목출력\t");		
+				System.out.println("누적대여횟수\t책번호\t책제목");		
 				do {
-					//					System.out.print(rs.getInt("")+"\t");						
-					//					:
-					//					System.out.println(rs.getDate("")+"\t");
+					System.out.print(rs.getInt("대여횟수")+"\t\t");
+					System.out.print(rs.getInt("book_num")+"\t");
+					System.out.println(rs.getString("책제목"));			
 				} while (rs.next());
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");
@@ -1256,7 +1258,67 @@ public class BookDAO_il {
 		} finally {
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
-	} // selectStatistics()
+	} // selectBookOrderStats()
+	
+	//회원별 대여 횟수
+	public void selectMemberOrderStats() {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;		
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT mem_id, COUNT(*) 대여횟수 FROM book_order GROUP BY mem_id "
+					+ "ORDER BY 대여횟수 DESC, mem_id";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(100));
+			if (rs.next()) { 
+				System.out.println("누적대여횟수\t회원아이디");		
+				do {
+					System.out.print(rs.getInt("대여횟수")+"\t\t");	
+					System.out.println(rs.getString("mem_id"));			
+				} while (rs.next());
+			} else {
+				System.out.println("표시할 데이터가 없습니다.");
+			} //if-else
+			System.out.println("-".repeat(100));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		} 	
+	} // selectMemberOrderStats()
+	
+	//회원별 리뷰 횟수
+		public void selectMemberReviewStats() {
+			Connection conn = null;
+			PreparedStatement pstmt = null;
+			ResultSet rs = null;		
+			String sql = null;
+			try {
+				conn = DBUtil.getConnection();
+				sql = "SELECT mem_id, COUNT(*) 리뷰횟수 FROM review GROUP BY mem_id \r\n"
+						+ "ORDER BY 리뷰횟수 DESC, mem_id";
+				pstmt = conn.prepareStatement(sql);
+				rs = pstmt.executeQuery();
+				System.out.println("-".repeat(100));
+				if (rs.next()) {
+					System.out.println("누적리뷰횟수\t회원아이디");		
+					do {
+						System.out.print(rs.getInt("리뷰횟수")+"\t\t");	
+						System.out.println(rs.getString("mem_id"));			
+					} while (rs.next());
+				} else {
+					System.out.println("표시할 데이터가 없습니다.");
+				} //if-else
+				System.out.println("-".repeat(100));
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				DBUtil.executeClose(rs, pstmt, conn);			
+			} 	
+		} // selectMemberReviewStats()
 
 	/*
 	//관리자(admin) 로그인 체크(로그인 성공 true, 로그인 실패 false 반환)
