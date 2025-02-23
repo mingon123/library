@@ -315,7 +315,7 @@ public class BookDAO_il {
 			pstmt.setString(++cnt, book_publisher);
 			pstmt.setInt(++cnt, book_p_year);	
 			pstmt.setString(++cnt, book_category);
-			pstmt.setInt(++cnt, book_rank);
+			pstmt.setInt(++cnt, book_rank); // 유효성 검사 필요...?
 			pstmt.setInt(++cnt, book_volm_cnt);
 			pstmt.setInt(++cnt, book_num);
 			int count = pstmt.executeUpdate();
@@ -479,13 +479,6 @@ public class BookDAO_il {
 		}
 	} // insertOrder()
 
-	//	order_num	number
-	//	mem_id	varchar2(12 byte)
-	//	book_num	number
-	//	order_date	date
-	//	return_date	date
-	//	is_add	number(1,0)
-	//	is_return	number(1,0)		
 	// 대여정보 수정 (수정 필요)
 	public void updateOrder(int order_num, String mem_id, int book_num, java.sql.Date order_date, 
 			java.sql.Date return_date, int is_add, int is_return) {
@@ -636,10 +629,6 @@ public class BookDAO_il {
 		}
 	} // insertRSV()
 
-	//reservation 테이블
-	//	re_num		number		not	예약번호
-	//	mem_id		varchar2(12)not	회원아이디
-	//	book_num	number		not	책번호		
 	// 예약정보 수정
 	public void updateRSV(int re_num, String mem_id, int book_num) {
 		Connection conn = null;
@@ -764,13 +753,6 @@ public class BookDAO_il {
 		}
 	} // insertWish()
 
-	//wish_book 테이블
-	//	wish_num		number                 희망도서 번호
-	//	wish_title		varchar2(2000 byte)    제목
-	//	wish_author		varchar2(2000 byte)    저자
-	//	wish_publisher	varchar2(2000 byte)    출판사
-	//	wish_date		date                   희망도서 신청일
-	//	mem_id			varchar2(12 byte)      회원 아이디	
 	// 희망도서정보 수정 
 	public void updateWish(String wish_title, String wish_author, String wish_publisher, String mem_id, int wish_num) {
 		Connection conn = null;
@@ -815,7 +797,8 @@ public class BookDAO_il {
 	} // deleteWish()
 
 	// 리뷰 관리
-	public void selectReview() {
+	// 리뷰목록 조회
+	public void selectReview() { // 리뷰내용 제외 출력. 리뷰내용은 상세보기에서 확인
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;		
@@ -827,11 +810,10 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("리뷰번호\t책번호\t리뷰내용\t평점\t리뷰등록일\t회원아이디");			
+				System.out.println("리뷰번호\t책번호\t평점\t리뷰등록일\t\t회원아이디");			
 				do {
 					System.out.print(rs.getInt("review_num")+"\t");							
-					System.out.print(rs.getInt("book_num")+"\t");
-					System.out.print(rs.getString("review_content")+"\t");
+					System.out.print(rs.getInt("book_num")+"\t");					
 					System.out.print(rs.getInt("review_rate")+"\t");
 					System.out.print(rs.getDate("review_reg_date")+"\t");
 					System.out.println(rs.getString("mem_id")+"\t");
@@ -845,10 +827,133 @@ public class BookDAO_il {
 		} finally {
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
-	} // selectReview()
+	} // selectReview()		
+
+	//조회하는 리뷰 레코드 존재 여부 체크
+	public int checkReviewRecord(int review_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM review WHERE review_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, review_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkReviewRecord()
+
+	//리뷰상세정보 확인
+	public void selectDetailReview(int review_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM review WHERE review_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, review_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {					
+				System.out.println("리뷰번호 : " + rs.getInt("review_num"));
+				System.out.println("책번호 : " + rs.getInt("book_num"));	
+				System.out.println("리뷰내용 : " + rs.getString("review_content"));						
+				System.out.println("평점 : " + rs.getInt("review_rate"));
+				System.out.println("리뷰등록일 : " + rs.getDate("review_reg_date"));					
+				System.out.println("회원아이디 : " + rs.getString("mem_id"));						
+			} else {
+				System.out.println("검색된 정보가 없습니다.");
+			}			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+	} // selectDetailReview	
+
+	// 리뷰정보 등록
+	public void InsertReview(int book_num, String review_content, int review_rate, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "INSERT INTO review (review_num, book_num, review_content, review_rate, review_reg_date, mem_id)"
+					+ "VALUES (review_seq.nextval,?,?,?,SYSDATE,?)"; //전체를 넣을땐 컬럼명 생략 가능
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(++cnt, book_num);
+			pstmt.setString(++cnt, review_content);
+			pstmt.setInt(++cnt, review_rate);
+			pstmt.setString(++cnt, mem_id);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 리뷰정보를 등록했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // insertReview()
+
+	// 리뷰정보 수정
+	public void updateReview(int review_num, 
+			int book_num, String review_content, int review_rate, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE review SET book_num=?, review_content=?, review_rate=?, mem_id=? WHERE review_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(++cnt, book_num);
+			pstmt.setString(++cnt, review_content);
+			pstmt.setInt(++cnt, review_rate);
+			pstmt.setString(++cnt, mem_id);
+			pstmt.setInt(++cnt, review_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 리뷰정보를 수정했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateReview()
+
+	// 리뷰정보 삭제
+	public void deleteReview(int review_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM review WHERE review_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, review_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 리뷰 정보를 삭제했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteReview()
+
 
 	// 공지사항 관리
-	public void selectNotice() {
+	// 공지사항 조회
+	public void selectNotice() { // 공지사항 내용은 상세보기에서 출력
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;		
@@ -860,11 +965,10 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {			
-				System.out.println("공지사항번호\t공지사항제목\t공지사항내용\t\t공지사항조회수\t공지사항등록일");		
+				System.out.println("공지사항번호\t공지사항제목\t공지사항조회수\t공지사항등록일");		
 				do {
 					System.out.print(rs.getInt("notice_num")+"\t\t");							
-					System.out.print(rs.getString("notice_title")+"\t");
-					System.out.print(rs.getString("notice_content")+"\t");
+					System.out.print(rs.getString("notice_title")+"\t");					
 					System.out.print(rs.getInt("notice_view")+"\t\t");					
 					System.out.println(rs.getDate("notice_reg_date")+"\t");
 				} while (rs.next());
@@ -879,27 +983,143 @@ public class BookDAO_il {
 		} 	
 	} // selectNotice()
 
+	//조회하는 공지사항 레코드 존재 여부 체크
+	public int checkNoticeRecord(int notice_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM notice WHERE notice_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, notice_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkNoticeRecord()
+
+	//공지사항 상세정보 조회
+	public void selectDetailNotice(int notice_num) { 
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;		
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();			
+			sql = "SELECT * FROM notice WHERE notice_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, notice_num);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(100));
+			if (rs.next()) {			
+				System.out.println("공지사항 번호 : " + rs.getInt("notice_num"));
+				System.out.println("공지사항 제목 : " + rs.getString("notice_title"));	
+				System.out.println("공지사항 내용 : " + rs.getString("notice_content"));						
+				System.out.println("공지사항 조회수 : " + rs.getInt("notice_view"));
+				System.out.println("공지사항 등록일 : " + rs.getDate("notice_reg_date"));				
+			} else {
+				System.out.println("표시할 데이터가 없습니다.");	
+			} //if-else
+			System.out.println("-".repeat(100));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		} 	
+	} // selectDetailNotice()
+
+	// 공지사항 등록
+	public void InsertNotice(String notice_title, String notice_content) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "INSERT INTO notice (notice_num, notice_title, notice_content, notice_reg_date)"
+					+ "VALUES (notice_seq.nextval,?,?,SYSDATE)"; 
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, notice_title);
+			pstmt.setString(++cnt, notice_content);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 공지사항을 등록했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // insertNotice()
+
+	// 공지사항 수정
+	public void updateNotice(int notice_num, String notice_title, String notice_content) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE notice SET notice_title=?, notice_content=? WHERE notice_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, notice_title);
+			pstmt.setString(++cnt, notice_content);
+			pstmt.setInt(++cnt, notice_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 공지사항 정보를 수정했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateNotice()
+
+	// 공지사항 삭제
+	public void deleteNotice(int notice_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM notice WHERE notice_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, notice_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 공지사항 정보를 삭제했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteReview()
+
 	// Q&A 관리
-	public void selectQnA() {
+	// Q&A 목록 조회
+	public void selectQnA() { // 질문내용 및 답변내용은 상세보기에서 출력
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;		
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT * FROM qna ORDER BY qna_num"; // 수정요망
-			pstmt = conn.prepareStatement(sql);
+			sql = "SELECT * FROM qna ORDER BY qna_num";			
+			pstmt = conn.prepareStatement(sql);			
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("qna번호\t질문제목\t질문내용\t조회수\t답변내용\t질문날짜\t\t답변날짜");		
+				System.out.println("qna번호\t질문제목\t조회수\t질문날짜\t\t답변날짜 ");		
 				do {
 					System.out.print(rs.getInt("qna_num")+"\t");							
 					System.out.print(rs.getString("qna_title")+"\t");
-					System.out.print(rs.getString("qna_content")+"\t");
 					System.out.print(rs.getInt("qna_view")+"\t");	
-					System.out.print(rs.getString("qna_re")+"\t");	
-					System.out.print(rs.getDate("q_date")+"\t");	
+					System.out.print(rs.getDate("q_date")+"\t");
 					System.out.println(rs.getDate("a_date")+"\t");
 				} while (rs.next());
 			} else {
@@ -912,6 +1132,101 @@ public class BookDAO_il {
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectQnA()
+
+	//조회하는 Q&A 레코드 존재 여부 체크
+	public int checkQnARecord(int qna_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM qna WHERE qna_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, qna_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkQNARecord()
+
+	// Q&A 상세보기
+	public void selectDetailQnA(int qna_num) { // 모든 항목 출력
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;		
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM qna WHERE qna_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, qna_num);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				System.out.println("질문제목 : " + rs.getString("qna_title"));
+				System.out.println("질문내용 : " + rs.getString("qna_content"));	
+				System.out.println("조회수 : " + rs.getString("qna_view"));	
+				System.out.println("답변내용 : " + rs.getString("qna_re"));	
+				System.out.println("질문날짜 : " + rs.getString("q_date"));	
+				System.out.println("답변날짜 : " + rs.getString("a_date"));
+				System.out.println("회원아이디 : " + rs.getString("mem_id"));
+			} else {
+				System.out.println("표시할 데이터가 없습니다.");	
+			} //if-else			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		} 	
+	} // selectDetailQnA()
+
+	// QnA 답변 등록
+	public void updateQnA(int qna_num, String qna_re) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE qna SET qna_re=?, a_date=SYSDATE WHERE qna_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, qna_re);
+			pstmt.setInt(++cnt, qna_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 답변을 등록했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateQnA()
+
+	// qna 삭제
+	public void deleteQnA(int qna_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "DELETE FROM qna WHERE qna_num=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, qna_num);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 qna 정보를 삭제했습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // deleteQnA()
+
 
 	// 통계 관리
 	public void selectStatistics() {
