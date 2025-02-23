@@ -1,6 +1,7 @@
 package kr.library;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -94,7 +95,7 @@ public class BookDAO_il {
 				System.out.println("전화번호 : " + rs.getString("mem_cell"));						
 				System.out.println("이메일 : " + rs.getString("mem_email"));
 				System.out.println("가입일 : " + rs.getDate("mem_date"));
-				System.out.println("마지막 정보수정일 : " + rs.getDate("mem_mdate"));
+				System.out.println("마지막 정보수정일 : " + rs.getDate("mem_mdate"));		
 				System.out.println("정지일 : " + rs.getDate("mem_stop_date"));
 			} else {
 				System.out.println("검색된 정보가 없습니다.");
@@ -456,7 +457,7 @@ public class BookDAO_il {
 			pstmt1.setInt(++cnt, book_num);				
 			int count = pstmt1.executeUpdate();
 			System.out.println(count + "개의 대여정보를 등록했습니다.");	
-			// 대여정보 추가시 해당도서 재고 -1;
+			// 대여정보 추가시 해당도서 재고 -1(적용완료) & 재고0인 책은 대여정보 등록 불가능하게 해야함.(수정요망)
 			sql = "UPDATE book SET book_volm_cnt = book_volm_cnt-1 WHERE book_num=?";
 			pstmt2 = conn.prepareStatement(sql);
 			pstmt2.setInt(1, book_num);
@@ -1195,8 +1196,11 @@ public class BookDAO_il {
 		int cnt = 0;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "UPDATE qna SET qna_re=?, a_date=SYSDATE WHERE qna_num=?";
+			// 답변등록시 기존 질문제목 앞에 RE:붙임.
+			sql = "UPDATE qna SET qna_title='RE:'||(SELECT qna_title FROM qna WHERE qna_num=?), "
+					+ "qna_re=?, a_date=SYSDATE WHERE qna_num=?";
 			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(++cnt, qna_num);
 			pstmt.setString(++cnt, qna_re);
 			pstmt.setInt(++cnt, qna_num);
 			int count = pstmt.executeUpdate();
