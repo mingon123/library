@@ -7,7 +7,8 @@ import java.util.regex.Pattern;
 
 public class LibraryMain_mg {
 	private BufferedReader br;
-	private String mem_id="aasd"; // 로그인한 아이디 저장
+	private String mem_id="test3"; // 로그인한 아이디 저장
+
 	private boolean isSelectSeven = false;
 	private boolean isSelectTwo = false;
 	private boolean isSelectThree = false;
@@ -16,7 +17,7 @@ public class LibraryMain_mg {
 	private BookDAO_mg dao;
 	private BookDAO_il il;
 	private BookDAO_Jw jw;
-	
+
 	public LibraryMain_mg() {
 		try {
 			dao = new BookDAO_mg();
@@ -31,7 +32,7 @@ public class LibraryMain_mg {
 			if(br!=null) try {br.close();} catch(IOException e) {}	
 		}
 	} // LibraryMain_mg
-	
+
 	// 메뉴 호출
 	private void callMenu() throws IOException {
 		while(true) {
@@ -73,7 +74,7 @@ public class LibraryMain_mg {
 			}
 		}
 	} // callMenu
-	
+
 	// 1번선택 시 나오는 화면
 	private void checkUserNotifications() throws IOException {
 		System.out.println("정지상태/연체/반납일/예약도서알림");
@@ -85,16 +86,16 @@ public class LibraryMain_mg {
 
 		if((memStop||overReturn||returnDateNotification||reservationNotification)) {
 			if(memStop)
-			if(overReturn)
-			if(returnDateNotification)
-			if(reservationNotification) System.out.println();
+				if(overReturn)
+					if(returnDateNotification)
+						if(reservationNotification) System.out.println();
 		} else {
 			System.out.println("알림이 없습니다.");
 			System.out.println("-".repeat(90));
 		}
 		callMenu();
 	} // checkUserNotifications
-	
+
 	// 2번선택 시 나오는 화면
 	private void showTwoMenu() throws IOException {
 		while (isSelectTwo) {			
@@ -165,32 +166,148 @@ public class LibraryMain_mg {
 	// 책 상세정보 확인
 	private void selectDetailBook() throws NumberFormatException, IOException {
 		System.out.print("조회할 책번호 입력 : ");
-		int num = Integer.parseInt(br.readLine());
-		int count = il.checkBookRecord(num);
+		int book_num = Integer.parseInt(br.readLine());
+		int count = il.checkBookRecord(book_num);
 		do {
 			if(count==0) {
 				System.out.print("책번호를 잘못 입력했습니다. 다시입력하세요 : ");
-				num = Integer.parseInt(br.readLine());
-				count = il.checkBookRecord(num);
+				book_num = Integer.parseInt(br.readLine());
+				count = il.checkBookRecord(book_num);
 			} else if (count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
 			} 
 		} while(count!=1);
-		il.selectDetailBook(num);
+
+		il.selectDetailBook(book_num);
 		System.out.println("-".repeat(90));
 
-		System.out.print("이 책을 대여하시겠습니까? (Y입력) : ");
-		String order = br.readLine().trim();
-		if(order.equalsIgnoreCase("Y")) {
-			if(jw.canOrder(mem_id, num)==1) {
-				jw.insertBookOrder(mem_id, num);
-				System.out.println("대여가 완료되었습니다.");
-			} else {
-				System.out.println("대여가 불가능합니다.");
-			}
-		} else System.out.println("대여를 취소하였습니다.");
+		orderOrReserveMenu(book_num); // 대여 예약
 	}
 	
+	private void orderOrReserveMenu(int book_num) throws IOException {
+		
+		System.out.print("1.대여하기 2.예약하기 3.뒤로가기\n >");
+		int no; boolean flag;
+		try {
+			no = Integer.parseInt(br.readLine());
+			int res = jw.canOrder(mem_id, book_num);
+			if(no==1) {
+				flag = false;
+				if(res == 1) {//대여가능
+					System.out.println("\n대여가 가능합니다.");
+					jw.insertBookOrder(mem_id, book_num);
+					System.out.println("이전화면으로 돌아갑니다.");
+					System.out.println();
+				}else if(res == 0) {//책권수가 0
+					System.out.println("\n해당 번호의 책의 권수가 0권입니다.");
+					String s;
+					do {
+						if(flag) {
+							System.out.println("Y/N(y/n) 중 입력해주세요.");
+						}
+						System.out.print("예약하시겠습니까?(Y/N) : ");
+						s = br.readLine();
+						if(s.equals("N")||s.equals("n")) {
+							System.out.println("\n예약을 취소하셨습니다.");
+							System.out.println("이전화면으로 돌아갑니다.");
+							continue;
+						}else if(s.equals("Y")||s.equals("y")) {
+							if(jw.isDuplicatedReserve(book_num, mem_id)) {
+								System.out.println("\n이미 해당 책을 예약하신 기록이 존재합니다.");
+							}
+							else {
+								System.out.println("\n예약을 진행합니다.");
+								jw.insertReserve(mem_id, book_num);		
+							}
+							System.out.println("이전화면으로 돌아갑니다.");
+							continue;
+						}else {
+							flag = true;
+						}
+					} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
+				}else if(res == -1) {
+					System.out.println("\n대여권수가 이미 3권입니다.");
+					System.out.println("이전화면으로 돌아갑니다.");
+				}else {
+					System.out.println("프로그램 오류");
+				}
+
+			}else if(no==2) {
+				flag = false;
+				if(res == -1) {
+					System.out.println("\n대여권수가 이미 3권입니다.");
+					System.out.println("예약이 불가능하니 이전화면으로 돌아갑니다.");
+				}else if(res == 1) {
+					System.out.println("\n책 권수가 1권 이상입니다.");
+					String s;
+					do {
+						if(flag) {
+							System.out.println("Y/N(y/n) 중 입력해주세요.");
+						}
+						System.out.print("대여하시겠습니까?(Y/N) : ");
+						s = br.readLine();
+						if(s.equals("N")||s.equals("n")) {
+							System.out.println("\n대여를 취소하셨습니다.");
+							System.out.println("이전화면으로 돌아갑니다.");
+							continue;
+						}else if(s.equals("Y")||s.equals("y")) {
+							System.out.println("\n대여를 진행합니다.");
+							jw.insertBookOrder(mem_id, book_num);
+							System.out.println();
+							System.out.println("이전화면으로 돌아갑니다.");
+							continue;
+						}else {
+							flag = true;
+						}
+					} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
+				}else if(res == 0) {// 책이 0권인 경우로 시작
+					int resultReserve = jw.canReservation(mem_id, book_num);
+					if(resultReserve == 1) {//예약가능
+						System.out.println("\n예약이 가능합니다.");
+						String s;
+						do {
+							if(flag) {
+								System.out.println("Y/N(y/n) 중 입력해주세요.");
+							}
+							System.out.print("예약하시겠습니까?(Y/N) : ");
+							s = br.readLine();
+							if(s.equals("N")||s.equals("n")) {
+								System.out.println("\n예약을 취소하셨습니다.");
+								System.out.println("이전화면으로 돌아갑니다.");
+								continue;
+							}else if(s.equals("Y")||s.equals("y")) {
+								if(jw.isDuplicatedReserve(book_num, mem_id)) {
+									System.out.println("\n이미 해당 책을 예약하신 기록이 존재합니다.");
+								}
+								else {
+									System.out.println("\n예약을 진행합니다.");
+									jw.insertReserve(mem_id, book_num);		
+								}
+								System.out.println("이전화면으로 돌아갑니다.");
+								continue;
+							}else {
+								flag = true;
+							}
+						} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
+					}else if(resultReserve == -1) {// 예약 권수 다참
+						System.out.println("\n예약 권수가 이미 2권입니다.");
+						System.out.println("이전화면으로 돌아갑니다.");
+					}else if(resultReserve == 0) {
+						System.out.println("오류발생!!");
+					}
+				} 
+
+			}else if(no==3) {
+				System.out.println("\n뒤로가기를 선택하셨습니다.");
+			}else {
+				System.out.println("잘못 입력하셨습니다.");
+			}
+		} catch (NumberFormatException e) {
+			System.out.println("[숫자만 입력 가능]");
+		}
+		
+	}
+
 	// 3번 선택 시 나오는 메뉴
 	private void showThreeMemu() throws IOException {
 		while(isSelectThree) {
@@ -218,7 +335,7 @@ public class LibraryMain_mg {
 			}
 		}
 	}
-	
+
 	// 제목으로 도서 검색
 	private void selectSearchBookTitle() throws IOException {
 		System.out.print("검색할 책 제목 검색 : ");
@@ -232,11 +349,11 @@ public class LibraryMain_mg {
 			} else if (count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
 			}
-		} while(count!=1);
+		} while(count<=0);
 		dao.selectSearchBookTitle(title);
 		System.out.println("-".repeat(90));
 	}
-	
+
 	// 저자로 도서 검색
 	private void selectSearchBookAuthor() throws IOException {
 		System.out.print("검색할 책 저자 검색 : ");
@@ -250,11 +367,11 @@ public class LibraryMain_mg {
 			} else if(count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
 			}
-		} while(count!=1);
+		} while(count<=0);
 		dao.selectSearchBookAuthor(author);
 		System.out.println("-".repeat(90));
 	}
-	
+
 	// 4번 선택시 나오는 화면
 	private void showFourMenu() throws IOException {
 		while(isSelectFour) {
@@ -298,7 +415,7 @@ public class LibraryMain_mg {
 		dao.selectDetailReview(num);
 		System.out.println("-".repeat(90));
 	}
-	
+
 	// 책 제목으로 리뷰 검색
 	private void selectBookTitleReview() throws IOException {
 		System.out.print("리뷰를 확인할 책 제목을 입력하세요(뒤로가기:q) : ");
@@ -325,7 +442,7 @@ public class LibraryMain_mg {
 		System.out.println("-".repeat(90));
 		if(count>=1) selectDetailReview();
 	}
-	
+
 	// 내 리뷰 관리 
 	private void manageMyReview() throws NumberFormatException, IOException {
 		System.out.print("1.내리뷰확인 2.리뷰수정 3.리뷰삭제 4.뒤로가기\n > ");
@@ -428,7 +545,7 @@ public class LibraryMain_mg {
 				showSevenMenu();
 			}
 			else System.out.println("잘못 입력하셨습니다.");
-			
+
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
 		} catch(Exception e) {
@@ -474,7 +591,7 @@ public class LibraryMain_mg {
 			e.printStackTrace();
 		}
 	} // deleteWishBook
-	
+
 	// qna관리
 	private void manageQNA() throws NumberFormatException, IOException {
 		System.out.print("1.질문등록 2.질문내역확인 3.질문삭제 4.뒤로가기\n > ");
@@ -527,7 +644,7 @@ public class LibraryMain_mg {
 			e.printStackTrace();
 		}
 	} // deleteQNA
-	
+
 	// 회원정보관리
 	private void manageMemberInfo() throws NumberFormatException, IOException {
 		System.out.print("1.회원정보조회 2.회원정보수정 3.회원탈퇴 4.뒤로가기\n > ");
@@ -618,11 +735,11 @@ public class LibraryMain_mg {
 			e.printStackTrace();
 		}
 	} // deleteMemberInfo
-	
 
-	
-	
-	
+
+
+
+
 	public static void main(String[] args) {
 		new LibraryMain_mg();
 	} // main
