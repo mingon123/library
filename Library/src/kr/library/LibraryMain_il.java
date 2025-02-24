@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Date;
+import java.util.regex.Pattern;
 
 /**
  * @author Lilly
@@ -57,26 +58,45 @@ public class LibraryMain_il {
 									dao.selectDetailMember(checkMember());
 
 								} else if (num==3) { // 1-3.회원정보 등록
-									System.out.print("회원 아이디: ");		
+									System.out.print("아이디(영문,숫자 최소 6~12자): ");		
 									String mem_id = br.readLine();
 									int count = dao.checkMemberRecord(mem_id);
-									//아이디 중복체크 
+									//아이디 중복체크 + 유효성 검사 추가 완료
 									do {
 										if (count==1) {
 											System.out.print("이미 존재하는 아이디 입니다. 다시입력하세요.: ");										
+											mem_id = br.readLine();
 											count = dao.checkMemberRecord(mem_id);
 										} else if (count!=0) {
 											System.out.println("정보 처리 중 오류 발생");
 										} // if
-									} while (count!=0);
-									System.out.print("회원 비밀번호: "); //유효성 검사 추가요망	
-									String mem_pw = br.readLine();
-									System.out.print("이름: ");		
+									} while (count!=0);									
+									while(true) { //ID 유효성 검사 추가 (수정요망)					
+										if(isValidID(mem_id)) break; 
+										else {
+											System.out.print("ID 형식(영문,숫자 최소 6~12자)이 올바르지 않습니다. 다시 입력하세요.: ");
+											mem_id = br.readLine();
+										} //if-else									
+									} //while	
+									
+									String mem_pw;
+									while(true) { //비밀번호 유효성 검사 추가
+										System.out.print("회원 비밀번호: "); 
+										mem_pw = br.readLine();
+										if(isValidPassword(mem_pw)) break; 
+										else System.out.println("비밀번호 형식이 올바르지 않습니다. 다시 입력하세요. ");			
+									} //while								
+									System.out.print("이름: ");
 									String mem_name = br.readLine();
-									System.out.print("전화번호: "); //유효성 검사 추가요망		
-									String mem_cell = br.readLine();
-									System.out.print("이메일: ");	 //유효성 검사 추가요망	
-									String mem_email = br.readLine();
+									System.out.print("전화번호: "); 		
+									String mem_cell = br.readLine();									
+									String mem_email;
+									while(true) { //이메일 유효성 검사 추가
+										System.out.print("이메일: "); 
+										mem_email = br.readLine();
+										if(isValidEmail(mem_email)) break; 
+										else System.out.println("email 형식이 올바르지 않습니다. 다시 입력하세요. ");			
+									} //while
 									dao.InsertMember(mem_id,mem_pw,mem_name,mem_cell,mem_email);
 
 								} else if (num==4) { // 1-4.회원정보 수정							
@@ -370,12 +390,12 @@ public class LibraryMain_il {
 									System.out.print("회원아이디: "); 
 									String mem_id = checkMember();	
 									dao.updateReview(review_num, book_num, review_content, review_rate, mem_id);
-									
+
 								} else if (num==5) { // 5-5.리뷰정보 삭제
 									dao.selectReview();
 									System.out.print("삭제할 리뷰번호 입력: ");
 									dao.deleteReview(checkReview());
-									
+
 								} else if (num==6) { // 5-5.뒤로가기	
 									callAdminMenu(); break out; // admin 메뉴 완전히 빠져나감
 								} else {
@@ -501,7 +521,7 @@ public class LibraryMain_il {
 						System.out.println("잘못 입력했습니다. 다시 입력하세요.");				
 					} // if
 				} catch(NumberFormatException e){
-					System.out.println("[숫자만 입력 가능]");
+					System.out.println("[숫자만 입력 가능]"); //+다시 입력하세요. 추가
 				} 
 			} // while
 	} // callAdminMenu()
@@ -509,14 +529,32 @@ public class LibraryMain_il {
 	public static void main(String[] args) {
 		new LibraryMain_il();
 	} // main
+	
+	// 회원아이디 유효성검사 // 정규표현식 참고 FROM BookDAO_he
+	private boolean isValidID(String mem_id) {
+		String regex = "^[a-zA-Z0-9]+$";
+		return Pattern.matches(regex, mem_id) && mem_id.length()>=6 && mem_id.length()<=12;
+	} // isValidID
 
-	//회원번호 유효성 체크
+	// 비밀번호 유효성검사 //복사 FROM LibraryMain_mg
+	private boolean isValidPassword(String password) {
+		String regex = "^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,15}$";
+		return Pattern.matches(regex, password);
+	} // isValidPassword	
+	
+	// 이메일 유효성검사 //복사 FROM LibraryMain_mg
+	private boolean isValidEmail(String email) {
+		String regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+		return Pattern.matches(regex, email);
+	} // isValidEmail
+
+	//회원아이디 유효성 체크
 	private String checkMember() throws IOException {
 		String mem_id = br.readLine();
 		int count = dao.checkMemberRecord(mem_id);
 		do { //잘못 입력하면 다시 입력받음
 			if (count==0) {
-				System.out.print("회원아이디를 잘못 입력했습니다. 다시입력하세요.: ");										
+				System.out.print("회원아이디를 잘못 입력했습니다. 다시입력하세요. ");										
 				mem_id = br.readLine();
 				count = dao.checkMemberRecord(mem_id);
 			} else if (count!=1) {
@@ -557,7 +595,7 @@ public class LibraryMain_il {
 		} while (count!=1);
 		return order_num;
 	} //checkOrder()
-	
+
 	//예약번호 유효성 체크
 	private int checkRSV() throws NumberFormatException, IOException {
 		int re_num = Integer.parseInt(br.readLine());
@@ -573,7 +611,7 @@ public class LibraryMain_il {
 		} while (count!=1);
 		return re_num;
 	} //checkRSV()
-	
+
 	//희망도서번호 유효성 체크
 	private int checkWish() throws NumberFormatException, IOException {
 		int wish_num = Integer.parseInt(br.readLine());
@@ -589,7 +627,7 @@ public class LibraryMain_il {
 		} while (count!=1);		
 		return wish_num;
 	} //checkWish()
-	
+
 	//리뷰번호 유효성 체크
 	private int checkReview() throws NumberFormatException, IOException {
 		int review_num = Integer.parseInt(br.readLine());
@@ -621,7 +659,7 @@ public class LibraryMain_il {
 		} while (count!=1);	
 		return notice_num;
 	} //checkNotice()
-	
+
 	//QnA번호 유효성 체크
 	private int checkQnA() throws NumberFormatException, IOException {
 		int qna_num = Integer.parseInt(br.readLine());
@@ -637,5 +675,5 @@ public class LibraryMain_il {
 		} while (count!=1);	
 		return qna_num;		
 	} //checkQnA()
-	
+
 } // class
