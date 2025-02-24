@@ -589,13 +589,13 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%5s %30s \t\t%10s \t%5s\n", "번호", "책제목", "대여일자", "반납여부(O/X)");
+				System.out.printf("%5s \t%s \t\t%5s \t%s\n", "번호", "대여일자", "반납여부(O/X)", "책제목");
 				do {
-					System.out.printf("%5d %30s \t%7s \t%5s\n", 
+					System.out.printf("%5d \t%7s \t%5s \t\t%s\n", 
 							rs.getInt("ORDER_NUM"),
-							rs.getString("BOOK_TITLE"),
 							rs.getDate("ORDER_DATE").toString(),
-							rs.getString("RETURN")
+							rs.getString("RETURN"),
+							rs.getString("BOOK_TITLE")
 							);
 
 				} while(rs.next());
@@ -626,15 +626,15 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%5s %30s \t\t%10s \t%10s \t%5s\n", 
-						"대여번호", "책제목", "대여일자", "반납예정일자","연장가능");
+				System.out.printf("%5s \t%7s \t%7s \t%5s \t\t%s\n", 
+						"대여번호", "대여일자", "반납예정일자","연장가능", "책제목");
 				do {
-					System.out.printf("%5s %30s \t%10s \t%10s %5s\n", 
+					System.out.printf("%5s \t%s \t%s \t%5s \t\t%s\n", 
 							rs.getInt("ORDER_NUM"),
-							rs.getString("BOOK_TITLE"),
 							rs.getDate("ORDER_DATE").toString(),
 							rs.getDate("RETURN_DATE").toString(),
-							rs.getString("CAN_ADD")
+							rs.getString("CAN_ADD"),
+							rs.getString("BOOK_TITLE")
 							);
 				} while(rs.next());
 			} else {
@@ -662,16 +662,16 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%10s\t%30s \t\t%10s \t%10s\n", 
-						"번호","책제목", "총 예약인원", "예약순위");
+				System.out.printf("%5s \t%s  %s \t%s \n", 
+						"번호", "총 예약인원", "예약순위", "책제목");
 				int reNum = rs.getInt("RE_NUM");
 
 				do {
-					System.out.printf("%10d\t%30s \t%10d \t%10d\n", 
+					System.out.printf("%5d \t%4d \t%5d %27s \n", 
 							rs.getInt("RE_NUM"),
-							rs.getString("BOOK_TITLE"),
 							calcReserveRank(reNum, 1),
-							calcReserveRank(reNum, 2)
+							calcReserveRank(reNum, 2),
+							rs.getString("BOOK_TITLE")
 							);
 				} while(rs.next());
 			} else {
