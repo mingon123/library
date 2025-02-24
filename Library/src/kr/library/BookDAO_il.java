@@ -1,7 +1,6 @@
 package kr.library;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,16 +29,15 @@ public class BookDAO_il {
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
 				// 출력항목: ID,이름,전화번호,e-mail,대여정지기한 (나머지는 상세보기에서 확인)
-				System.out.println("ID\t이름\t전화번호\t\te-mail\t\t대여정지기한");
+				System.out.printf("%-12s %s\t%s\t\t%-20s %s\n","ID","이름","전화번호","e-mail","대여정지기한");
+				System.out.println("-".repeat(100));
 				do {
-					System.out.print(rs.getString("mem_id")+"\t");
+					System.out.printf("%-12s ", rs.getString("mem_id"));
 					System.out.print(rs.getString("mem_name")+"\t");
 					System.out.print(rs.getString("mem_cell")+"\t");	
-					System.out.print(rs.getString("mem_email")+"\t");						
-					System.out.println(rs.getDate("mem_stop_date"));
-//					Date mem_stop_date = rs.getDate("mem_stop_date"); // null일 경우 공란 처리 필요
-//					if(mem_stop_date == null) mem_stop_date = ""; // 수정요망
-//					System.out.println(mem_stop_date);				
+					System.out.printf("%-20s ", rs.getString("mem_email"));				
+					if(rs.getDate("mem_stop_date") == null) System.out.println("-");
+					else System.out.println(rs.getDate("mem_stop_date"));		
 				} while (rs.next());
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");	
@@ -194,11 +192,11 @@ public class BookDAO_il {
 				System.out.println("책번호\t제목\t\t저자\t출판사\t출판년도\t카테고리\t보유권수\t등록일"); // 수정요망
 				do {
 					System.out.print(rs.getInt("book_num")+"\t");
-//					String book_title=rs.getString("book_title");					
-//					int index = book_title.length()>=15 ? 15 : book_title.length()-1;					
-//					System.out.print(book_title.substring(0, index)+"\t"); 
 					// 제목길이 제한출력여부 검토요망	
-					System.out.print(rs.getString("book_title")+"\t");	
+					String book_title=rs.getString("book_title");					
+					int index = book_title.length()>=15 ? 15 : book_title.length();					
+					System.out.printf("%-15s\t", book_title.substring(0, index)); 
+					//System.out.print(rs.getString("book_title")+"\t");	
 					System.out.print(rs.getString("book_author")+"\t");					
 					System.out.print(rs.getString("book_publisher")+"\t");					
 					System.out.print(rs.getInt("book_p_year")+"\t");					
