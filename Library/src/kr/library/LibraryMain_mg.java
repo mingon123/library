@@ -17,6 +17,7 @@ public class LibraryMain_mg {
 	private BookDAO_mg dao;
 	private BookDAO_il il;
 	private BookDAO_Jw jw;
+	private LibraryMain_jw2 main_jw;
 
 	public LibraryMain_mg() {
 		try {
@@ -37,7 +38,7 @@ public class LibraryMain_mg {
 	private void callMenu() throws IOException {
 		while(true) {
 			if(isStart) {
-				System.out.print("1.사용자알림 2.도서목록 3.도서검색 4.리뷰확인 7.기타메뉴 9.종료\n > ");
+				System.out.print("1.사용자알림 2.도서목록 3.도서검색 4.리뷰확인 5.대여/예약 6.반납 7.기타메뉴 9.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
 					if(no==1) {
@@ -54,7 +55,16 @@ public class LibraryMain_mg {
 						isStart = false;
 						isSelectFour = true;
 						showFourMenu();
-					} else if(no==7) {
+					} else if(no==5) {
+						isStart = false;
+						main_jw = new LibraryMain_jw2(no, mem_id);
+						main_jw.test(isStart);
+					}else if(no==6) {
+						isStart = false;
+						main_jw = new LibraryMain_jw2(no, mem_id);
+						main_jw.test(isStart);
+						showFourMenu();
+					}else if(no==7) {
 						isStart = false;
 						isSelectSeven = true;
 						System.out.println("기타 메뉴를 선택하셨습니다.");

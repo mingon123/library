@@ -4,20 +4,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class LibraryMain_jw {
+public class LibraryMain_jw2 {
 	private BufferedReader br;
-	private String mem_id = "test"; // 로그인한 아이디 저장
+	private String mem_id; // 로그인한 아이디 저장
 	private boolean isSelectFive = false;
-	private boolean isStart = true;
 	private BookDAO_Jw dao;
+	private LibraryMain_mg main;
 
 
-	public LibraryMain_jw() {
+	public LibraryMain_jw2(int no, String mem_id) {
 		try {
 			dao = new BookDAO_Jw();
 			br = new BufferedReader(new InputStreamReader(System.in));
 			// 메뉴 호출
-			callMenu();
+			//callMenu();
+			callMenu_fiveOrSix(no,mem_id);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -26,18 +27,15 @@ public class LibraryMain_jw {
 	}
 
 	// 메뉴 호출
-	private void callMenu() throws IOException {
+	private void callMenu_fiveOrSix(int no, String mem_id) throws IOException {
 		while(true) {
-			if(isStart) {
-				System.out.print("5.대여/예약 6.반납 9.종료\n > ");
 				try {
-					int no = Integer.parseInt(br.readLine());
 					if(!dao.checkMemStop(mem_id) && no==5 ) {
 						System.out.println("현재 정지상태입니다. 대여/예약이 불가능합니다.");
 						System.out.println("홈화면으로 돌아갑니다.\n");
-						continue;
+						//continue;
+						main = new LibraryMain_mg();
 					}else if(no==5) { // 완
-						isStart = false;
 						isSelectFive = true;
 						System.out.println("\n대여/예약 메뉴를 선택하셨습니다.");
 					} else if(no==6) {
@@ -52,7 +50,9 @@ public class LibraryMain_jw {
 						if(dao.checkZeroOrder(mem_id)) {
 							System.out.println("\n대여기록이 존재하지 않습니다.");
 							System.out.println("이전화면으로 돌아갑니다.\n");
-							continue;
+							
+							//continue;
+							main = new LibraryMain_mg();
 						};
 
 						boolean flag = false; int order_num = -1; String s = "";
@@ -82,7 +82,8 @@ public class LibraryMain_jw {
 							if(s.equals("N")||s.equals("n")) {
 								System.out.println("\n반납을 취소하셨습니다.");
 								System.out.println("이전화면으로 돌아갑니다.");
-								continue;
+								//continue;
+								main = new LibraryMain_mg();
 							}else if(s.equals("Y")||s.equals("y")) {
 								System.out.println();
 								dao.updateOrderReturn(order_num);
@@ -147,7 +148,8 @@ public class LibraryMain_jw {
 
 										System.out.println("리뷰 등록 중 입니다.");
 										dao.insertReviewInfo(book_num, content, rateInt, mem_id);
-										continue;
+										//continue;
+										main = new LibraryMain_mg();
 									}
 
 								} while (!answer.equals("N") && !answer.equals("n") && !answer.equals("Y") && !answer.equals("y"));
@@ -158,22 +160,15 @@ public class LibraryMain_jw {
 							flag = true;
 						} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
 
-					} else if(no==9) {//완
-						// 종료
-						System.out.println("프로그램 종료");
-						break;
-					} else {
-						System.out.println("잘못 입력하셨습니다.");
 					}
 				} catch (NumberFormatException e) {
 					System.out.println("[숫자만 입력 가능]");
 				}
-			}
 			if(isSelectFive) { 
 				System.out.print("1.대여/예약하기 2.대여/예약 내역확인 3.예약취소 4.뒤로가기\n >");
 				int book_num = 0;
 				try {
-					int no = Integer.parseInt(br.readLine());
+					no = Integer.parseInt(br.readLine());
 					if(no==1) {//완
 						boolean flag = false;
 						boolean isOrder = true;
@@ -514,8 +509,8 @@ public class LibraryMain_jw {
 					}else if(no==4) {//완
 						// 뒤로가기
 						System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
-						isStart = true;
 						isSelectFive = false;
+						main = new LibraryMain_mg();
 					} else {
 						System.out.println("잘못 입력하셨습니다.");
 					}
@@ -526,14 +521,13 @@ public class LibraryMain_jw {
 		}
 
 	}
-
-	private void orderOrReserveMenu(int book_num) throws IOException {
-
-
-
+	
+	public boolean test(boolean isStart) {
+		return true;
 	}
 
+
 	public static void main(String[] args) {
-		new LibraryMain_jw();
+		//new LibraryMain_jw2();
 	}
 }

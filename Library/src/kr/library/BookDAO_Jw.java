@@ -628,10 +628,10 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%5s \t%7s \t%7s \t%5s \t\t%s\n", 
+				System.out.printf("%5s \t%7s \t\t%7s \t%5s \t%5s\n", 
 						"대여번호", "대여일자", "반납예정일자","연장가능", "책제목");
 				do {
-					System.out.printf("%5s \t%s \t%s \t%5s \t\t%s\n", 
+					System.out.printf("%5s \t\t%s \t%s \t%5s \t\t%s\n", 
 							rs.getInt("ORDER_NUM"),
 							rs.getDate("ORDER_DATE").toString(),
 							rs.getDate("RETURN_DATE").toString(),
