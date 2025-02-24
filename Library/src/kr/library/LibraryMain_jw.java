@@ -11,7 +11,6 @@ public class LibraryMain_jw {
 	private boolean isStart = true;
 	private BookDAO_Jw dao;
 
-	// TODO 반납시 리뷰 작성 기능 추가 필요 - 진행중
 	
 	public LibraryMain_jw() {
 		try {
@@ -104,14 +103,52 @@ public class LibraryMain_jw {
 										continue;
 									}else if(answer.equals("Y")||answer.equals("y")) {
 										System.out.println("\n리뷰작성을 선택하셨습니다.");
-										// TODO
 										System.out.print("다음의 책에 대한 리뷰를 작성합니다.\n\n");
 										System.out.println("-*".repeat(60));
 										// 리뷰하려는 책 제목, 저자 띄우기
 										dao.selectOrderNumToBookInfo(order_num);
 										System.out.println("-*".repeat(60));
-										// 내용 입력받기 - 내용, 별점(1~5)
+										
+										// 내용 입력받기 - 내용, 점수(1~5)
+										String regex = "^[1-5]$";
+										flag = false;
+										String rate;
+										do {
+											if(flag) {
+												System.out.println("\n점수는 1~5 사이의 정수여야합니다.");
+											}
+											System.out.print("점수 입력(1~5 사이의 정수) : ");
+											rate = br.readLine();
+											flag = true;
+										} while (!rate.matches(regex));
+										
+										String content, rewrite ="";
+										System.out.print("\n리뷰 내용 입력(엔터누를시 입력 종료)\n > ");
+										content = br.readLine();
+										flag = false;
+										do {
+											if(flag) {
+												System.out.println("Y/N(y/n) 중 입력해주세요.");
+											}
+											System.out.print("\n내용을 다시 입력하시겠습니까? (Y/N) : ");
+											rewrite = br.readLine();
+											
+											if(rewrite.equals("Y") || rewrite.equals("y")) {
+												System.out.print("내용을 다시 입력해주세요.(엔터누를시 입력 종료)\n >");
+												content = br.readLine();
+											}else if(rewrite.equals("N") || rewrite.equals("n")) {
+												System.out.println("리뷰 등록을 그대로 진행합니다.");
+											}
+											
+											flag = true;
+										} while (!rewrite.equals("N") && !rewrite.equals("n") && !rewrite.equals("Y") && !rewrite.equals("y"));
+										
+										int book_num = dao.selectOrderNumToBookNum(order_num);
+										int rateInt = Integer.parseInt(rate);
+										
 										// 리뷰테이블에 insert
+										System.out.println("리뷰 등록 중 입니다.");
+										dao.insertReviewInfo(book_num, content, rateInt, mem_id);
 										continue;
 									}
 									
