@@ -68,7 +68,7 @@ public class LibraryMain_jw {
 							} catch (NumberFormatException e) {
 								System.out.println("[숫자만 입력 가능]");
 							}
-						} while (!dao.checkNowOrderNum(order_num));
+						} while (!dao.checkNowOrderNum(order_num, mem_id));
 
 						System.out.println();
 						System.out.println(order_num+"번을 선택하셨습니다.");
@@ -207,6 +207,8 @@ public class LibraryMain_jw {
 										dao.insertBookOrder(mem_id, book_num);
 										System.out.println("이전화면으로 돌아갑니다.");
 										System.out.println();
+										isOrder = false;
+										continue;
 									}else if(res == 0) {//책권수가 0
 										System.out.println("\n해당 번호의 책의 권수가 0권입니다.");
 										String s;
@@ -219,6 +221,7 @@ public class LibraryMain_jw {
 											if(s.equals("N")||s.equals("n")) {
 												System.out.println("\n예약을 취소하셨습니다.");
 												System.out.println("이전화면으로 돌아갑니다.");
+												isOrder = false;
 												continue;
 											}else if(s.equals("Y")||s.equals("y")) {
 												if(dao.isDuplicatedReserve(book_num, mem_id)) {
@@ -229,6 +232,7 @@ public class LibraryMain_jw {
 													dao.insertReserve(mem_id, book_num);		
 												}
 												System.out.println("이전화면으로 돌아갑니다.");
+												isOrder = false;
 												continue;
 											}else {
 												flag = true;
@@ -237,6 +241,8 @@ public class LibraryMain_jw {
 									}else if(res == -1) {
 										System.out.println("\n대여권수가 이미 3권입니다.");
 										System.out.println("이전화면으로 돌아갑니다.");
+										isOrder = false;
+										continue;
 									}else {
 										System.out.println("프로그램 오류");
 									}
@@ -246,6 +252,8 @@ public class LibraryMain_jw {
 									if(res == -1) {
 										System.out.println("\n대여권수가 이미 3권입니다.");
 										System.out.println("예약이 불가능하니 이전화면으로 돌아갑니다.");
+										isOrder = false;
+										continue;
 									}else if(res == 1) {
 										System.out.println("\n책 권수가 1권 이상입니다.");
 										String s;
@@ -258,12 +266,14 @@ public class LibraryMain_jw {
 											if(s.equals("N")||s.equals("n")) {
 												System.out.println("\n대여를 취소하셨습니다.");
 												System.out.println("이전화면으로 돌아갑니다.");
+												isOrder = false;
 												continue;
 											}else if(s.equals("Y")||s.equals("y")) {
 												System.out.println("\n대여를 진행합니다.");
 												dao.insertBookOrder(mem_id, book_num);
 												System.out.println();
 												System.out.println("이전화면으로 돌아갑니다.");
+												isOrder = false;
 												continue;
 											}else {
 												flag = true;
@@ -283,6 +293,7 @@ public class LibraryMain_jw {
 												if(s.equals("N")||s.equals("n")) {
 													System.out.println("\n예약을 취소하셨습니다.");
 													System.out.println("이전화면으로 돌아갑니다.");
+													isOrder = false;
 													continue;
 												}else if(s.equals("Y")||s.equals("y")) {
 													if(dao.isDuplicatedReserve(book_num, mem_id)) {
@@ -293,6 +304,7 @@ public class LibraryMain_jw {
 														dao.insertReserve(mem_id, book_num);		
 													}
 													System.out.println("이전화면으로 돌아갑니다.");
+													isOrder = false;
 													continue;
 												}else {
 													flag = true;
@@ -301,6 +313,8 @@ public class LibraryMain_jw {
 										}else if(resultReserve == -1) {// 예약 권수 다참
 											System.out.println("\n예약 권수가 이미 2권입니다.");
 											System.out.println("이전화면으로 돌아갑니다.");
+											isOrder = false;
+											continue;
 										}else if(resultReserve == 0) {
 											System.out.println("오류발생!!");
 										}
@@ -308,6 +322,8 @@ public class LibraryMain_jw {
 
 								}else if(no==3) {
 									System.out.println("\n뒤로가기를 선택하셨습니다.");
+									isOrder = false;
+									continue;
 								}else {
 									System.out.println("잘못 입력하셨습니다.");
 								}
@@ -354,7 +370,7 @@ public class LibraryMain_jw {
 
 											}
 										}
-									} while (!dao.checkNowOrderNum(sNum) && !s.equals("q") && !s.equals("Q"));
+									} while (!dao.checkNowOrderNum(sNum,mem_id) && !s.equals("q") && !s.equals("Q"));
 
 									System.out.println();
 
