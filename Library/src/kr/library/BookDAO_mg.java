@@ -200,7 +200,7 @@ public class BookDAO_mg {
 			
 			if(rs.next()) {
 				System.out.println("Q&A 목록");
-				System.out.println("번호\t제목\t내용\t문의일");
+				System.out.println("번호\t문의일\t\t제목\t내용");
 				do {
 					System.out.print(rs.getInt("qna_num"));
 					System.out.print("\t");
@@ -248,8 +248,6 @@ public class BookDAO_mg {
 					System.out.print("\t");
 					System.out.println(rs.getDate("a_date"));
 				} while(rs.next());
-			} else {
-				System.out.println("등록된 qna가 없습니다.");
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -352,7 +350,7 @@ public class BookDAO_mg {
 			sql = "SELECT mem_id FROM member WHERE mem_id=? AND mem_pw=?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, memId);
-			pstmt.setString(2, password);
+			pstmt.setString(2, password.trim());
 			rs = pstmt.executeQuery();
 			if(rs.next()) count = 1;
 		} catch (Exception e) {
@@ -789,7 +787,7 @@ public class BookDAO_mg {
 	} // checkReviewRecord()
 	
 	// mem_id도 같이 검사
-	public int checkReviewRecord(int reviewNum,String memId) {
+	public int checkMyReviewRecord(int reviewNum,String memId) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -803,7 +801,7 @@ public class BookDAO_mg {
 			pstmt.setString(2, memId);
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
-				count = 1; //레코드가 존재할 때 1 저장				
+				count = rs.getInt(1); //레코드가 존재할 때 1 저장				
 			} // if					
 		} catch (Exception e) {
 			count = -1; //오류 발생
@@ -967,6 +965,7 @@ public class BookDAO_mg {
 			DBUtil.executeClose(rs, pstmt, conn);
 		}
 	}
+	
 	//조회하는 책 레코드 존재 여부 체크(제목 기준)
 	public int checkBookTitleRecord(String bookTitle) {
 		Connection conn = null;
@@ -1046,6 +1045,47 @@ public class BookDAO_mg {
 		}		
 		return count; 
 	} // checkBookTitleRecord()	
+	
+	// 책 정보(리뷰,평점 포함)
+	public void selectDetailBook(int bookNum) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT b.book_num, b.book_category, COALESCE(AVG(r.review_rate), 0) AS review_rate, "
+				    + "b.book_title, b.book_author, b.book_publisher, b.book_p_year, "
+				    + "b.book_rank, b.book_volm_cnt, b.book_reg_date, "
+				    + "COALESCE(LISTAGG(r.review_content, ' | ') WITHIN GROUP (ORDER BY r.review_rate), '리뷰 없음') AS review_content "
+				    + "FROM book b LEFT JOIN review r ON b.book_num = r.book_num "
+				    + "WHERE b.book_num = ? GROUP BY b.book_num, b.book_category, b.book_title, b.book_author, "
+				    + "b.book_publisher, b.book_p_year, b.book_rank, b.book_volm_cnt, b.book_reg_date";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, bookNum);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				System.out.println("책번호 : " + rs.getInt("book_num"));
+				System.out.println("제목 : " + rs.getString("book_title"));
+				System.out.println("저자 : " + rs.getString("book_author"));
+				System.out.println("출판사 : " + rs.getString("book_publisher"));
+				System.out.println("출판년도 : " + rs.getInt("book_p_year"));
+				System.out.println("카테고리 : " + rs.getString("book_category"));
+				System.out.println("추천순위 : " + rs.getInt("book_rank"));
+				System.out.println("보유권수 : " + rs.getInt("book_volm_cnt"));
+				System.out.println("등록일 : " + rs.getDate("book_reg_date"));	
+				System.out.println("평균 평점 : " + rs.getDouble("review_rate"));
+				System.out.println("리뷰 내용 : " + rs.getString("review_content"));
+			} else {
+				System.out.println("검색된 정보가 없습니다.");
+			}			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);	
+		}		
+	} // selectDetailBook()
+	
 	
 	
 }

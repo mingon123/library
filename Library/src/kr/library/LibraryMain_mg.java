@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class LibraryMain_mg {
 	private BufferedReader br;
-	private String mem_id="test3"; // 로그인한 아이디 저장
+	private String mem_id="aasd"; // 로그인한 아이디 저장
 
 	private boolean isSelectSeven = false;
 	private boolean isSelectTwo = false;
@@ -40,29 +40,29 @@ public class LibraryMain_mg {
 				System.out.print("1.사용자알림 2.도서목록 3.도서검색 4.리뷰확인 7.기타메뉴 9.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
-					if(no==1) { // 완
+					if(no==1) {
 						checkUserNotifications();
-					} else if(no==2) { // 완
+					} else if(no==2) {
 						isStart = false;
 						isSelectTwo = true;
 						showTwoMenu();
-					} else if(no==3) { // 대여/예약 추가
+					} else if(no==3) {
 						isStart = false;
 						isSelectThree = true;
 						showThreeMemu();
-					} else if(no==4) { // 범위 지정해야함
+					} else if(no==4) {
 						isStart = false;
 						isSelectFour = true;
 						showFourMenu();
-					} else if(no==7) { // 완
+					} else if(no==7) {
 						isStart = false;
 						isSelectSeven = true;
 						System.out.println("기타 메뉴를 선택하셨습니다.");
 						showSevenMenu();
-					} else if(no==9) {//완
+					} else if(no==9) {
 						// 종료
 						System.out.println("프로그램 종료");
-						break;
+						System.exit(0);
 					} else {
 						System.out.println("잘못 입력하셨습니다.");
 					}
@@ -177,8 +177,7 @@ public class LibraryMain_mg {
 				System.out.println("정보 처리 중 오류 발생");
 			} 
 		} while(count!=1);
-
-		il.selectDetailBook(book_num);
+		dao.selectDetailBook(book_num);
 		System.out.println("-".repeat(90));
 
 		orderOrReserveMenu(book_num); // 대여 예약
@@ -462,6 +461,7 @@ public class LibraryMain_mg {
 		else System.out.println("잘못 입력하셨습니다.");
 	}
 
+	// 리뷰 수정
 	private void updateMyReview() throws IOException {
 		boolean MyReview = dao.selectMyReviewInfo(mem_id);
 		if(!MyReview) {
@@ -471,7 +471,7 @@ public class LibraryMain_mg {
 		try {
 			System.out.print("수정할 번호를 입력하세요: ");
 			int num = Integer.parseInt(br.readLine());
-			int count = dao.checkReviewRecord(num,mem_id);
+			int count = dao.checkMyReviewRecord(num,mem_id);
 			if(count==1) {
 				System.out.print("새로운 리뷰내용 입력 : ");
 				String content = br.readLine();
@@ -497,9 +497,11 @@ public class LibraryMain_mg {
 		try {
 			System.out.print("삭제할 번호를 입력하세요: ");
 			int num = Integer.parseInt(br.readLine());
-			int count = dao.checkReviewRecord(num,mem_id);
-			if(count==1) il.deleteReview(num);
-			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
+			int count = dao.checkMyReviewRecord(num,mem_id);
+			if(count>0) {
+				il.deleteReview(num);
+			}
+			else if(count==0) System.out.println("본인이 작성한 리뷰가 아닙니다.");
 			else if(count==-1) System.out.println("정보 처리 중 오류 발생");
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
@@ -653,7 +655,6 @@ public class LibraryMain_mg {
 			if(no==1) {
 				dao.selectMemberInfo(mem_id);
 				System.out.println("-".repeat(90));
-				System.out.println("");
 			}
 			else if(no==2) updateMemberInfo();
 			else if(no==3) deleteMemberInfo();
@@ -673,7 +674,7 @@ public class LibraryMain_mg {
 		System.out.printf("현재 계정은 %s입니다. 뒤로가기:q(Q)입력 \n",memId);
 		String password;
 		while(true) {
-			System.out.print("현재 비밀번호를 입력하세요: ");
+			System.out.print("현재 비밀번호를 입력하세요(문자,숫자,특수문자 포함 8~15자리) : ");
 			password = br.readLine();
 			if(isValidPassword(password)) break;
 			else if(password.equalsIgnoreCase("q")) {
