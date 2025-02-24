@@ -527,12 +527,6 @@ public class LibraryMain_jw {
 
 	}
 
-	private void orderOrReserveMenu(int book_num) throws IOException {
-
-
-
-	}
-
 	public static void main(String[] args) {
 		new LibraryMain_jw();
 	}
