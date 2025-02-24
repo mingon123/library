@@ -68,7 +68,7 @@ public class LibraryMain_jw {
 							} catch (NumberFormatException e) {
 								System.out.println("[숫자만 입력 가능]");
 							}
-						} while (!dao.checkNowOrderNum(order_num));
+						} while (!dao.checkNowOrderNum(order_num, mem_id));
 
 						System.out.println();
 						System.out.println(order_num+"번을 선택하셨습니다.");
@@ -370,7 +370,7 @@ public class LibraryMain_jw {
 
 											}
 										}
-									} while (!dao.checkNowOrderNum(sNum) && !s.equals("q") && !s.equals("Q"));
+									} while (!dao.checkNowOrderNum(sNum,mem_id) && !s.equals("q") && !s.equals("Q"));
 
 									System.out.println();
 

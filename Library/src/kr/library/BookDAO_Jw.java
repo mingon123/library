@@ -142,8 +142,9 @@ public class BookDAO_Jw {
 	}//checkBookNum
 
 
-	// 대여번호가 현황기록에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false
-	public boolean checkNowOrderNum(int order_num) {
+	// 대여번호가 현황기록에 존재하는지 확인하며, 해당 유저의 것인지 확인하는 함수 
+	//	- 존재:true / 존재X 또는 에러:false
+	public boolean checkNowOrderNum(int order_num, String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -151,9 +152,10 @@ public class BookDAO_Jw {
 		int check = -1;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND IS_RETURN=0";
+			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND IS_RETURN=0 AND MEM_ID=?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, order_num);
+			pstmt.setString(2, mem_id);
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) check = rs.getInt(1);
@@ -170,7 +172,7 @@ public class BookDAO_Jw {
 	}//checkNowOrderNum
 
 
-	// 책번호가 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
+	// 책번호가 해당유저로 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
 	public boolean checkReserveBookNum(int book_num, String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -202,7 +204,7 @@ public class BookDAO_Jw {
 	}//checkReserveBookNum
 
 
-	// 예약번호가 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
+	// 예약번호가 해당 유저의 것이며, 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
 	public boolean checkReserveReNum(int re_num, String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -341,7 +343,7 @@ public class BookDAO_Jw {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String sql = null;
-		int check = -1;
+		int check = -9999;
 		try {
 			conn = DBUtil.getConnection();
 			//값이 양수여야 정지X
@@ -356,7 +358,7 @@ public class BookDAO_Jw {
 		} finally {
 			DBUtil.executeClose(rs, pstmt, conn);
 		}
-		if(check == -1) System.out.println("에러 발생!");
+		if(check == -9999) System.out.println("에러 발생!");
 
 		return check >= 1? true: false; 
 	}//checkMemStop
@@ -922,9 +924,9 @@ public class BookDAO_Jw {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String sql = null;
-		
+
 		int res = -1;
-		
+
 		try {
 			conn = DBUtil.getConnection();
 			sql =  "SELECT BOOK_NUM FROM BOOK_ORDER WHERE ORDER_NUM = ?";
@@ -933,7 +935,7 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) res = rs.getInt("BOOK_NUM");
-			
+
 			if(res == -1)
 				System.out.println("book_num을 불러오던중 오류 발생!");
 		} catch (Exception e) {
@@ -942,7 +944,7 @@ public class BookDAO_Jw {
 		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
-		
+
 		return res;
 	} // selectOrderNumToBookNum
 
