@@ -731,7 +731,7 @@ public class BookDAO_mg {
 		} 	
 	} // selectReviewInfo
 	
-	// 리뷰 상세 정보
+	// 리뷰 상세 정보(book_num 기준)
 	public void selectDetailReview(int num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -788,6 +788,154 @@ public class BookDAO_mg {
 		return count; 
 	} // checkReviewRecord()
 	
+	// mem_id도 같이 검사
+	public int checkReviewRecord(int reviewNum,String memId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM review WHERE review_num=? AND mem_id=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, reviewNum);
+			pstmt.setString(2, memId);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			//자원정리
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkReviewRecord()
+	
+	//조회하는 리뷰 레코드 존재 여부 체크(제목기준)
+	public int checkReviewRecordOfBookTile(String bookTitle) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM review r,book b WHERE r.book_num=b.book_num AND b.book_title LIKE ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%"+bookTitle+"%");
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = rs.getInt(1); //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			//자원정리
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkReviewRecordOfBookTile()
+	
+	// 리뷰검색(책제목 기준)
+	public void selectSearchReviewOftitle(String bookTitle) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT r.review_num,b.book_title,b.book_author,r.review_rate,review_reg_date FROM review r JOIN book b ON r.book_num=b.book_num "
+					+ "WHERE b.book_title LIKE ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, "%"+bookTitle+"%");
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			if(rs.next()) {
+				System.out.println("리뷰번호\t등록일\t\t평점\t책제목\t\t\t저자\t\t");
+				do {
+				System.out.print(rs.getInt("review_num")+"\t");
+				System.out.print(rs.getDate("review_reg_date")+"\t");
+				System.out.print(rs.getInt("review_rate")+"\t");
+				System.out.print(rs.getString("book_title")+"\t");
+				System.out.println(rs.getString("book_author")+"\t");
+				} while(rs.next());
+			} else {
+				System.out.println("검색된 책에 대한 리뷰가 없습니다.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+	}
+	
+	// 내 리뷰 보기
+	public boolean selectMyReviewInfo(String memId) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT r.review_num,b.book_title,r.review_content,r.review_rate,r.review_reg_date "
+					+ "FROM review r, book b WHERE r.book_num=b.book_num "
+					+ "AND r.mem_id=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, memId);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(90));
+			
+			if(rs.next()) {
+				System.out.println("내 리뷰");
+				System.out.println("번호\t리뷰등록일\t\t평점\t책제목\t\t\t리뷰내용");
+				do {
+					System.out.print(rs.getInt("review_num")+"\t");
+					System.out.print(rs.getDate("review_reg_date")+"\t");
+					System.out.print(rs.getInt("review_rate")+"\t");
+					System.out.print(rs.getString("book_title")+"\t");
+					System.out.println(rs.getString("review_content")+"\t");
+				} while(rs.next());
+			} else {
+				System.out.println("리뷰 내역이 없습니다.");
+			}
+			System.out.println("-".repeat(90));
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		return false; 
+	} // selectMyReviewInfo
+	
+	// 리뷰정보 수정
+	public void updateMyReview(int review_num, String review_content, int review_rate, String mem_id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		int cnt = 0;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE review SET review_content=?, review_rate=? WHERE review_num=? AND mem_id=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(++cnt, review_content);
+			pstmt.setInt(++cnt, review_rate);
+			pstmt.setInt(++cnt, review_num);
+			pstmt.setString(++cnt, mem_id);
+			int count = pstmt.executeUpdate();
+	        if (count > 0) System.out.println(count + "개의 리뷰 정보를 수정했습니다.");
+	        else System.out.println("리뷰 수정에 실패했습니다. 리뷰 번호를 확인하세요.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateMyReview()
+	
+	
 	// 책 제목 기준 검색
 	public void selectSearchBookTitle(String bookTitle) {
 		Connection conn = null;
@@ -833,7 +981,7 @@ public class BookDAO_mg {
 			pstmt.setString(1, "%"+bookTitle+"%");
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
-				count = 1; //레코드가 존재할 때 1 저장				
+				count = rs.getInt(1); //레코드가 존재할 때 1 저장				
 			} // if					
 		} catch (Exception e) {
 			count = -1; //오류 발생
@@ -889,7 +1037,7 @@ public class BookDAO_mg {
 			pstmt.setString(1, "%"+bookAuthor+"%");
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
-				count = 1; //레코드가 존재할 때 1 저장				
+				count = rs.getInt(1); //레코드가 존재할 때 1 저장				
 			} // if					
 		} catch (Exception e) {
 			count = -1; //오류 발생

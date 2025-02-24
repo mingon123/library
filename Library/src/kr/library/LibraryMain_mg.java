@@ -11,6 +11,7 @@ public class LibraryMain_mg {
 	private boolean isSelectSeven = false;
 	private boolean isSelectTwo = false;
 	private boolean isSelectThree = false;
+	private boolean isSelectFour = false;
 	private boolean isStart = true;
 	private BookDAO_mg dao;
 	private BookDAO_il il;
@@ -49,7 +50,9 @@ public class LibraryMain_mg {
 						isSelectThree = true;
 						showThreeMemu();
 					} else if(no==4) { // 범위 지정해야함
-						selectDetailReview();
+						isStart = false;
+						isSelectFour = true;
+						showFourMenu();
 					} else if(no==7) { // 완
 						isStart = false;
 						isSelectSeven = true;
@@ -169,7 +172,7 @@ public class LibraryMain_mg {
 				System.out.print("책번호를 잘못 입력했습니다. 다시입력하세요 : ");
 				num = Integer.parseInt(br.readLine());
 				count = il.checkBookRecord(num);
-			} else if (count!=1) {
+			} else if (count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
 			} 
 		} while(count!=1);
@@ -226,7 +229,7 @@ public class LibraryMain_mg {
 				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 : ");
 				title = br.readLine();
 				count = dao.checkBookTitleRecord(title);
-			} else if (count!=1) {
+			} else if (count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
 			}
 		} while(count!=1);
@@ -244,7 +247,7 @@ public class LibraryMain_mg {
 				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 : ");
 				author = br.readLine();
 				count = dao.checkBookAuthorRecord(author);
-			} else if(count!=1) {
+			} else if(count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
 			}
 		} while(count!=1);
@@ -252,27 +255,141 @@ public class LibraryMain_mg {
 		System.out.println("-".repeat(90));
 	}
 	
+	// 4번 선택시 나오는 화면
+	private void showFourMenu() throws IOException {
+		while(isSelectFour) {
+			System.out.println("리뷰 메뉴입니다.");
+			System.out.print("1.전체리뷰 2.책제목검색 3.내리뷰 4.뒤로가기\n > ");
+			try {
+				int no = Integer.parseInt(br.readLine());
+				if(no==1) {
+					dao.selectReviewInfo();
+					selectDetailReview();
+				} else if(no==2) {
+					selectBookTitleReview();
+				} else if(no==3) {
+					manageMyReview();
+				}else if(no==4) { //뒤로가기
+					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
+					isStart = true;
+					isSelectFour = false;
+				} else System.out.println("잘못 입력하셨습니다.");
+			} catch (NumberFormatException e) {
+				System.out.println("[숫자만 입력 가능]");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	// 4.리뷰 상세정보 확인
 	private void selectDetailReview() throws NumberFormatException, IOException {
-		dao.selectReviewInfo();
 		System.out.print("조회할 리뷰번호 입력 : ");
 		int num = Integer.parseInt(br.readLine());
 		int count = dao.checkReviewRecord(num);
 		do {
 			if(count==0) {
-				System.out.print("리뷰번호를 잘못 입력했습니다. 다시입력하세요 : ");
+				System.out.print("리뷰번호를 잘못 입력했습니다. 다시 입력하세요 : ");
 				num = Integer.parseInt(br.readLine());
-				count = il.checkBookRecord(num);
-			} else if (count!=1) {
+				count = dao.checkReviewRecord(num);
+			} else if (count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
 			}
 		} while(count!=1);
 		dao.selectDetailReview(num);
 		System.out.println("-".repeat(90));
 	}
-    
-
 	
+	// 책 제목으로 리뷰 검색
+	private void selectBookTitleReview() throws IOException {
+		System.out.print("리뷰를 확인할 책 제목을 입력하세요(뒤로가기:q) : ");
+		String bookTitle = br.readLine();
+		if(bookTitle.equalsIgnoreCase("q")) {
+			System.out.println("메뉴로 돌아갑니다.");
+			showFourMenu();
+		}
+		int count = dao.checkReviewRecordOfBookTile(bookTitle);
+		do {
+			if(count==0) {
+				System.out.print("해당 책에 대한 리뷰가 없습니다. 다시 입력하세요(뒤로가기:q) : ");
+				bookTitle = br.readLine();
+				if(bookTitle.equalsIgnoreCase("q")) {
+					System.out.println("뒤로 돌아갑니다.");
+					break;
+				}
+				count = dao.checkReviewRecordOfBookTile(bookTitle);
+			} else if (count==-1) {
+				System.out.println("정보 처리 중 오류 발생");
+			}
+		} while(count==0);
+		dao.selectSearchReviewOftitle(bookTitle);
+		System.out.println("-".repeat(90));
+		if(count>=1) selectDetailReview();
+	}
+	
+	// 내 리뷰 관리 
+	private void manageMyReview() throws NumberFormatException, IOException {
+		System.out.print("1.내리뷰확인 2.리뷰수정 3.리뷰삭제 4.뒤로가기\n > ");
+		int no = Integer.parseInt(br.readLine());
+		if(no==1) {
+			dao.selectMyReviewInfo(mem_id);
+		}
+		else if(no==2) {
+			updateMyReview();
+		} else if(no==3) {
+			deleteMyReview();
+			System.out.println("-".repeat(90));
+		} else if(no==4) {
+			System.out.println("뒤로가기를 선택하셨습니다.");
+			showFourMenu();
+		}
+		else System.out.println("잘못 입력하셨습니다.");
+	}
+
+	private void updateMyReview() throws IOException {
+		boolean MyReview = dao.selectMyReviewInfo(mem_id);
+		if(!MyReview) {
+			System.out.println("작성한 리뷰가 없습니다.");
+			return;
+		}
+		try {
+			System.out.print("수정할 번호를 입력하세요: ");
+			int num = Integer.parseInt(br.readLine());
+			int count = dao.checkReviewRecord(num,mem_id);
+			if(count==1) {
+				System.out.print("새로운 리뷰내용 입력 : ");
+				String content = br.readLine();
+				System.out.print("새로운 평점 입력(1~5) : ");
+				int rate = Integer.parseInt(br.readLine());
+				dao.updateMyReview(num, content, rate, mem_id);
+			}
+			else if(count==0) System.out.println("본인이 작성한 리뷰가 아닙니다.");
+			else if(count==-1) System.out.println("정보 처리 중 오류 발생");
+		} catch (NumberFormatException e) {
+			System.out.println("[숫자만 입력 가능]");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	// 내 리뷰 삭제
+	private void deleteMyReview() throws IOException {
+		boolean MyReview = dao.selectMyReviewInfo(mem_id);
+		if(!MyReview) {
+			System.out.println("작성한 리뷰가 없습니다.");
+			return;
+		}
+		try {
+			System.out.print("삭제할 번호를 입력하세요: ");
+			int num = Integer.parseInt(br.readLine());
+			int count = dao.checkReviewRecord(num,mem_id);
+			if(count==1) il.deleteReview(num);
+			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
+			else if(count==-1) System.out.println("정보 처리 중 오류 발생");
+		} catch (NumberFormatException e) {
+			System.out.println("[숫자만 입력 가능]");
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	} // deleteMyReview
 	// 7번선택 시 나오는 화면
 	private void showSevenMenu() throws IOException {
 		while(isSelectSeven) {
@@ -350,7 +467,7 @@ public class LibraryMain_mg {
 			int count = dao.checkRecord(mem_id);
 			if(count==1) dao.deleteWishBookInfo(mem_id, num);
 			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
-			else System.out.println("정보 처리 중 오류 발생");
+			else if(count==-1) System.out.println("정보 처리 중 오류 발생");
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
 		} catch(Exception e) {
@@ -364,7 +481,7 @@ public class LibraryMain_mg {
 		int no = Integer.parseInt(br.readLine());
 		if(no==1) insertQNA();
 		else if(no==2) {
-			selectQNAInfo();
+			dao.selectQNAInfo();
 			System.out.println("-".repeat(90));
 		} else if(no==3) {
 			deleteQNA();
@@ -384,14 +501,12 @@ public class LibraryMain_mg {
 			System.out.println("이전화면으로 돌아갑니다.");
 			manageQNA();
 		}
-		System.out.print("질문 내용을 입력하세요.");
+		System.out.print("질문 내용을 입력하세요 : ");
 		String qnaContent = br.readLine();
 		dao.insertQNA(qnaTitle, qnaContent, mem_id);
 	} // insertQNA
 	// qna목록확인
-	private void selectQNAInfo() {
-		dao.selectQNAInfo();
-	} // selectQNAInfo
+
 	// qna 삭제
 	private void deleteQNA() throws IOException {
 		boolean hasQNA = dao.selectMyQNAInfo(mem_id);
@@ -405,7 +520,7 @@ public class LibraryMain_mg {
 			int count = dao.checkRecord(mem_id);
 			if(count==1) dao.deleteQNAInfo(mem_id, num);
 			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
-			else System.out.println("정보 처리 중 오류 발생");
+			else if(count==-1) System.out.println("정보 처리 중 오류 발생");
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
 		} catch(Exception e) {
