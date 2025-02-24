@@ -37,9 +37,9 @@ public class BookDAO_il {
 					System.out.print(rs.getString("mem_cell")+"\t");	
 					System.out.print(rs.getString("mem_email")+"\t");						
 					System.out.println(rs.getDate("mem_stop_date"));
-					//Date mem_stop_date = rs.getDate("mem_stop_date"); // null일 경우 공란 처리 필요
-					//if(mem_stop_date == null) mem_stop_date = ""; // 수정요망
-					//System.out.println(mem_stop_date);				
+//					Date mem_stop_date = rs.getDate("mem_stop_date"); // null일 경우 공란 처리 필요
+//					if(mem_stop_date == null) mem_stop_date = ""; // 수정요망
+//					System.out.println(mem_stop_date);				
 				} while (rs.next());
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");	
@@ -191,10 +191,14 @@ public class BookDAO_il {
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
 				// 출력항목 검토요망 - 추천순위 제외 출력
-				System.out.println("책번호\t제목\t저자\t출판사\t출판년도\t카테고리\t보유권수\t등록일"); // 수정요망
+				System.out.println("책번호\t제목\t\t저자\t출판사\t출판년도\t카테고리\t보유권수\t등록일"); // 수정요망
 				do {
-					System.out.print(rs.getInt("book_num")+"\t"); 								
-					System.out.print(rs.getString("book_title")+"\t"); // 제목길이 제한출력여부 검토요망				
+					System.out.print(rs.getInt("book_num")+"\t");
+//					String book_title=rs.getString("book_title");					
+//					int index = book_title.length()>=15 ? 15 : book_title.length()-1;					
+//					System.out.print(book_title.substring(0, index)+"\t"); 
+					// 제목길이 제한출력여부 검토요망	
+					System.out.print(rs.getString("book_title")+"\t");	
 					System.out.print(rs.getString("book_author")+"\t");					
 					System.out.print(rs.getString("book_publisher")+"\t");					
 					System.out.print(rs.getInt("book_p_year")+"\t");					
@@ -251,6 +255,7 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
 				System.out.println("책번호 : " + rs.getInt("book_num"));
+				
 				System.out.println("제목 : " + rs.getString("book_title"));
 				System.out.println("저자 : " + rs.getString("book_author"));
 				System.out.println("출판사 : " + rs.getString("book_publisher"));
