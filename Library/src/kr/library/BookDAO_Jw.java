@@ -888,7 +888,7 @@ public class BookDAO_Jw {
 	} // calcReserveRank
 
 
-	// order_num -> 책이름, 저자 출력 //TODO
+	// order_num -> 책이름, 저자 출력
 	public void selectOrderNumToBookInfo(int order_num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -916,12 +916,43 @@ public class BookDAO_Jw {
 	} // selectOrderNumToBookInfo
 
 
-	// 리뷰 작성 TODO
+	// order_num -> book_num
+	public int selectOrderNumToBookNum(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		
+		int res = -1;
+		
+		try {
+			conn = DBUtil.getConnection();
+			sql =  "SELECT BOOK_NUM FROM BOOK_ORDER WHERE ORDER_NUM = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) res = rs.getInt("BOOK_NUM");
+			
+			if(res == -1)
+				System.out.println("book_num을 불러오던중 오류 발생!");
+		} catch (Exception e) {
+			//e.printStackTrace();
+			System.out.println("book_num을 불러오던중 오류 발생");
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+		
+		return res;
+	} // selectOrderNumToBookNum
+
+
+	// 리뷰 등록
 	public void insertReviewInfo(int book_num, String content, int rate, String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
-		
+
 		try {
 			conn = DBUtil.getConnection();
 			sql = "INSERT INTO REVIEW(REVIEW_NUM,BOOK_NUM,REVIEW_CONTENT,REVIEW_RATE,MEM_ID) VALUES (review_seq.nextval,?,?,?,?)";
@@ -930,9 +961,9 @@ public class BookDAO_Jw {
 			pstmt.setString(2, content);
 			pstmt.setInt(3, rate);
 			pstmt.setString(4, mem_id);
-			
+
 			int count = pstmt.executeUpdate();
-			
+
 			if(count > 0) System.out.println("리뷰등록이 완료되었습니다.");
 			else System.out.println("리뷰 등록 오류!");
 		} catch (Exception e) {
