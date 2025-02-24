@@ -25,6 +25,7 @@ public class LibraryMain_mg {
 			il = new BookDAO_il();
 			jw = new BookDAO_Jw();
 			br = new BufferedReader(new InputStreamReader(System.in));
+			
 			// 메뉴 호출
 			callMenu();
 		} catch (Exception e) {
@@ -38,6 +39,7 @@ public class LibraryMain_mg {
 	private void callMenu() throws IOException {
 		while(true) {
 			if(isStart) {
+				Open.main(null);
 				System.out.print("1.사용자알림 2.도서목록 3.도서검색 4.리뷰확인 5.대여/예약 6.반납 7.기타메뉴 9.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
