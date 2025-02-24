@@ -182,7 +182,7 @@ public class LibraryMain_mg {
 
 		orderOrReserveMenu(book_num); // 대여 예약
 	}
-	
+
 	private void orderOrReserveMenu(int book_num) throws IOException {
 		
 		System.out.print("1.대여하기 2.예약하기 3.뒤로가기\n >");

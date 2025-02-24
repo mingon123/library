@@ -361,7 +361,7 @@ public class BookDAO_mg {
 		}
 		return count;
 	} // checkPassword
-	
+
 	// 회원정보 수정
 	public void updateMemberInfo(String memId,String password,String newName,String newEmail){
 		Connection conn = null;
