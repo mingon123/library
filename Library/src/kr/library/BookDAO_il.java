@@ -189,14 +189,15 @@ public class BookDAO_il {
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
 				// 출력항목 검토요망 - 추천순위 제외 출력
-				System.out.println("책번호\t제목\t\t\t저자\t\t출판사\t\t출판년도\t카테고리\t보유권수\t등록일"); // 수정요망
+				System.out.println("책번호\t제목\t\t\t저자\t\t출판사\t\t출판년도\t카테고리\t보유권수\t등록일");
+				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("book_num")+"\t");
-					// 제목길이 제한출력(20자)
+					// 제목 길이 제한출력(20자)
 					String title=rs.getString("book_title");					
-					if (title.length()>=15) System.out.printf("%-15s..\t", title.substring(0, 16));
+					if (title.length()>=15) System.out.printf("%-15s..\t", title.substring(0, 15));
 					else System.out.printf("%-15s\t", title);
-					// 제목길이 제한출력(10자)
+					// 저자 길이 제한출력(10자)
 					String author=rs.getString("book_author");	
 					if (author.length()>=10) System.out.printf("%-10s..\t", author.substring(0, 11));
 					else System.out.printf("%-10s\t", author);
@@ -255,7 +256,7 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
 				System.out.println("책번호 : " + rs.getInt("book_num"));
-				
+
 				System.out.println("제목 : " + rs.getString("book_title"));
 				System.out.println("저자 : " + rs.getString("book_author"));
 				System.out.println("출판사 : " + rs.getString("book_publisher"));
@@ -360,16 +361,22 @@ public class BookDAO_il {
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT * FROM book_order ORDER BY order_num";
+			//sql = "SELECT * FROM book_order ORDER BY order_num";
+			sql = "SELECT bo.*, (SELECT book_title FROM book WHERE book_num=bo.book_num) 책제목 "
+					+ "FROM book_order bo ORDER BY order_num";
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("대여번호\t회원아이디\t책번호\t대여일\t\t반납기한일\t\t연장유무\t반납유무");
+				System.out.println("대여번호\t회원아이디\t책번호\t책제목\t\t\t대여일\t\t반납기한일\t\t연장유무\t반납유무");
+				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("order_num")+"\t");		
 					System.out.print(rs.getString("mem_id")+"\t");		
-					System.out.print(rs.getInt("book_num")+"\t");		
+					System.out.print(rs.getInt("book_num")+"\t");	
+					String title=rs.getString("책제목");					
+					if (title.length()>=15) System.out.printf("%-15s..\t", title.substring(0, 15));
+					else System.out.printf("%-15s\t", title);
 					System.out.print(rs.getDate("order_date")+"\t");
 					System.out.print(rs.getDate("return_date")+"\t");
 					String is_add = rs.getInt("is_add")==1 ? "O" : "X";					
@@ -420,7 +427,9 @@ public class BookDAO_il {
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT * FROM book_order WHERE order_num=?";
+			//sql = "SELECT * FROM book_order WHERE order_num=?";
+			sql = "SELECT bo.*, (SELECT book_title FROM book WHERE book_num=bo.book_num) 책제목 "
+					+ "FROM book_order bo WHERE order_num=?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, order_num);
 			rs = pstmt.executeQuery();
@@ -428,6 +437,8 @@ public class BookDAO_il {
 				System.out.println("대여번호 : " + rs.getInt("order_num"));
 				System.out.println("회원아이디 : " + rs.getString("mem_id"));
 				System.out.println("책번호 : " + rs.getInt("book_num"));
+				//책제목 같이 출력요망
+				System.out.println("책제목 : " + rs.getString("책제목"));
 				System.out.println("대여일 : " + rs.getDate("order_date"));
 				System.out.println("반납기한일 : " + rs.getDate("return_date"));			
 				String is_add = rs.getInt("is_add")==1 ? "O" : "X";	
@@ -572,6 +583,7 @@ public class BookDAO_il {
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
 				System.out.println("예약번호\t회원아이디\t책번호");
+				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("re_num")+"\t");							
 					System.out.print(rs.getString("mem_id")+"\t");
@@ -690,7 +702,8 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {			
-				System.out.println("희망도서번호\t제목\t저자\t출판사\t희망도서신청일\t회원아이디");				
+				System.out.println("희망도서번호\t제목\t저자\t출판사\t희망도서신청일\t회원아이디");	
+				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("wish_num")+"\t\t");							
 					System.out.print(rs.getString("wish_title")+"\t");
@@ -732,8 +745,32 @@ public class BookDAO_il {
 			DBUtil.executeClose(rs, pstmt, conn);			
 		}		
 		return count; 
-	} // checkWishRecord()
+	} // checkWishRecord(대여번호)
 
+	//희망도서 신청시 해당도서 보유 여부 체크
+	public int checkWishRecord(String wish_title, String wish_author) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;		
+		int count = 0;		
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT * FROM book WHERE book_title=? AND book_author=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, wish_title);
+			pstmt.setString(2, wish_author);
+			rs = pstmt.executeQuery();
+			if (rs.next()) {
+				count = 1; //레코드가 존재할 때 1 저장				
+			} // if					
+		} catch (Exception e) {
+			count = -1; //오류 발생
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		}		
+		return count; 
+	} // checkWishRecord(제목,작가)
 
 	//희망도서정보 등록(이미 존재하는 책 넣지 못하도록 수정 필요)
 	public void InsertWish(String wish_title, String wish_author, String wish_publisher, String mem_id) {
@@ -811,18 +848,25 @@ public class BookDAO_il {
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT * FROM review ORDER BY review_num";
+			//sql = "SELECT * FROM review ORDER BY review_num";
+			sql = "SELECT r.*, (SELECT book_title FROM book WHERE book_num=r.book_num) 책제목 "
+					+ "FROM review r ORDER BY review_num";
+
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("리뷰번호\t책번호\t평점\t리뷰등록일\t\t회원아이디");			
+				System.out.println("리뷰번호\t책번호\t책제목\t\t\t평점\t리뷰등록일\t\t회원아이디");	
+				System.out.println("-".repeat(100));
 				do {
-					System.out.print(rs.getInt("review_num")+"\t");							
-					System.out.print(rs.getInt("book_num")+"\t");					
+					System.out.print(rs.getInt("review_num")+"\t");
+					System.out.print(rs.getInt("book_num")+"\t");
+					String title=rs.getString("책제목");					
+					if (title.length()>=15) System.out.printf("%-15s..\t", title.substring(0, 15));
+					else System.out.printf("%-15s\t", title);					
 					System.out.print(rs.getInt("review_rate")+"\t");
 					System.out.print(rs.getDate("review_reg_date")+"\t");
-					System.out.println(rs.getString("mem_id")+"\t");
+					System.out.println(rs.getString("mem_id")+"\t");					
 				} while (rs.next());
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");	
@@ -971,10 +1015,12 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {			
-				System.out.println("공지사항번호\t공지사항제목\t공지사항조회수\t공지사항등록일");		
+				System.out.println("공지사항번호\t공지사항제목\t\t공지사항조회수\t공지사항등록일");	
+				System.out.println("-".repeat(100));
 				do {
-					System.out.print(rs.getInt("notice_num")+"\t\t");							
-					System.out.print(rs.getString("notice_title")+"\t");					
+					System.out.print(rs.getInt("notice_num")+"\t\t");	
+
+					System.out.printf("%-15s\t",rs.getString("notice_title"));					
 					System.out.print(rs.getInt("notice_view")+"\t\t");					
 					System.out.println(rs.getDate("notice_reg_date")+"\t");
 				} while (rs.next());
@@ -1121,12 +1167,14 @@ public class BookDAO_il {
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
 				System.out.println("qna번호\t질문제목\t조회수\t질문날짜\t\t답변날짜 ");		
+				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("qna_num")+"\t");							
 					System.out.print(rs.getString("qna_title")+"\t");
 					System.out.print(rs.getInt("qna_view")+"\t");	
 					System.out.print(rs.getDate("q_date")+"\t");
-					System.out.println(rs.getDate("a_date")+"\t");
+					if(rs.getDate("a_date") == null) System.out.println("-");
+					else System.out.println(rs.getDate("a_date")+"\t");
 				} while (rs.next());
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");	
@@ -1253,6 +1301,7 @@ public class BookDAO_il {
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
 				System.out.println("누적대여횟수\t책번호\t책제목");		
+				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("대여횟수")+"\t\t");
 					System.out.print(rs.getInt("book_num")+"\t");
@@ -1268,7 +1317,7 @@ public class BookDAO_il {
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectBookOrderStats()
-	
+
 	//회원별 대여 횟수
 	public void selectMemberOrderStats() {
 		Connection conn = null;
@@ -1283,7 +1332,8 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) { 
-				System.out.println("누적대여횟수\t회원아이디");		
+				System.out.println("누적대여횟수\t회원아이디");	
+				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("대여횟수")+"\t\t");	
 					System.out.println(rs.getString("mem_id"));			
@@ -1298,36 +1348,37 @@ public class BookDAO_il {
 			DBUtil.executeClose(rs, pstmt, conn);			
 		} 	
 	} // selectMemberOrderStats()
-	
+
 	//회원별 리뷰 횟수
-		public void selectMemberReviewStats() {
-			Connection conn = null;
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;		
-			String sql = null;
-			try {
-				conn = DBUtil.getConnection();
-				sql = "SELECT mem_id, COUNT(*) 리뷰횟수 FROM review GROUP BY mem_id \r\n"
-						+ "ORDER BY 리뷰횟수 DESC, mem_id";
-				pstmt = conn.prepareStatement(sql);
-				rs = pstmt.executeQuery();
+	public void selectMemberReviewStats() {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;		
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT mem_id, COUNT(*) 리뷰횟수 FROM review GROUP BY mem_id \r\n"
+					+ "ORDER BY 리뷰횟수 DESC, mem_id";
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			System.out.println("-".repeat(100));
+			if (rs.next()) {
+				System.out.println("누적리뷰횟수\t회원아이디");		
 				System.out.println("-".repeat(100));
-				if (rs.next()) {
-					System.out.println("누적리뷰횟수\t회원아이디");		
-					do {
-						System.out.print(rs.getInt("리뷰횟수")+"\t\t");	
-						System.out.println(rs.getString("mem_id"));			
-					} while (rs.next());
-				} else {
-					System.out.println("표시할 데이터가 없습니다.");
-				} //if-else
-				System.out.println("-".repeat(100));
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				DBUtil.executeClose(rs, pstmt, conn);			
-			} 	
-		} // selectMemberReviewStats()
+				do {
+					System.out.print(rs.getInt("리뷰횟수")+"\t\t");	
+					System.out.println(rs.getString("mem_id"));			
+				} while (rs.next());
+			} else {
+				System.out.println("표시할 데이터가 없습니다.");
+			} //if-else
+			System.out.println("-".repeat(100));
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);			
+		} 	
+	} // selectMemberReviewStats()
 
 	/*
 	//관리자(admin) 로그인 체크(로그인 성공 true, 로그인 실패 false 반환)

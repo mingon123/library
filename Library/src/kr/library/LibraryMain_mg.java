@@ -28,7 +28,7 @@ public class LibraryMain_mg {
 			dao = new BookDAO_mg();
 			il = new BookDAO_il();
 			jw = new BookDAO_Jw();
-			callMenu();
+			//callMenu();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
