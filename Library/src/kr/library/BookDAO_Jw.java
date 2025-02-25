@@ -10,7 +10,7 @@ import util.DBUtil;
 
 public class BookDAO_Jw {
 
-	
+
 	//랜덤 책 정보 - 숫자 입력받아 하나로 재사용
 	public void randomBookInfo(int num) { // 평점 정보 출력하게 추가? TODO
 		Connection conn = null;
@@ -150,7 +150,7 @@ public class BookDAO_Jw {
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String sql = null;
-		
+
 		int check = -1;
 		try {
 			conn = DBUtil.getConnection();
@@ -309,6 +309,60 @@ public class BookDAO_Jw {
 		return check >= 1? true: false; 
 
 	}//checkNowOrderNum
+
+
+	// 공지사항 번호가 유효한지 확인해주는 함수  / 유효 : true , 유효X : false TODO
+	public boolean checkNoticeNum(int notice_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int check = -1;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM NOTICE WHERE NOTICE_NUM=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, notice_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) check = rs.getInt(1);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		if(check == -1) System.out.println("에러 발생!");
+
+		return check >= 1? true: false; 
+
+	}//checkNoticeNum
+
+
+	// 공지사항 조회수 조정 함수 (조회시 + 1) TODO
+	public void updateNoticeViewCount(int notice_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+
+			sql = "UPDATE NOTICE SET NOTICE_VIEW = NOTICE_VIEW + 1 WHERE NOTICE_NUM = ?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, notice_num);
+			int count = pstmt.executeUpdate();
+
+			if(count <= 0) {
+				System.out.println("조회수 업데이트 중 오류발생!");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+
+	} // updateNoticeViewCount
 
 
 	//	연장 이전에 반납기한이 연장하려는 시기보다 같거나 커야함 

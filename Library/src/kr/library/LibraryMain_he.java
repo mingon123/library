@@ -10,12 +10,14 @@ public class LibraryMain_he {
 	private boolean flag;//로그인 여부
 	private BookDAO_he dao;
 	private LibraryMain_mg main_mg;
+	private BookDAO_Jw dao_jw;
 
 	public LibraryMain_he() {
 		this.mem_id = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(System.in));
 			dao= new BookDAO_he ();
+			dao_jw = new BookDAO_Jw();
 			//메뉴 호출
 			callMenu();
 		} catch (Exception e) {
@@ -41,10 +43,19 @@ public class LibraryMain_he {
 				}else if (no==3) {
 					//공지사항
 					dao.selectNotice();
-					System.out.print("선택한 글의 번호:");
-					int num = Integer.parseInt(br.readLine());
+					int num; boolean flag = false;
+					do {
+						if(flag) {
+							System.out.print("\n존재하지 않는 글 번호 입니다.\n다시 ");
+						}
+						System.out.print("조회하실 글의 번호 입력 : ");
+						num = Integer.parseInt(br.readLine());
+						flag = true;
+					} while (!dao_jw.checkNoticeNum(num));
 					System.out.println("-".repeat(90));
+					dao_jw.updateNoticeViewCount(num); // 상세정보 보면서 조회수 증가 위해 먼저 
 					dao.selectDetailNotice(num);
+					
 				} else if (no==4) {
 					//회원가입
 					System.out.println("회원가입 페이지입니다.");
