@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class LibraryMain_mg {
 	private BufferedReader br;
-	private String mem_id="1234"; // 로그인한 아이디 저장
+	private String mem_id; // 로그인한 아이디 저장
 //	private String mem_id;
 
 	private boolean isSelectSeven = false;
@@ -210,7 +210,7 @@ public class LibraryMain_mg {
 		dao.selectDetailBook(book_num);
 		System.out.println("-".repeat(90));
 
-		if(mem_id != null) { //TODO 로그인시에만 대여 예약 가능
+		if(mem_id != null) { 
 			orderOrReserveMenu(book_num); // 대여 예약
 		}
 	}
@@ -795,6 +795,6 @@ public class LibraryMain_mg {
 
 
 	public static void main(String[] args) {
-		new LibraryMain_mg();
+		//new LibraryMain_mg();
 	} // main
 } // class
