@@ -175,7 +175,7 @@ public class BookDAO_il {
 		}
 	} // deleteMember()
 
-	//도서 목록 조회(우선 20개만-> 조회 범위 재검토요망)
+	//도서 목록 조회
 	public void selectBook() {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -183,14 +183,15 @@ public class BookDAO_il {
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT * FROM book WHERE book_num<=20 ORDER BY book_num DESC"; // 20개만 출력(랜덤으로 출력되게 수정요망)
+			//최근 등록한 책 10개만 출력
+			sql = "SELECT * FROM (SELECT * FROM book ORDER BY book_num DESC) WHERE ROWNUM <= 10"; 
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
-			System.out.println("-".repeat(100));
+			System.out.println("-".repeat(110));
 			if (rs.next()) {
 				// 출력항목 검토요망 - 추천순위 제외 출력
-				System.out.println("책번호\t제목\t\t\t저자\t\t출판사\t\t출판년도\t카테고리\t보유권수\t등록일");
-				System.out.println("-".repeat(100));
+				System.out.println("책번호\t제목\t\t\t저자\t\t\t출판사\t\t출판년도\t카테고리\t보유권수\t등록일");
+				System.out.println("-".repeat(110));
 				do {
 					System.out.print(rs.getInt("book_num")+"\t");
 					// 제목 길이 제한출력(20자)
@@ -199,8 +200,8 @@ public class BookDAO_il {
 					else System.out.printf("%-15s\t", title);
 					// 저자 길이 제한출력(10자)
 					String author=rs.getString("book_author");	
-					if (author.length()>=10) System.out.printf("%-10s..\t", author.substring(0, 11));
-					else System.out.printf("%-10s\t", author);
+					if (author.length()>=10) System.out.printf("%-10s..\t\t", author.substring(0, 10));
+					else System.out.printf("%-10s\t\t", author);
 					System.out.printf("%-10s\t", rs.getString("book_publisher"));			
 					System.out.print(rs.getInt("book_p_year")+"\t");					
 					System.out.print(rs.getString("book_category")+"\t");					
@@ -210,7 +211,7 @@ public class BookDAO_il {
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");	
 			} //if-else
-			System.out.println("-".repeat(100));
+			System.out.println("-".repeat(110));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
