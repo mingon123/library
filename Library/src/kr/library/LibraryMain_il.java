@@ -229,12 +229,27 @@ public class LibraryMain_il {
 									String mem_id = checkMember();						
 									System.out.print("책번호: "); 
 									int book_num = checkBook();	
-									System.out.print("대여일: ");
-									java.sql.Date order_date = Date.valueOf(br.readLine()); 
-									// 자료형 재확인요망 (yyyy-[m]m-[d]d 형식으로 입력해야함. or IllegalArgumentException 예외 발생.)
-									System.out.print("반납기한일: ");
-									java.sql.Date return_date = Date.valueOf(br.readLine()); 
-									// 자료형 재확인요망 (yyyy-[m]m-[d]d 형식으로 입력해야함. or IllegalArgumentException 예외 발생.)										
+									java.sql.Date order_date=null; //대여일 유효성 체크								
+									do {
+										try {
+											System.out.print("대여일: ");
+											order_date = Date.valueOf(br.readLine()); 
+											// 자료형 재확인요망 (yyyy-[m]m-[d]d 형식으로 입력해야함. or IllegalArgumentException 예외 발생.)
+										} catch (IllegalArgumentException e) {
+											System.out.println("잘못된 날짜형식입니다. 올바른 날짜형식[YYYY-(M)M-(D)D]으로 입력하세요.");
+										} 
+									} while (!(order_date instanceof java.sql.Date));
+									java.sql.Date return_date=null; //반납일 유효성 체크
+									do {
+										try {
+											System.out.print("반납기한일: ");
+											return_date = Date.valueOf(br.readLine()); 
+											// 자료형 재확인요망 (yyyy-[m]m-[d]d 형식으로 입력해야함. or IllegalArgumentException 예외 발생.)									
+										} catch (IllegalArgumentException e) {
+											System.out.println("잘못된 날짜형식입니다. 올바른 날짜형식[YYYY-(M)M-(D)D]으로 입력하세요.");
+										} 
+									} while (!(return_date instanceof java.sql.Date));
+									
 									System.out.print("연장유무(O/X): ");
 									int is_add = br.readLine().equals("O") ? 1 : 0; // 연장기한+7 필요(수정요망)									
 									System.out.print("반납유무(O/X): ");
