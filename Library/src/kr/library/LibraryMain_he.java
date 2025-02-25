@@ -60,9 +60,12 @@ public class LibraryMain_he {
 					String id;
 					boolean isDuplicateId, isValidId;
 					do {
-						System.out.print("아이디 (영문,숫자 최소 6~12자):");
+						System.out.print("아이디(영문,숫자 최소 6~12자) (뒤로가기:q) :");
 						id = br.readLine();
-						
+						if(id.equalsIgnoreCase("q")) {
+							System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
+							callMenu();
+						}
 					    isDuplicateId = dao.isDuplicateId(id);
 					    isValidId = dao.checkValidId(id);
 						
@@ -73,9 +76,12 @@ public class LibraryMain_he {
 					String passwd;
 					boolean isValidPw;
 					do {
-						System.out.print("비밀번호 (영문,숫자,특수문자 포함 최소8자 이상):");
+						System.out.print("비밀번호(영문,숫자,특수문자 포함 최소8자 이상) (뒤로가기:q) :");
 						passwd = br.readLine();
-						
+						if(passwd.equalsIgnoreCase("q")) {
+							System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
+							callMenu();
+						}
 						isValidPw = dao.checkValidPassword(passwd);
 						
 						if(!isValidPw) System.out.println("형식에 맞지 않습니다.");
@@ -84,9 +90,12 @@ public class LibraryMain_he {
 					String name;
 					boolean isValidName;
 					do {
-						System.out.print("이름 (한글,영문,숫자만 입력 가능):");
+						System.out.print("이름(한글,영문,숫자만 입력 가능) (뒤로가기:q) :");
 						name = br.readLine();
-						
+						if(name.equalsIgnoreCase("q")) {
+							System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
+							callMenu();
+						}
 						isValidName = dao.checkValidName(name);
 						
 						if(!isValidName) System.out.println("형식에 맞지 않습니다.");
@@ -95,9 +104,12 @@ public class LibraryMain_he {
 					String cell;
 					boolean isDupicateCell,isValidCell;
 					do {
-						System.out.print("전화번호 (010-0000-0000 형식) :");
+						System.out.print("전화번호(010-0000-0000 형식) (뒤로가기:q) :");
 						cell  = br.readLine();
-						
+						if(cell.equalsIgnoreCase("q")) {
+							System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
+							callMenu();
+						}
 						isValidCell = dao.checkValidCell(cell);
 						isDupicateCell = dao.isDuplicateCell(cell);
 						
@@ -108,9 +120,12 @@ public class LibraryMain_he {
 					String email;
 					boolean isValidEmail;
 					do {
-						System.out.print("이메일:");
+						System.out.print("이메일(test@test.com 형식) (뒤로가기:q) :");
 						email = br.readLine();
-						
+						if(email.equalsIgnoreCase("q")) {
+							System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
+							callMenu();
+						}
 						isValidEmail = dao.checkValidEmail(email);
 						
 						if(!isValidEmail) System.out.println("형식에 맞지 않습니다.");
