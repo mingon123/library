@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 public class LibraryMain_il {
 	private BufferedReader br;
 	private BookDAO_il dao;
+	private LibraryMain_he main_he;
+	private LibraryMain_mg main_mg;
 	private String mem_id; // 로그인한 아이디 저장
 	private boolean flag; // 로그인 여부 
 
@@ -31,13 +33,27 @@ public class LibraryMain_il {
 		}
 	} // LibraryMain_il()
 
+	public LibraryMain_il(String mem_id) {
+		try {
+			br = new BufferedReader(new InputStreamReader(System.in));
+			dao = new BookDAO_il();			
+			this.mem_id = mem_id;
+			callAdminMenu(); // 메뉴 호출
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally { 
+			// 자원정리
+			if(br!=null) try {br.close();} catch(IOException e) {}	
+		}
+	} // LibraryMain_il(String mem_id)
+	
 	// 관리자 메뉴 호출
 	private void callAdminMenu() throws IOException {		
 		// 로그인 성공후 관리자 메뉴 호출
 		out: // 2nd depth 메뉴에서 뒤로가기 호출 후 종료시 바로 빠져나가려고 라벨 붙여놓음.
 			while(true) { // flag로 수정요망
 				System.out.print("1.회원 관리, 2.도서 관리, 3.대여 관리, 4.예약 관리, 5.희망도서 관리,\n"
-						+ "6.리뷰 관리, 7.공지사항 관리, 8.Q&A 관리, 9.통계, 10.종료\n"
+						+ "6.리뷰 관리, 7.공지사항 관리, 8.Q&A 관리, 9.통계, 10.로그아웃, 11.종료\n"
 						+ "번호를 입력하세요.> ");
 				try {
 					int no = Integer.parseInt(br.readLine());
@@ -527,9 +543,15 @@ public class LibraryMain_il {
 							}							
 						} while (num!=1||num!=2||num!=3||num!=4);
 
-					} else if (no==10) { // 프로그램 종료 
+					} else if (no==10) { // 10.로그아웃
+						System.out.println("로그아웃을 선택하셨습니다.");
+						main_he = new LibraryMain_he();
+						
+					} else if (no==11) { // 11.프로그램 종료 
 						System.out.println("프로그램 종료");
-						break;
+						main_mg = new LibraryMain_mg();
+						main_mg.closeReader();
+						System.exit(0);
 
 					} else {
 						System.out.println("잘못 입력했습니다. 다시 입력하세요.");				
@@ -541,7 +563,7 @@ public class LibraryMain_il {
 	} // callAdminMenu()
 
 	public static void main(String[] args) {
-		new LibraryMain_il();
+		//new LibraryMain_il();
 	} // main
 	
 	// 회원아이디 유효성검사 // 정규표현식 참고 FROM BookDAO_he
@@ -707,5 +729,7 @@ public class LibraryMain_il {
 		} while (count!=1);	
 		return qna_num;		
 	} //checkQnA()
+	
+	
 
 } // class

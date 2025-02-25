@@ -11,6 +11,7 @@ public class LibraryMain_he {
 	private BookDAO_he dao;
 	private LibraryMain_mg main_mg;
 	private BookDAO_Jw dao_jw;
+	private LibraryMain_il main_il;
 
 	public LibraryMain_he() {
 		this.mem_id = null;
@@ -22,9 +23,6 @@ public class LibraryMain_he {
 			callMenu();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}finally {
-			if(br!=null)try {br.close();}catch(IOException e ) {}
-
 		}
 	}
 	//메뉴 호출
@@ -140,7 +138,8 @@ public class LibraryMain_he {
 						System.out.println(mem_id + "님 로그인 되었습니다.");
 						//callMenu();
 						if(mem_id.equals("admin")) {
-							//관리자 메인 메뉴 이동칸 TODO
+							//관리자 메인 메뉴 이동칸
+							main_il = new LibraryMain_il(mem_id);
 						}else {
 							main_mg = new LibraryMain_mg(mem_id);
 						}
@@ -149,7 +148,9 @@ public class LibraryMain_he {
 				} else if (no==6) {
 					//종료
 					System.out.println("프로그램 종료");
-					break;
+					main_mg = new LibraryMain_mg();
+					main_mg.closeReader();
+					System.exit(0); break;
 				} else {
 					System.out.println("잘못 입력했습니다.");
 				}
@@ -158,6 +159,7 @@ public class LibraryMain_he {
 			}
 		}
 	}
+
 	public static void main(String[] args) {
 		new LibraryMain_he();
 	}

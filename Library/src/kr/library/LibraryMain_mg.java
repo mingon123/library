@@ -91,6 +91,7 @@ public class LibraryMain_mg {
 					}else if(no==9) {
 						// 종료
 						System.out.println("프로그램 종료");
+						closeReader();
 						System.exit(0);
 					} else {
 						System.out.println("잘못 입력하셨습니다.");
