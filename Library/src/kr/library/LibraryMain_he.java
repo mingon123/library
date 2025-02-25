@@ -9,8 +9,10 @@ public class LibraryMain_he {
 	private String mem_id;//로그인한 아이디 저장
 	private boolean flag;//로그인 여부
 	private BookDAO_he dao;
-	
+	private LibraryMain_mg main_mg;
+
 	public LibraryMain_he() {
+		this.mem_id = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(System.in));
 			dao= new BookDAO_he ();
@@ -21,18 +23,22 @@ public class LibraryMain_he {
 		}finally {
 			if(br!=null)try {br.close();}catch(IOException e ) {}
 
-			
 		}
 	}
 	//메뉴 호출
 	private void callMenu()throws IOException {
 		//로그인 체크 영역
 		while(true) {
-			System.out.print("3.공지사항확인 4.회원가입 5.로그인 6.종료:");
+			System.out.print("1.도서목록 2.도서검색 3.공지사항확인 4.회원가입 5.로그인 6.종료\n >");
 			try {
 				int no= Integer.parseInt(br.readLine());
-				
-				if (no==3) {
+				if(no==1) {
+					main_mg = new LibraryMain_mg();
+					main_mg.showTwoMenu();
+				}else if(no==2) {
+					main_mg = new LibraryMain_mg();
+					main_mg.showThreeMemu();
+				}else if (no==3) {
 					//공지사항
 					dao.selectNotice();
 					System.out.print("선택한 글의 번호:");
@@ -56,29 +62,35 @@ public class LibraryMain_he {
 
 					System.out.print("이메일:");
 					String email = br.readLine();
-					
+
 					dao.insertInfo(id, passwd, name, cell, email);
 
 				} else if(no ==5) {
 					//로그인
 					System.out.print("아이디(입력취소:q):");
 					mem_id = br.readLine();
-					
+
 					//0이면 입력 취소
 					if(mem_id.equalsIgnoreCase("q")) continue;
-					
+
 					System.out.print("비밀번호:");
 					String mem_pw = br.readLine();
-					
+
 					flag = dao.loginCheck(mem_id, mem_pw);
 					if(flag) {
 						System.out.println(mem_id + "님 로그인 되었습니다.");
-						callMenu();
+						//callMenu();
+						if(mem_id.equals("admin")) {
+							//관리자 메인 메뉴 이동칸 TODO
+						}else {
+							main_mg = new LibraryMain_mg(mem_id);
+						}
 					}
 					System.out.println("아이디 또는 비밀번호가 불일치합니다.");				
-						
+
 				} else if (no==6) {
 					//종료
+					main_mg.closeReader();
 					System.out.println("프로그램 종료");
 					break;
 				} else {

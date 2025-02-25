@@ -7,7 +7,8 @@ import java.util.regex.Pattern;
 
 public class LibraryMain_mg {
 	private BufferedReader br;
-	private String mem_id="aasd"; // 로그인한 아이디 저장
+	private String mem_id; // 로그인한 아이디 저장
+	//private String mem_id;
 
 	private boolean isSelectSeven = false;
 	private boolean isSelectTwo = false;
@@ -18,14 +19,28 @@ public class LibraryMain_mg {
 	private BookDAO_il il;
 	private BookDAO_Jw jw;
 	private LibraryMain_jw2 main_jw;
+	private LibraryMain_he main_he;
+
 
 	public LibraryMain_mg() {
+		try {
+			br = new BufferedReader(new InputStreamReader(System.in));
+			dao = new BookDAO_mg();
+			il = new BookDAO_il();
+			jw = new BookDAO_Jw();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public LibraryMain_mg(String mem_id) {
 		try {
 			dao = new BookDAO_mg();
 			il = new BookDAO_il();
 			jw = new BookDAO_Jw();
 			br = new BufferedReader(new InputStreamReader(System.in));
-			
+			this.mem_id = mem_id;
 			// 메뉴 호출
 			callMenu();
 		} catch (Exception e) {
@@ -40,18 +55,16 @@ public class LibraryMain_mg {
 		while(true) {
 			if(isStart) {
 				Open.main(null);
-				System.out.print("1.사용자알림 2.도서목록 3.도서검색 4.리뷰확인 5.대여/예약 6.반납 7.기타메뉴 9.종료\n > ");
+				System.out.print("1.사용자알림 2.도서목록 3.도서검색 4.리뷰확인 5.대여/예약 6.반납 7.기타메뉴 8.로그아웃 9.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
 					if(no==1) {
 						checkUserNotifications();
 					} else if(no==2) {
 						isStart = false;
-						isSelectTwo = true;
 						showTwoMenu();
 					} else if(no==3) {
 						isStart = false;
-						isSelectThree = true;
 						showThreeMemu();
 					} else if(no==4) {
 						isStart = false;
@@ -71,7 +84,11 @@ public class LibraryMain_mg {
 						isSelectSeven = true;
 						System.out.println("기타 메뉴를 선택하셨습니다.");
 						showSevenMenu();
-					} else if(no==9) {
+					}else if(no==8) {
+						isStart = false;
+						System.out.println("로그아웃을 선택하셨습니다.");
+						main_he = new LibraryMain_he();
+					}else if(no==9) {
 						// 종료
 						System.out.println("프로그램 종료");
 						System.exit(0);
@@ -109,7 +126,8 @@ public class LibraryMain_mg {
 	} // checkUserNotifications
 
 	// 2번선택 시 나오는 화면
-	private void showTwoMenu() throws IOException {
+	public void showTwoMenu() throws IOException {
+		isSelectTwo = true;
 		while (isSelectTwo) {			
 			System.out.println("도서목록 확인");
 			System.out.print("1.카테고리별 2.추천순위 3.신간책 4.대여베스트 5.뒤로가기\n > ");
@@ -192,11 +210,13 @@ public class LibraryMain_mg {
 		dao.selectDetailBook(book_num);
 		System.out.println("-".repeat(90));
 
-		orderOrReserveMenu(book_num); // 대여 예약
+		if(mem_id != null) { //TODO 로그인시에만 대여 예약 가능
+			orderOrReserveMenu(book_num); // 대여 예약
+		}
 	}
 
 	private void orderOrReserveMenu(int book_num) throws IOException {
-		
+
 		System.out.print("1.대여하기 2.예약하기 3.뒤로가기\n >");
 		int no; boolean flag;
 		try {
@@ -316,11 +336,12 @@ public class LibraryMain_mg {
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
 		}
-		
+
 	}
 
 	// 3번 선택 시 나오는 메뉴
-	private void showThreeMemu() throws IOException {
+	public void showThreeMemu() throws IOException {
+		isSelectThree = true;
 		while(isSelectThree) {
 			System.out.println("도서 검색");
 			System.out.print("1.제목 2.저자 3.뒤로가기\n > ");
@@ -749,11 +770,21 @@ public class LibraryMain_mg {
 		}
 	} // deleteMemberInfo
 
+	public void closeReader() {
+		if (br != null) {
+			try {
+				br.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 
 
 
 
 	public static void main(String[] args) {
-		new LibraryMain_mg();
+		//new LibraryMain_mg();
 	} // main
 } // class

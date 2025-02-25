@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 
 public class LibraryMain_jw2 {
 	private BufferedReader br;
-	private String mem_id; // 로그인한 아이디 저장
+	//private String mem_id; // 로그인한 아이디 저장
 	private boolean isSelectFive = false;
 	private BookDAO_Jw dao;
 	private LibraryMain_mg main;
@@ -34,7 +34,7 @@ public class LibraryMain_jw2 {
 						System.out.println("현재 정지상태입니다. 대여/예약이 불가능합니다.");
 						System.out.println("홈화면으로 돌아갑니다.\n");
 						//continue;
-						main = new LibraryMain_mg();
+						main = new LibraryMain_mg(mem_id);
 					}else if(no==5) { // 완
 						isSelectFive = true;
 						System.out.println("\n대여/예약 메뉴를 선택하셨습니다.");
@@ -52,7 +52,7 @@ public class LibraryMain_jw2 {
 							System.out.println("이전화면으로 돌아갑니다.\n");
 							
 							//continue;
-							main = new LibraryMain_mg();
+							main = new LibraryMain_mg(mem_id);
 						};
 
 						boolean flag = false; int order_num = -1; String s = "";
@@ -83,7 +83,7 @@ public class LibraryMain_jw2 {
 								System.out.println("\n반납을 취소하셨습니다.");
 								System.out.println("이전화면으로 돌아갑니다.");
 								//continue;
-								main = new LibraryMain_mg();
+								main = new LibraryMain_mg(mem_id);
 							}else if(s.equals("Y")||s.equals("y")) {
 								System.out.println();
 								dao.updateOrderReturn(order_num);
@@ -149,7 +149,7 @@ public class LibraryMain_jw2 {
 										System.out.println("리뷰 등록 중 입니다.");
 										dao.insertReviewInfo(book_num, content, rateInt, mem_id);
 										//continue;
-										main = new LibraryMain_mg();
+										main = new LibraryMain_mg(mem_id);
 									}
 
 								} while (!answer.equals("N") && !answer.equals("n") && !answer.equals("Y") && !answer.equals("y"));
@@ -510,7 +510,7 @@ public class LibraryMain_jw2 {
 						// 뒤로가기
 						System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
 						isSelectFive = false;
-						main = new LibraryMain_mg();
+						main = new LibraryMain_mg(mem_id);
 					} else {
 						System.out.println("잘못 입력하셨습니다.");
 					}
