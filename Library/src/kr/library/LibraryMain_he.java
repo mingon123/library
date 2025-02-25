@@ -16,7 +16,7 @@ public class LibraryMain_he {
 		this.mem_id = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(System.in));
-			dao= new BookDAO_he ();
+			dao = new BookDAO_he();
 			dao_jw = new BookDAO_Jw();
 			//메뉴 호출
 			callMenu();
@@ -59,23 +59,71 @@ public class LibraryMain_he {
 				} else if (no==4) {
 					//회원가입
 					System.out.println("회원가입 페이지입니다.");
-					System.out.print("아이디 (영문,숫자 최소 6~12자):");
-					String id = br.readLine();
+					String id;
+					boolean isDuplicateId, isValidId;
+					do {
+						System.out.print("아이디 (영문,숫자 최소 6~12자):");
+						id = br.readLine();
+						
+					    isDuplicateId = dao.isDuplicateId(id);
+					    isValidId = dao.checkValidId(id);
+						
+					    if (isDuplicateId) System.out.println("이미 존재하는 아이디입니다.");
+					    else if (!isValidId) System.out.println("형식에 맞지 않습니다.");
+					} while(isDuplicateId||!isValidId);
+					
+					String passwd;
+					boolean isValidPw;
+					do {
+						System.out.print("비밀번호 (영문,숫자,특수문자 포함 최소8자 이상):");
+						passwd = br.readLine();
+						
+						isValidPw = dao.checkValidPassword(passwd);
+						
+						if(!isValidPw) System.out.println("형식에 맞지 않습니다.");
+					} while(!isValidPw);
+					
+					String name;
+					boolean isValidName;
+					do {
+						System.out.print("이름 (한글,영문,숫자만 입력 가능):");
+						name = br.readLine();
+						
+						isValidName = dao.checkValidName(name);
+						
+						if(!isValidName) System.out.println("형식에 맞지 않습니다.");
+					} while(!isValidName);
 
-					System.out.print("비밀번호 (영문,숫자,특수문자 최소8 이상):");
-					String passwd = br.readLine();
+					String cell;
+					boolean isDupicateCell,isValidCell;
+					do {
+						System.out.print("전화번호 (010-0000-0000 형식) :");
+						cell  = br.readLine();
+						
+						isValidCell = dao.checkValidCell(cell);
+						isDupicateCell = dao.isDuplicateCell(cell);
+						
+						if(!isValidCell) System.out.println("형식에 맞지 않습니다.");
+						if(isDupicateCell) System.out.println("이미 등록된 전화번호입니다.");
+					} while(!isValidCell || isDupicateCell);
 
-					System.out.print("이름 (한글, 영문만 입력 가능):");
-					String name = br.readLine();
+					String email;
+					boolean isValidEmail;
+					do {
+						System.out.print("이메일:");
+						email = br.readLine();
+						
+						isValidEmail = dao.checkValidEmail(email);
+						
+						if(!isValidEmail) System.out.println("형식에 맞지 않습니다.");
+					} while(!isValidEmail);
 
-					System.out.print("전화번호 (숫자만 입력 가능):");
-					String cell  = br.readLine();
-
-					System.out.print("이메일:");
-					String email = br.readLine();
-
-					dao.insertInfo(id, passwd, name, cell, email);
-
+					boolean success = dao.insertInfo(id, passwd, name, cell, email);
+					if (success) {
+					    System.out.println("회원가입이 완료되었습니다.");
+					} else {
+					    System.out.println("회원가입에 실패했습니다. 다시 시도해주세요.");
+					}
 				} else if(no ==5) {
 					//로그인
 					System.out.print("아이디(입력취소:q):");
@@ -96,8 +144,7 @@ public class LibraryMain_he {
 						}else {
 							main_mg = new LibraryMain_mg(mem_id);
 						}
-					}
-					System.out.println("아이디 또는 비밀번호가 불일치합니다.");				
+					} else System.out.println("아이디 또는 비밀번호가 불일치합니다.");				
 
 				} else if (no==6) {
 					//종료
