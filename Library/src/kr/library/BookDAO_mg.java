@@ -667,9 +667,9 @@ public class BookDAO_mg {
 		try {
 			conn = DBUtil.getConnection();
 			sql  = "SELECT * FROM ("
-					+ "SELECT b.book_num,b.book_title,b.book_author,b.book_category,count(o.book_num) AS cnt "
+					+ "SELECT b.book_num,b.book_title,b.book_author,b.book_category,count(o.book_num) AS cnt,b.book_rank "
 					+ "FROM book_order o JOIN book b ON b.book_num=o.book_num "
-					+ "GROUP BY b.book_num,book_title, book_author, book_category ORDER BY cnt DESC)"
+					+ "GROUP BY b.book_num,book_title, book_author, book_category, book_rank ORDER BY cnt DESC,b.book_rank)"
 					+ "WHERE ROWNUM <= 10";
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
@@ -897,7 +897,9 @@ public class BookDAO_mg {
 					System.out.println(rs.getString("review_content")+"\t");
 				} while(rs.next());
 			} else {
-				System.out.println("리뷰 내역이 없습니다.");
+				System.out.println("작성한 리뷰가 없습니다.");
+				System.out.println("-".repeat(90));
+				return false;
 			}
 			System.out.println("-".repeat(90));
 			return true;
@@ -1054,13 +1056,16 @@ public class BookDAO_mg {
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT b.book_num, b.book_category, COALESCE(AVG(r.review_rate), 0) AS review_rate, "
-				    + "b.book_title, b.book_author, b.book_publisher, b.book_p_year, "
-				    + "b.book_rank, b.book_volm_cnt, b.book_reg_date, "
-				    + "COALESCE(LISTAGG(r.review_content, ' | ') WITHIN GROUP (ORDER BY r.review_rate), '리뷰 없음') AS review_content "
-				    + "FROM book b LEFT JOIN review r ON b.book_num = r.book_num "
-				    + "WHERE b.book_num = ? GROUP BY b.book_num, b.book_category, b.book_title, b.book_author, "
-				    + "b.book_publisher, b.book_p_year, b.book_rank, b.book_volm_cnt, b.book_reg_date";
+	        sql = "SELECT b.book_num, b.book_category, "
+	                + "COALESCE(AVG(r.review_rate), NULL) AS review_rate, "
+	                + "b.book_title, b.book_author, b.book_publisher, b.book_p_year, "
+	                + "b.book_rank, b.book_volm_cnt, b.book_reg_date, "
+	                + "COALESCE(LISTAGG(r.review_content, ' | ') WITHIN GROUP (ORDER BY r.review_rate), '리뷰 없음') AS review_content "
+	                + "FROM book b LEFT JOIN review r ON b.book_num = r.book_num "
+	                + "WHERE b.book_num = ? "
+	                + "GROUP BY b.book_num, b.book_category, b.book_title, b.book_author, "
+	                + "b.book_publisher, b.book_p_year, b.book_rank, b.book_volm_cnt, b.book_reg_date";
+
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, bookNum);
 			rs = pstmt.executeQuery();
@@ -1073,12 +1078,16 @@ public class BookDAO_mg {
 				System.out.println("카테고리 : " + rs.getString("book_category"));
 				System.out.println("추천순위 : " + rs.getInt("book_rank"));
 				System.out.println("보유권수 : " + rs.getInt("book_volm_cnt"));
-				System.out.println("등록일 : " + rs.getDate("book_reg_date"));	
-				System.out.println("평균 평점 : " + rs.getDouble("review_rate"));
-				System.out.println("리뷰 내용 : " + rs.getString("review_content"));
-			} else {
-				System.out.println("검색된 정보가 없습니다.");
-			}			
+				System.out.println("등록일 : " + rs.getDate("book_reg_date"));
+				
+	            double reviewRate = rs.getDouble("review_rate");
+	            String reviewRateStr = rs.wasNull() ? "정보 없음" : String.valueOf(reviewRate);
+	            System.out.println("평균 평점 : " + reviewRateStr);
+
+	            System.out.println("리뷰 내용 : " + rs.getString("review_content"));
+	        } else {
+	            System.out.println("검색된 정보가 없습니다.");
+	        }		
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
 
 public class LibraryMain_mg {
 	private BufferedReader br;
-	private String mem_id; // 로그인한 아이디 저장
-	//private String mem_id;
+	private String mem_id="1234"; // 로그인한 아이디 저장
+//	private String mem_id;
 
 	private boolean isSelectSeven = false;
 	private boolean isSelectTwo = false;
@@ -28,7 +28,7 @@ public class LibraryMain_mg {
 			dao = new BookDAO_mg();
 			il = new BookDAO_il();
 			jw = new BookDAO_Jw();
-
+			callMenu();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -370,13 +370,15 @@ public class LibraryMain_mg {
 
 	// 제목으로 도서 검색
 	private void selectSearchBookTitle() throws IOException {
-		System.out.print("검색할 책 제목 검색 : ");
+		System.out.print("검색할 책 제목 검색 (뒤로가기:q) : ");
 		String title = br.readLine();
+		if(title.equalsIgnoreCase("q")) showThreeMemu();
 		int count = dao.checkBookTitleRecord(title);
 		do {
 			if(count==0) {
-				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 : ");
+				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 (뒤로가기:q) : ");
 				title = br.readLine();
+				if(title.equalsIgnoreCase("q")) showThreeMemu();
 				count = dao.checkBookTitleRecord(title);
 			} else if (count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
@@ -388,13 +390,15 @@ public class LibraryMain_mg {
 
 	// 저자로 도서 검색
 	private void selectSearchBookAuthor() throws IOException {
-		System.out.print("검색할 책 저자 검색 : ");
+		System.out.print("검색할 책 저자 검색 (뒤로가기:q) : ");
 		String author = br.readLine();
+		if(author.equalsIgnoreCase("q")) showThreeMemu();
 		int count = dao.checkBookAuthorRecord(author);
 		do {
 			if(count==0) {
-				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 : ");
+				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 (뒤로가기:q) : ");
 				author = br.readLine();
+				if(author.equalsIgnoreCase("q")) showThreeMemu();
 				count = dao.checkBookAuthorRecord(author);
 			} else if(count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
@@ -486,7 +490,6 @@ public class LibraryMain_mg {
 			updateMyReview();
 		} else if(no==3) {
 			deleteMyReview();
-			System.out.println("-".repeat(90));
 		} else if(no==4) {
 			System.out.println("뒤로가기를 선택하셨습니다.");
 			showFourMenu();
@@ -497,10 +500,8 @@ public class LibraryMain_mg {
 	// 리뷰 수정
 	private void updateMyReview() throws IOException {
 		boolean MyReview = dao.selectMyReviewInfo(mem_id);
-		if(!MyReview) {
-			System.out.println("작성한 리뷰가 없습니다.");
-			return;
-		}
+		if(!MyReview) return;
+		
 		try {
 			System.out.print("수정할 번호를 입력하세요: ");
 			int num = Integer.parseInt(br.readLine());
@@ -512,7 +513,10 @@ public class LibraryMain_mg {
 				int rate = Integer.parseInt(br.readLine());
 				dao.updateMyReview(num, content, rate, mem_id);
 			}
-			else if(count==0) System.out.println("본인이 작성한 리뷰가 아닙니다.");
+			else if(count==0) {
+				System.out.println("본인이 작성한 리뷰가 아닙니다.");
+				System.out.println("-".repeat(90));
+			}
 			else if(count==-1) System.out.println("정보 처리 중 오류 발생");
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
@@ -523,10 +527,8 @@ public class LibraryMain_mg {
 	// 내 리뷰 삭제
 	private void deleteMyReview() throws IOException {
 		boolean MyReview = dao.selectMyReviewInfo(mem_id);
-		if(!MyReview) {
-			System.out.println("작성한 리뷰가 없습니다.");
-			return;
-		}
+		if(!MyReview) return;
+
 		try {
 			System.out.print("삭제할 번호를 입력하세요: ");
 			int num = Integer.parseInt(br.readLine());
@@ -534,7 +536,10 @@ public class LibraryMain_mg {
 			if(count>0) {
 				il.deleteReview(num);
 			}
-			else if(count==0) System.out.println("본인이 작성한 리뷰가 아닙니다.");
+			else if(count==0) {
+				System.out.println("본인이 작성한 리뷰가 아닙니다.");
+				System.out.println("-".repeat(90));
+			}
 			else if(count==-1) System.out.println("정보 처리 중 오류 발생");
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
@@ -614,8 +619,11 @@ public class LibraryMain_mg {
 			return;
 		}
 		try {
-			System.out.print("삭제할 번호를 입력하세요: ");
-			int num = Integer.parseInt(br.readLine());
+			System.out.print("삭제할 번호를 입력하세요 (뒤로가기:q) : ");
+			String del = br.readLine();
+			if(del.equalsIgnoreCase("q")) return;
+			
+			int num = Integer.parseInt(del);
 			int count = dao.checkRecord(mem_id);
 			if(count==1) dao.deleteWishBookInfo(mem_id, num);
 			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
@@ -667,8 +675,10 @@ public class LibraryMain_mg {
 			return;
 		}
 		try {
-			System.out.print("삭제할 번호를 입력하세요: ");
-			int num = Integer.parseInt(br.readLine());
+			System.out.print("삭제할 번호를 입력하세요 (뒤로가기:q) : ");
+			String del = br.readLine();
+			if(del.equalsIgnoreCase("q")) return;
+			int num = Integer.parseInt(del);
 			int count = dao.checkRecord(mem_id);
 			if(count==1) dao.deleteQNAInfo(mem_id, num);
 			else if(count==0) System.out.println("번호를 잘못입력했습니다.");
@@ -785,6 +795,6 @@ public class LibraryMain_mg {
 
 
 	public static void main(String[] args) {
-		//new LibraryMain_mg();
+		new LibraryMain_mg();
 	} // main
 } // class
