@@ -101,7 +101,6 @@ public class LibraryMain_he {
 
 				} else if (no==6) {
 					//종료
-					main_mg.closeReader();
 					System.out.println("프로그램 종료");
 					break;
 				} else {
