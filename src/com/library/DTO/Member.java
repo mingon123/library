@@ -1,5 +1,6 @@
-package com.library.model;
+package com.library.DTO;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class Member {
@@ -19,7 +20,6 @@ public class Member {
 		this.memName = memName;
 		this.memCell = memCell;
 		this.memEmail = memEmail;
-		this.memDate = new Date();
 	}
 
 	public String getMemId() {
@@ -28,6 +28,7 @@ public class Member {
 
 	public void setMemId(String memId) {
 		this.memId = memId;
+		setMemMdate(); // 수정되면 수정일 갱신
 	}
 
 	public String getMemPw() {
@@ -44,6 +45,7 @@ public class Member {
 
 	public void setMemName(String memName) {
 		this.memName = memName;
+		setMemMdate();
 	}
 
 	public String getMemCell() {
@@ -60,30 +62,31 @@ public class Member {
 
 	public void setMemEmail(String memEmail) {
 		this.memEmail = memEmail;
+		setMemMdate();
 	}
 
 	public Date getMemDate() {
 		return memDate;
 	}
 
-	public void setMemDate(Date memDate) {
-		this.memDate = memDate;
-	}
-
 	public Date getMemMdate() {
 		return memMdate;
 	}
 
-	public void setMemMdate(Date memMdate) {
-		this.memMdate = memMdate;
+	public void setMemMdate() {
+		this.memMdate = new Date();
 	}
 
 	public Date getMemStopDate() {
 		return memStopDate;
 	}
 
-	public void setMemStopDate(Date memStopDate) {
+	public void setMemStopDate(Date memStopDate, int overDays) {
 		this.memStopDate = memStopDate;
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(memStopDate);
+        cal.add(Calendar.DAY_OF_MONTH, overDays);
+        this.memStopDate = cal.getTime();
 	}
 	
 }
