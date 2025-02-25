@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import util.DBUtil;
 
 public class BookDAO_he {
-	
+
 	// 사용자 로그인 체크 (로그인 성공 true, 로그인 실패 false 반환)
 	public boolean loginCheck(String mem_id, String mem_pw) {
 		Connection conn = null;
@@ -32,110 +32,115 @@ public class BookDAO_he {
 		}
 		return flag;
 	}
+	
+	// 아이디 검증 (6~12자, 영문+숫자만 허용)
+    public boolean checkValidId(String id) {
+        return id != null && id.matches("^[a-zA-Z0-9]{6,12}$");
+    }
+	// 아이디 중복 검사(존재:true, 없:false)
+	public boolean isDuplicateId(String id) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = "SELECT COUNT(*) FROM member WHERE mem_id = ?";
+		try {
+			conn = DBUtil.getConnection();
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, id);
+			rs = pstmt.executeQuery();
 
-	//회원가입
-	public void insertInfo(String id, String passwd, String name, String cell, String email) {
+			if (rs.next() && rs.getInt(1) > 0) {
+				System.out.println("이미 존재하는 아이디입니다.");
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		return false;
+	}
+
+	// 비밀번호 검증(8자이상, 알파벳,숫자,특수기호 포함)
+	public boolean checkValidPassword(String passwd) {
+	    return passwd != null && passwd.length() >= 8 
+	        && passwd.matches(".*[a-zA-Z].*") 
+	        && passwd.matches(".*\\d.*") 
+	        && passwd.matches(".*[!@#$%^&*(),.?\":{}|<>].*");  // 특수문자 확장
+	}
+	
+    // 이름 검증(알파벳,한글,숫자만 가능)
+    public boolean checkValidName(String name) {
+        return name != null && name.matches("^[a-zA-Z가-힣0-9]+$");
+    }
+
+    
+    public boolean checkValidCell(String phone) {
+        return phone != null && phone.matches("^010-\\d{4}-\\d{4}$");
+    }
+	// 전화번호 중복 검사(중복:true,없:false)
+	public boolean isDuplicateCell(String cell) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = "SELECT COUNT(*) FROM member WHERE mem_cell = ?";
+		try {
+			conn = DBUtil.getConnection();
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, cell);
+			rs = pstmt.executeQuery();
+
+			if (rs.next() && rs.getInt(1) > 0) {
+				System.out.println("이미 존재하는 전화번호입니다.");
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		}
+		return false;
+	}
+
+	// 이메일 검증
+    public boolean checkValidEmail(String email) {
+        return email != null && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$");
+    }
+
+	// 회원가입
+	public boolean insertInfo(String id, String passwd, String name, String cell, String email) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		String sql = null;
-		ResultSet rs = null;
 		int cnt = 0;
+
+		if (isDuplicateId(id) || isDuplicateCell(cell)) return false;
+		if (!checkValidId(id)) return false;
+		if (!checkValidPassword(passwd)) return false;
+		if (!checkValidName(name)) return false;
+		if (!checkValidEmail(email)) return false;
+		if (!checkValidCell(cell)) return false;
 		
-		//아이디
-		 if (id == null || id.isEmpty()) {
-	            System.out.println("아이디를 입력해주세요.");
-	            return;
-	        }
-		 //유효성 검사
-		 if (!id.matches("^[a-zA-Z0-9]+$")) {  // ^문자열 시작 첫a-z소문자 A-Z대문자 0-9숫자 +앞 문자클래스 1이상 포함 $문자열 끝
-	            System.out.println("아이디는 영문자와 숫자만 포함할 수 있습니다.");
-	            return;
-	        }
-		 //중복검사
-		 try {
-		        conn = DBUtil.getConnection();
-		        sql = "SELECT COUNT(*) FROM member WHERE mem_id = ?";
-		        pstmt = conn.prepareStatement(sql);
-		        pstmt.setString(1, id);
-		        rs = pstmt.executeQuery();
-		        
-		        if (rs.next() && rs.getInt(1) > 0) {
-		            System.out.println("이미 존재하는 아이디입니다.");
-		            return;
-		        }// 레코드 정보의 다음 값이 존재하고 1 이상 존재시 true 면 프린트
-		    } catch (Exception e) {
-		        e.printStackTrace();
-		    } finally {
-		        DBUtil.executeClose(rs, pstmt, conn);
-		    }
-	    // 비밀번호
-	        if (passwd == null || passwd.isEmpty()) {
-	            System.out.println("비밀번호를 입력해주세요.");
-	            return;
-	        }
-	     // 유효성 검사 
-	        if (passwd.length() < 8) {
-	            System.out.println("비밀번호는 최소 8자 이상이어야 합니다.");
-	            return;
-	        }
-	        if (!passwd.matches(".*[a-z].*") || !passwd.matches(".*\\d.*") || !passwd.matches(".*[!@#$%^&*(),.?\":{}|<>].*")) {
-	            System.out.println("비밀번호는 소문자, 숫자, 특수문자를 포함해야 합니다.");
-	            return;
-	        }
-	        
-	        //이름
-	        if (name == null || name.isEmpty()) {
-	            System.out.println("이름을 입력해주세요.");
-	            return;
-	        }
-	        if (!name.matches("^[a-zA-Z가-힣]+$")) {  // 이름에 숫자나 특수문자가 포함되지 않도록
-	            System.out.println("이름은 한글이나 영문만 가능합니다.");
-	            return;
-	        }
-	        //전화번호
-	        if (cell == null || cell.isEmpty()) {
-	            System.out.println("전화번호를 입력해주세요.");
-	            return;
-	        }
-	        if (!cell.matches("^[0-9]+$")) {  // 전화번호는 숫자만 포함하도록
-	            System.out.println("전화번호는 숫자만 포함해야 합니다.");
-	            return;
-	        }
-	        //이메일
-	        if (email == null || email.isEmpty()) {
-	            System.out.println("이메일을 입력해주세요.");
-	            return;
-	        }
-	     //유효성 검사 
-	        if (!email.matches("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")) {
-	            System.out.println("유효하지 않은 이메일 형식입니다.");
-	            return;
-	        }
-		
-		
+		// DB 저장
 		try {
 			conn = DBUtil.getConnection();
 			sql = "INSERT INTO member(mem_id,mem_pw,mem_name,mem_cell,mem_email,mem_date) VALUES (?,?,?,?,?,sysdate)";
-			pstmt= conn.prepareStatement(sql);
+			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(++cnt, id);
 			pstmt.setString(++cnt, passwd);
 			pstmt.setString(++cnt, name);
 			pstmt.setString(++cnt, cell);
 			pstmt.setString(++cnt, email);
 			int rows = pstmt.executeUpdate();
-			if(rows>0) System.out.println("회원가입이 완료되었습니다.");
-			else System.out.println("회원가입에 실패했습니다.");
+			if (rows > 0) return true;
 		} catch (Exception e) {
 			e.printStackTrace();
-		}finally {
+		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
-	}
-
-	private boolean checkDuplicateId(String id) {
-		// TODO Auto-generated method stub
 		return false;
 	}
+
 
 	//notice
 	public void selectNotice() {
@@ -150,7 +155,7 @@ public class BookDAO_he {
 			rs=pstmt.executeQuery();
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
-				System.out.println("번호\t조회수\t  등록일\t\t제목");
+				System.out.println("번호\t조회수\t등록일\t\t제목");
 				System.out.println("-".repeat(90));
 				do {
 					System.out.print(rs.getInt("notice_num"));
@@ -171,7 +176,7 @@ public class BookDAO_he {
 			DBUtil.executeClose(rs, pstmt, conn);
 		}
 	}
-	//조회하는 레코드가 존재하는지 여부 체크
+	//조회하는 공지 레코드가 존재하는지 여부 체크
 	public int checkNoticeRecord(int num) {
 		Connection conn=null;
 		PreparedStatement pstmt = null;
@@ -194,7 +199,7 @@ public class BookDAO_he {
 		}
 		return count;
 	}
-	//상세보기
+	// 공지 상세보기
 	public void selectDetailNotice(int num) {
 		Connection conn=null;
 		PreparedStatement pstmt=null;
