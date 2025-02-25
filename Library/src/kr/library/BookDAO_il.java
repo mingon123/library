@@ -189,16 +189,18 @@ public class BookDAO_il {
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
 				// 출력항목 검토요망 - 추천순위 제외 출력
-				System.out.println("책번호\t제목\t\t저자\t출판사\t출판년도\t카테고리\t보유권수\t등록일"); // 수정요망
+				System.out.println("책번호\t제목\t\t\t저자\t\t출판사\t\t출판년도\t카테고리\t보유권수\t등록일"); // 수정요망
 				do {
 					System.out.print(rs.getInt("book_num")+"\t");
-					// 제목길이 제한출력여부 검토요망	
-					String book_title=rs.getString("book_title");					
-					int index = book_title.length()>=15 ? 15 : book_title.length();					
-					System.out.printf("%-15s\t", book_title.substring(0, index)); 
-					//System.out.print(rs.getString("book_title")+"\t");	
-					System.out.print(rs.getString("book_author")+"\t");					
-					System.out.print(rs.getString("book_publisher")+"\t");					
+					// 제목길이 제한출력(20자)
+					String title=rs.getString("book_title");					
+					if (title.length()>=15) System.out.printf("%-15s..\t", title.substring(0, 16));
+					else System.out.printf("%-15s\t", title);
+					// 제목길이 제한출력(10자)
+					String author=rs.getString("book_author");	
+					if (author.length()>=10) System.out.printf("%-10s..\t", author.substring(0, 11));
+					else System.out.printf("%-10s\t", author);
+					System.out.printf("%-10s\t", rs.getString("book_publisher"));			
 					System.out.print(rs.getInt("book_p_year")+"\t");					
 					System.out.print(rs.getString("book_category")+"\t");					
 					System.out.print(rs.getInt("book_volm_cnt")+"\t");					
