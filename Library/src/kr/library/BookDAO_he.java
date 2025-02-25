@@ -150,7 +150,8 @@ public class BookDAO_he {
 			rs=pstmt.executeQuery();
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
-				System.out.println("번호\t조회수\t등록일\t\t제목");
+				System.out.println("번호\t조회수\t  등록일\t\t제목");
+				System.out.println("-".repeat(90));
 				do {
 					System.out.print(rs.getInt("notice_num"));
 					System.out.print("\t");
@@ -211,6 +212,7 @@ public class BookDAO_he {
 				System.out.println("내용 : " + rs.getString("notice_content"));
 				System.out.println("조회수 : " + rs.getInt("notice_view"));
 				System.out.println("등록일 : " + rs.getDate("notice_reg_date"));
+				System.out.println("-".repeat(90));
 			}else {
 				System.out.println("검색된 정보가 없습니다.");
 			}
