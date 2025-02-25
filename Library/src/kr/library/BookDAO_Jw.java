@@ -1,15 +1,15 @@
 package kr.library;
 
 import java.sql.Connection;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Types;
 import java.util.HashSet;
 
 import util.DBUtil;
 
 public class BookDAO_Jw {
-
+	private BookDAO_mg mg = new BookDAO_mg();
 
 	//랜덤 책 정보 - 숫자 입력받아 하나로 재사용
 	public void randomBookInfo(int num) { // 평점 정보 출력하게 추가? TODO
@@ -33,6 +33,12 @@ public class BookDAO_Jw {
 			sql = "SELECT * FROM book WHERE BOOK_NUM=?";
 			pstmt = conn.prepareStatement(sql);
 
+			for (int randNum : hs) {
+				System.out.println("-".repeat(70));
+				mg.selectDetailBook(randNum);
+				System.out.println("-".repeat(70));
+			} // for randNum
+			/*
 			for (int randNum : hs) {
 				pstmt.setInt(1, randNum);
 				rs = pstmt.executeQuery();
@@ -66,6 +72,7 @@ public class BookDAO_Jw {
 					System.out.println("오류발생");
 				}
 			} // for randNum
+			*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
