@@ -9,10 +9,11 @@ import java.util.HashSet;
 import util.DBUtil;
 
 public class BookDAO_Jw {
-	private BookDAO_mg mg = new BookDAO_mg();
 
 	//랜덤 책 정보 - 숫자 입력받아 하나로 재사용
 	public void randomBookInfo(int num) { // 평점 정보 출력하게 추가? TODO
+		BookDAO_mg mg = new BookDAO_mg();
+		
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -72,7 +73,7 @@ public class BookDAO_Jw {
 					System.out.println("오류발생");
 				}
 			} // for randNum
-			*/
+			 */
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -1038,5 +1039,41 @@ public class BookDAO_Jw {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
 	}
+
+	// 한글은 2칸, 영어/숫자는 1칸으로 계산하는 함수
+	// 한글 2칸, 영어/숫자/특수문자는 1칸으로 계산하는 함수
+	public int consoleWidth(String str) {
+		int width = 0;
+		for (char ch : str.toCharArray()) {
+			if (ch >= '가' && ch <= '힣') { 
+				width += 2; // 한글은 2칸
+			} else if (Character.isWhitespace(ch)) { 
+				width += 1; // 공백은 1칸
+			} else if (ch >= '!' && ch <= '~') { 
+				width += 1; // 영어, 숫자, 일반 특수문자는 1칸
+			} else { 
+				width += 2; // 기타 유니코드 문자(한자, 일본어 등)는 2칸
+			}
+		}
+		return width;
+	}
+
+
+	// 콘솔 너비 기준으로 문자열을 자르는 함수 (한글 2칸 고려)
+	public String cutTitle(String str, int maxWidth) {
+		int width = 0;
+		StringBuilder sb = new StringBuilder();
+		for (char ch : str.toCharArray()) {
+			int charWidth = (ch >= '가' && ch <= '힣') ? 2 : 1;
+			if (width + charWidth > maxWidth - 3) { // "..." 포함하여 최대 길이 초과 방지
+				sb.append("...");
+				break;
+			}
+			sb.append(ch);
+			width += charWidth;
+		}
+		return sb.toString();
+	}
+
 
 }

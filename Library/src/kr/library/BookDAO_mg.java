@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import util.DBUtil;
 
 public class BookDAO_mg {
-	private BookDAO_Jw jw;
+	private BookDAO_Jw jw = new BookDAO_Jw();
 	private BookDAO_il il; //checkBookRecord(int book_num) 사용
 	
 	// 희망도서신청
@@ -554,7 +554,7 @@ public class BookDAO_mg {
 	} // isReservationNotification
 
 	
-	// 카테고리별 책
+	// 카테고리별 책 TODO
 	public void selectCategoryOfBook(String category) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -568,19 +568,48 @@ public class BookDAO_mg {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, category);
 			rs = pstmt.executeQuery();
-			System.out.println("-".repeat(90));
+			System.out.println("-".repeat(130));
 			if(rs.next()) {
-				System.out.println("책번호\t카테고리\t책제목\t\t\t저자");
+				System.out.println("책번호\t카테고리\t책제목\t\t\t\t\t\t\t저자");
+				//System.out.printf("%-4s %-8s %-40s %35s \n","책번호","카테고리","책제목","저자");
 				do {
+					/*
 					System.out.print(rs.getInt("book_num")+"\t");
 					System.out.print(rs.getString("book_category")+"\t");
 					System.out.print(rs.getString("book_title")+"\t");
 					System.out.println(rs.getString("book_author")+"\t");
+					*/
+					String title = rs.getString("book_title");
+
+					// 제목이 40보다 길면 자름
+					if (jw.consoleWidth(title) > 40) {
+					    title = jw.cutTitle(title, 40);
+					}
+
+					// 공백 추가 (음수 방지)
+					int totalPadding = Math.max(0, 45 - jw.consoleWidth(title));  
+					title += " ".repeat(totalPadding);
+
+					
+					String author = rs.getString("book_author");
+					if(author.length() > 25) {
+						author = author.substring(0, 26);
+						author += "...";
+					}
+					
+					/*
+					System.out.print(rs.getInt("book_num")+"\t");
+					System.out.print(rs.getString("book_category")+"\t");
+					System.out.print(title+"\t");
+					System.out.println(author+"\t");
+					*/
+					System.out.printf("%-4s\t%-5s\t%-30s %-20s \n",
+							rs.getInt("book_num"),rs.getString("book_category"), title,author);
 				} while(rs.next());
 			} else {
 				System.out.println("표시할 정보가 없습니다.");
 			}
-			System.out.println("-".repeat(90));
+			System.out.println("-".repeat(130));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
