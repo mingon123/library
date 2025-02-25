@@ -199,7 +199,7 @@ public class LibraryMain_il {
 
 					} else if (no==3) { // 대여 관리				
 
-						int num=0;
+						int num=0;						
 						do {
 							System.out.print("1.대여 목록보기, 2.대여 상세정보 확인, 3.대여정보 등록, 4.대여정보 수정, 5.대여정보 삭제, 6.뒤로가기\n"
 									+ "번호를 입력하세요.> ");
@@ -300,27 +300,26 @@ public class LibraryMain_il {
 						} while (num!=1||num!=2||num!=3||num!=4||num!=5);		
 
 					} else if (no==5) { // 희망도서 관리
-						int num=0;
+						int num=0;						
 						do {
 							System.out.print("1.희망도서 목록보기, 2.희망도서정보 등록, 3.희망도서정보 수정, 4.희망도서정보 삭제, 5.뒤로가기\n"
 									+ "번호를 입력하세요.> ");
 							try {
 								num = Integer.parseInt(br.readLine());				
-								if (num==1) { //4-1.희망도서 목록보기
+								if (num==1) { //5-1.희망도서 목록보기
 									dao.selectWish();
 
-								} else if (num==2) { //4-2.희망도서정보 등록
-									System.out.print("희망도서 제목: ");
-									String wish_title = br.readLine();
-									System.out.print("희망도서 저자: ");
-									String wish_author = br.readLine();
+								} else if (num==2) { //5-2.희망도서정보 등록
+									String wish_title=null;
+									String wish_author=null;
+									if (checkWishBook()==1) break;									
 									System.out.print("희망도서 출판사: ");
 									String wish_publisher = br.readLine();								
 									System.out.print("회원아이디: ");
 									String mem_id = checkMember();									
 									dao.InsertWish(wish_title, wish_author, wish_publisher, mem_id);
 
-								} else if (num==3) { //4-3.희망도서정보 수정
+								} else if (num==3) { //5-3.희망도서정보 수정
 									dao.selectWish();
 									System.out.print("수정할 희망도서번호 입력: "); 
 									int wish_num = checkWish();									
@@ -334,12 +333,12 @@ public class LibraryMain_il {
 									String mem_id = checkMember();	
 									dao.updateWish(wish_title, wish_author, wish_publisher, mem_id, wish_num);
 
-								} else if (num==4) { //4-4.희망도서정보 삭제
+								} else if (num==4) { //5-4.희망도서정보 삭제
 									dao.selectWish();
 									System.out.print("삭제할 희망도서번호 입력: "); 
 									dao.deleteWish(checkWish());
 
-								} else if (num==5) { //4-5.뒤로가기	
+								} else if (num==5) { //5-5.뒤로가기	
 									callAdminMenu(); break out; // admin 메뉴 완전히 빠져나감
 								} else {
 									System.out.println("잘못 입력했습니다. 출력된 메뉴 번호 중 하나를 입력하세요.");
@@ -356,15 +355,15 @@ public class LibraryMain_il {
 									+ "번호를 입력하세요.> ");
 							try {
 								num = Integer.parseInt(br.readLine());				
-								if (num==1) { //5-1.리뷰 목록보기
+								if (num==1) { // 6-1.리뷰 목록보기
 									dao.selectReview();
 
-								} else if (num==2) { // 5-2.리뷰정보 상세보기
+								} else if (num==2) { // 6-2.리뷰정보 상세보기
 									dao.selectReview();
 									System.out.print("조회할 리뷰번호 입력: "); 
 									dao.selectDetailReview(checkReview());									
 
-								} else if (num==3) { // 5-3.리뷰정보 등록									
+								} else if (num==3) { // 6-3.리뷰정보 등록									
 									System.out.print("책번호: "); 
 									int book_num = checkBook();	
 									System.out.print("리뷰내용: "); 
@@ -376,7 +375,7 @@ public class LibraryMain_il {
 									String mem_id = checkMember();
 									dao.InsertReview(book_num, review_content, review_rate, mem_id);
 
-								} else if (num==4) { // 5-4.리뷰정보 수정
+								} else if (num==4) { // 6-4.리뷰정보 수정
 									dao.selectReview();
 									System.out.print("수정할 리뷰번호 입력: ");
 									int review_num = checkReview();
@@ -391,12 +390,12 @@ public class LibraryMain_il {
 									String mem_id = checkMember();	
 									dao.updateReview(review_num, book_num, review_content, review_rate, mem_id);
 
-								} else if (num==5) { // 5-5.리뷰정보 삭제
+								} else if (num==5) { // 6-5.리뷰정보 삭제
 									dao.selectReview();
 									System.out.print("삭제할 리뷰번호 입력: ");
 									dao.deleteReview(checkReview());
 
-								} else if (num==6) { // 5-5.뒤로가기	
+								} else if (num==6) { // 6-5.뒤로가기	
 									callAdminMenu(); break out; // admin 메뉴 완전히 빠져나감
 								} else {
 									System.out.println("잘못 입력했습니다. 출력된 메뉴 번호 중 하나를 입력하세요.");
@@ -627,6 +626,24 @@ public class LibraryMain_il {
 		} while (count!=1);		
 		return wish_num;
 	} //checkWish()
+	
+	//희망도서 신청시 해당 도서 보유 여부 체크
+	private int checkWishBook() throws NumberFormatException, IOException {
+		System.out.print("희망도서 제목: ");
+		String wish_title = br.readLine();
+		System.out.print("희망도서 저자: ");
+		String wish_author = br.readLine();
+		int count = dao.checkWishRecord(wish_title,wish_author);
+		do { //잘못 입력하면 다시 입력받음
+			if (count==1) {
+				System.out.println("이미 보유하고 있는 도서입니다. 해당 도서정보를 확인하시기 바랍니다.");
+				break;
+			} else if (count!=0) {
+				System.out.println("정보 처리 중 오류 발생");
+			} // if
+		} while (count!=0);
+		return count;
+	} //checkWishBook()
 
 	//리뷰번호 유효성 체크
 	private int checkReview() throws NumberFormatException, IOException {
