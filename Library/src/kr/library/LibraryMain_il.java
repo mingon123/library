@@ -116,15 +116,25 @@ public class LibraryMain_il {
 								} else if (num==4) { // 1-4.회원정보 수정							
 									dao.selectMember();		
 									System.out.print("수정할 회원ID 입력: ");
-									String mem_id = checkMember();
-									System.out.print("회원 비밀번호: "); //유효성 검사 추가요망	
-									String mem_pw = br.readLine();
+									String mem_id = checkMember();							
+									String mem_pw;
+									while(true) { //비밀번호 유효성 검사 추가
+										System.out.print("회원 비밀번호: "); 
+										mem_pw = br.readLine();
+										if(isValidPassword(mem_pw)) break; 
+										else System.out.println("비밀번호 형식이 올바르지 않습니다. 다시 입력하세요. ");			
+									} //while	
 									System.out.print("이름: ");		
 									String mem_name = br.readLine();
-									System.out.print("전화번호: "); //유효성 검사 추가요망			
+									System.out.print("전화번호: ");		
 									String mem_cell = br.readLine();
-									System.out.print("이메일: ");	 //유효성 검사 추가요망		
-									String mem_email = br.readLine();
+									String mem_email;
+									while(true) { //이메일 유효성 검사 추가
+										System.out.print("이메일: "); 
+										mem_email = br.readLine();
+										if(isValidEmail(mem_email)) break; 
+										else System.out.println("email 형식이 올바르지 않습니다. 다시 입력하세요. ");			
+									} //while
 									dao.updateMember(mem_id,mem_pw,mem_name,mem_cell,mem_email);
 
 								} else if (num==5) { // 1-5.회원정보 삭제

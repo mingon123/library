@@ -29,7 +29,7 @@ public class BookDAO_il {
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
 				// 출력항목: ID,이름,전화번호,e-mail,대여정지기한 (나머지는 상세보기에서 확인)
-				System.out.printf("%-12s %s\t%s\t\t%-20s %s\n","ID","이름","전화번호","e-mail","대여정지기한");
+				System.out.printf("%-12s %s\t\t%s\t\t%-20s %s\n","ID","이름","전화번호","e-mail","대여정지기한");
 				System.out.println("-".repeat(100));
 				do {
 					System.out.printf("%-12s ", rs.getString("mem_id"));
