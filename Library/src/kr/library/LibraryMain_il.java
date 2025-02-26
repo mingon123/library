@@ -52,16 +52,14 @@ public class LibraryMain_il {
 		// 로그인 성공후 관리자 메뉴 호출
 		out: // 2nd depth 메뉴에서 뒤로가기 호출 후 종료시 바로 빠져나가려고 라벨 붙여놓음.
 			while(true) { // flag로 수정요망
-				System.out.print("1.회원 관리, 2.도서 관리, 3.대여 관리, 4.예약 관리, 5.희망도서 관리,\n"
-						+ "6.리뷰 관리, 7.공지사항 관리, 8.Q&A 관리, 9.통계, 10.로그아웃, 11.종료\n"
-						+ "번호를 입력하세요.> ");
+				System.out.print("1.회원 관리 2.도서 관리 3.대여 관리 4.예약 관리 5.희망도서 관리\n"
+						+ "6.리뷰 관리 7.공지사항 관리 8.Q&A 관리 9.통계 10.로그아웃 11.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
 					if (no==1) { // 회원 관리
 						int num = 0;
 						do {
-							System.out.print("1.회원 목록보기, 2.회원 상세정보 확인, 3.회원정보 등록, 4.회원정보 수정, 5.회원정보 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.회원 목록보기 2.회원 상세정보 확인 3.회원정보 등록 4.회원정보 수정 5.회원정보 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());	
 
@@ -147,8 +145,7 @@ public class LibraryMain_il {
 					} else if (no==2) { // 도서 관리					
 						int num=0;
 						do {
-							System.out.print("1.도서 목록보기, 2.도서 상세정보 확인, 3.도서정보 등록, 4.도서정보 수정, 5.도서정보 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.도서 목록보기 2.도서 상세정보 확인 3.도서정보 등록 4.도서정보 수정 5.도서정보 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());	
 
@@ -217,8 +214,7 @@ public class LibraryMain_il {
 
 						int num=0;						
 						do {
-							System.out.print("1.대여 목록보기, 2.대여 상세정보 확인, 3.대여정보 등록, 4.대여정보 수정, 5.대여정보 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.대여 목록보기 2.대여 상세정보 확인 3.대여정보 등록 4.대여정보 수정 5.대여정보 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { // 3-1.대여 목록보기
@@ -291,8 +287,7 @@ public class LibraryMain_il {
 					} else if (no==4) { // 예약 관리
 						int num=0;
 						do {
-							System.out.print("1.예약 목록보기, 2.예약정보 등록, 3.예약정보 수정, 4.예약정보 삭제, 5.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.예약 목록보기 2.예약정보 등록 3.예약정보 수정 4.예약정보 삭제 5.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { // 4-1.예약 목록보기
@@ -333,8 +328,7 @@ public class LibraryMain_il {
 					} else if (no==5) { // 희망도서 관리
 						int num=0;						
 						do {
-							System.out.print("1.희망도서 목록보기, 2.희망도서정보 등록, 3.희망도서정보 수정, 4.희망도서정보 삭제, 5.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.희망도서 목록보기 2.희망도서정보 등록 3.희망도서정보 수정 4.희망도서정보 삭제 5.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { //5-1.희망도서 목록보기
@@ -382,8 +376,7 @@ public class LibraryMain_il {
 					} else if (no==6) { // 리뷰 관리						
 						int num=0;
 						do {
-							System.out.print("1.리뷰 목록보기, 2.리뷰정보 상세보기 3.리뷰정보 등록, 4.리뷰정보 수정, 5.리뷰정보 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.리뷰 목록보기 2.리뷰정보 상세보기 3.리뷰정보 등록 4.리뷰정보 수정 5.리뷰정보 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { // 6-1.리뷰 목록보기
@@ -439,8 +432,7 @@ public class LibraryMain_il {
 					} else if (no==7) { // 공지사항 관리
 						int num=0;
 						do {				
-							System.out.print("1.공지사항 목록보기, 2.공지사항 상세정보 확인, 3.공지사항 등록, 4.공지사항 수정, 5.공지사항 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.공지사항 목록보기 2.공지사항 상세정보 확인 3.공지사항 등록 4.공지사항 수정 5.공지사항 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { //7-1.공지사항 목록보기
@@ -486,8 +478,7 @@ public class LibraryMain_il {
 					} else if (no==8) { // Q&A 관리						
 						int num=0;
 						do {				
-							System.out.print("1.Q&A 목록보기, 2.Q&A 상세정보 확인, 3.Q&A 답변 등록, 4.Q&A 삭제, 5.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.Q&A 목록보기 2.Q&A 상세정보 확인 3.Q&A 답변 등록 4.Q&A 삭제 5.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { //8-1.Q&A 목록보기
@@ -523,8 +514,7 @@ public class LibraryMain_il {
 					} else if (no==9) { // 통계 관리				
 						int num=0;
 						do {				
-							System.out.print("1.도서별 대여 횟수 2.회원별 대여 횟수, 3.회원별 리뷰 횟수, 4.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.도서별 대여 횟수 2.회원별 대여 횟수 3.회원별 리뷰 횟수 4.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { //8-1.도서별 대여 횟수
