@@ -193,22 +193,22 @@ public class BookDAO_mg {
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT qna_num,qna_title,qna_content,q_date FROM qna ORDER BY q_date DESC";
+			sql = "SELECT qna_num,qna_title,qna_content,q_date,a_date,qna_re FROM qna ORDER BY q_date DESC";
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(90));
-			
 			if(rs.next()) {
 				System.out.println("Q&A 목록");
-				System.out.println("번호\t문의일\t\t제목\t내용");
+				System.out.println("번호\t문의일\t\t제목\t내용\t\t답변일\t\t답변내용");
 				do {
-					System.out.print(rs.getInt("qna_num"));
-					System.out.print("\t");
-					System.out.print(rs.getDate("q_date"));
-					System.out.print("\t");
-					System.out.print(rs.getString("qna_title"));
-					System.out.print("\t");
-					System.out.println(rs.getString("qna_content"));
+					System.out.print(rs.getInt("qna_num")+"\t");
+					System.out.print(rs.getDate("q_date")+"\t");
+					System.out.print(rs.getString("qna_title")+"\t");
+					System.out.print(rs.getString("qna_content") +"\t\t");
+					if(rs.getString("qna_title").startsWith("RE:")) {
+						System.out.print(rs.getDate("a_date")+"\t");
+						System.out.println(rs.getString("qna_re"));
+					} else System.out.println();
 				} while(rs.next());
 			} else {
 				System.out.println("Q&A 내역이 없습니다.");
@@ -236,7 +236,7 @@ public class BookDAO_mg {
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
 				hasQNA = true;
-				System.out.println("번호\t제목\t등록일\t답변\t답변일");
+				System.out.println("번호\t제목\t등록일\t\t답변일\t\t답변");
 				do {
 					System.out.print(rs.getInt("qna_num"));
 					System.out.print("\t");
@@ -244,9 +244,11 @@ public class BookDAO_mg {
 					System.out.print("\t");
 					System.out.print(rs.getDate("q_date"));
 					System.out.print("\t");
-					System.out.print(rs.getString("qna_re"));
-					System.out.print("\t");
-					System.out.println(rs.getDate("a_date"));
+					if(rs.getString("qna_title").startsWith("RE:")) {
+						System.out.print(rs.getDate("a_date"));
+						System.out.print("\t");
+						System.out.println(rs.getString("qna_re"));
+					} else System.out.println();
 				} while(rs.next());
 			}
 		}catch (Exception e) {
