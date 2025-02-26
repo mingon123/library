@@ -71,7 +71,7 @@ public class BookDAO_he {
 	
     // 이름 검증(알파벳,한글,숫자만 가능)
     public boolean checkValidName(String name) {
-        return name != null && name.matches("^[a-zA-Z가-힣0-9]+$");
+        return name != null && name.matches("^[a-zA-Z가-힣]+$");
     }
 
     
