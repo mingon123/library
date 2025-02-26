@@ -82,17 +82,17 @@ public class BookDAO_mg {
 			System.out.println("-".repeat(90));
 			
 			if(rs.next()) {
-				System.out.println("번호\t제목\t저자\t출판사\t신청일");
+				System.out.println("번호\t신청일\t\t제목\t저자\t출판사");
 				do {
 					System.out.print(rs.getInt("wish_num"));
+					System.out.print("\t");
+					System.out.print(rs.getDate("wish_date"));
 					System.out.print("\t");
 					System.out.print(rs.getString("wish_title"));
 					System.out.print("\t");
 					System.out.print(rs.getString("wish_author"));
 					System.out.print("\t");
-					System.out.print(rs.getString("wish_publisher"));
-					System.out.print("\t");
-					System.out.println(rs.getDate("wish_date"));
+					System.out.println(rs.getString("wish_publisher"));
 				} while(rs.next());
 			} else {
 				System.out.println("대여,예약도서가 없습니다.");
@@ -120,17 +120,17 @@ public class BookDAO_mg {
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
 				hasBook = true;
-				System.out.println("번호\t제목\t저자\t출판사\t신청일");
+				System.out.println("번호\t신청일\t\t제목\t저자\t출판사");
 				do {
 					System.out.print(rs.getInt("wish_num"));
+					System.out.print("\t");
+					System.out.print(rs.getDate("wish_date"));
 					System.out.print("\t");
 					System.out.print(rs.getString("wish_title"));
 					System.out.print("\t");
 					System.out.print(rs.getString("wish_author"));
 					System.out.print("\t");
-					System.out.print(rs.getString("wish_publisher"));
-					System.out.print("\t");
-					System.out.println(rs.getDate("wish_date"));
+					System.out.println(rs.getString("wish_publisher"));
 				} while(rs.next());
 			}
 		}catch (Exception e) {
@@ -570,7 +570,7 @@ public class BookDAO_mg {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(130));
 			if(rs.next()) {
-				System.out.println("책번호\t카테고리\t책제목\t\t\t\t\t\t\t저자");
+				System.out.println("책번호\t카테고리\t책제목\t\t\t\t\t저자");
 				//System.out.printf("%-4s %-8s %-40s %35s \n","책번호","카테고리","책제목","저자");
 				do {
 					/*
