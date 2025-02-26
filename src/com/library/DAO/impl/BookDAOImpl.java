@@ -1,5 +1,9 @@
 package com.library.DAO.impl;
 
-public class BookDAOImpl {
+import com.library.DAO.BookDAO;
+
+public class BookDAOImpl implements BookDAO {
+	public BookDAOImpl() {}
+	
 
 }

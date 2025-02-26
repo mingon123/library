@@ -1,5 +1,6 @@
 package com.library.DAO;
 
-public class BookDAO {
+public interface BookDAO {
 
+	
 }

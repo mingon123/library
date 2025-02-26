@@ -18,6 +18,14 @@ public class wishBook {
 		this.memId = memId;
 	}
 
+	public wishBook(int wishNum, String wishTitle, String wishAuthor, String wishPublisher, Date wishDate) {
+		this.wishNum = wishNum;
+		this.wishTitle = wishTitle;
+		this.wishAuthor = wishAuthor;
+		this.wishPublisher = wishPublisher;
+		this.wishDate = wishDate;
+	}
+
 	public int getWishNum() {
 		return wishNum;
 	}
