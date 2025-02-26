@@ -1167,12 +1167,11 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("qna번호\t질문제목\t조회수\t질문날짜\t\t답변날짜 ");		
+				System.out.println("qna번호\t질문제목\t질문날짜\t\t답변날짜 ");		
 				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("qna_num")+"\t");							
 					System.out.print(rs.getString("qna_title")+"\t");
-					System.out.print(rs.getInt("qna_view")+"\t");	
 					System.out.print(rs.getDate("q_date")+"\t");
 					if(rs.getDate("a_date") == null) System.out.println("-");
 					else System.out.println(rs.getDate("a_date")+"\t");
@@ -1227,7 +1226,6 @@ public class BookDAO_il {
 			if (rs.next()) {
 				System.out.println("질문제목 : " + rs.getString("qna_title"));
 				System.out.println("질문내용 : " + rs.getString("qna_content"));	
-				System.out.println("조회수 : " + rs.getString("qna_view"));	
 				System.out.println("답변내용 : " + rs.getString("qna_re"));	
 				System.out.println("질문날짜 : " + rs.getString("q_date"));	
 				System.out.println("답변날짜 : " + rs.getString("a_date"));
