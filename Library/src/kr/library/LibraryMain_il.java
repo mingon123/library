@@ -549,8 +549,6 @@ public class LibraryMain_il {
 						
 					} else if (no==11) { // 11.프로그램 종료 
 						System.out.println("프로그램 종료");
-						main_mg = new LibraryMain_mg();
-						main_mg.closeReader();
 						System.exit(0);
 
 					} else {

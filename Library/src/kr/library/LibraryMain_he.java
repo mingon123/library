@@ -163,8 +163,6 @@ public class LibraryMain_he {
 				} else if (no==6) {
 					//종료
 					System.out.println("프로그램 종료");
-					main_mg = new LibraryMain_mg();
-					main_mg.closeReader();
 					System.exit(0); break;
 				} else {
 					System.out.println("잘못 입력했습니다.");
