@@ -52,16 +52,14 @@ public class LibraryMain_il {
 		// 로그인 성공후 관리자 메뉴 호출
 		out: // 2nd depth 메뉴에서 뒤로가기 호출 후 종료시 바로 빠져나가려고 라벨 붙여놓음.
 			while(true) { // flag로 수정요망
-				System.out.print("1.회원 관리, 2.도서 관리, 3.대여 관리, 4.예약 관리, 5.희망도서 관리,\n"
-						+ "6.리뷰 관리, 7.공지사항 관리, 8.Q&A 관리, 9.통계, 10.로그아웃, 11.종료\n"
-						+ "번호를 입력하세요.> ");
+				System.out.print("1.회원 관리 2.도서 관리 3.대여 관리 4.예약 관리 5.희망도서 관리\n"
+						+ "6.리뷰 관리 7.공지사항 관리 8.Q&A 관리 9.통계 10.로그아웃 11.종료\n > ");
 				try {
 					int no = Integer.parseInt(br.readLine());
 					if (no==1) { // 회원 관리
 						int num = 0;
 						do {
-							System.out.print("1.회원 목록보기, 2.회원 상세정보 확인, 3.회원정보 등록, 4.회원정보 수정, 5.회원정보 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.회원 목록보기 2.회원 상세정보 확인 3.회원정보 등록 4.회원정보 수정 5.회원정보 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());	
 
@@ -118,15 +116,25 @@ public class LibraryMain_il {
 								} else if (num==4) { // 1-4.회원정보 수정							
 									dao.selectMember();		
 									System.out.print("수정할 회원ID 입력: ");
-									String mem_id = checkMember();
-									System.out.print("회원 비밀번호: "); //유효성 검사 추가요망	
-									String mem_pw = br.readLine();
+									String mem_id = checkMember();							
+									String mem_pw;
+									while(true) { //비밀번호 유효성 검사 추가
+										System.out.print("회원 비밀번호: "); 
+										mem_pw = br.readLine();
+										if(isValidPassword(mem_pw)) break; 
+										else System.out.println("비밀번호 형식이 올바르지 않습니다. 다시 입력하세요. ");			
+									} //while	
 									System.out.print("이름: ");		
 									String mem_name = br.readLine();
-									System.out.print("전화번호: "); //유효성 검사 추가요망			
+									System.out.print("전화번호: ");		
 									String mem_cell = br.readLine();
-									System.out.print("이메일: ");	 //유효성 검사 추가요망		
-									String mem_email = br.readLine();
+									String mem_email;
+									while(true) { //이메일 유효성 검사 추가
+										System.out.print("이메일: "); 
+										mem_email = br.readLine();
+										if(isValidEmail(mem_email)) break; 
+										else System.out.println("email 형식이 올바르지 않습니다. 다시 입력하세요. ");			
+									} //while
 									dao.updateMember(mem_id,mem_pw,mem_name,mem_cell,mem_email);
 
 								} else if (num==5) { // 1-5.회원정보 삭제
@@ -147,8 +155,7 @@ public class LibraryMain_il {
 					} else if (no==2) { // 도서 관리					
 						int num=0;
 						do {
-							System.out.print("1.도서 목록보기, 2.도서 상세정보 확인, 3.도서정보 등록, 4.도서정보 수정, 5.도서정보 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.도서 목록보기 2.도서 상세정보 확인 3.도서정보 등록 4.도서정보 수정 5.도서정보 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());	
 
@@ -217,8 +224,7 @@ public class LibraryMain_il {
 
 						int num=0;						
 						do {
-							System.out.print("1.대여 목록보기, 2.대여 상세정보 확인, 3.대여정보 등록, 4.대여정보 수정, 5.대여정보 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.대여 목록보기 2.대여 상세정보 확인 3.대여정보 등록 4.대여정보 수정 5.대여정보 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { // 3-1.대여 목록보기
@@ -291,8 +297,7 @@ public class LibraryMain_il {
 					} else if (no==4) { // 예약 관리
 						int num=0;
 						do {
-							System.out.print("1.예약 목록보기, 2.예약정보 등록, 3.예약정보 수정, 4.예약정보 삭제, 5.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.예약 목록보기 2.예약정보 등록 3.예약정보 수정 4.예약정보 삭제 5.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { // 4-1.예약 목록보기
@@ -333,8 +338,7 @@ public class LibraryMain_il {
 					} else if (no==5) { // 희망도서 관리
 						int num=0;						
 						do {
-							System.out.print("1.희망도서 목록보기, 2.희망도서정보 등록, 3.희망도서정보 수정, 4.희망도서정보 삭제, 5.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.희망도서 목록보기 2.희망도서정보 등록 3.희망도서정보 수정 4.희망도서정보 삭제 5.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { //5-1.희망도서 목록보기
@@ -382,8 +386,7 @@ public class LibraryMain_il {
 					} else if (no==6) { // 리뷰 관리						
 						int num=0;
 						do {
-							System.out.print("1.리뷰 목록보기, 2.리뷰정보 상세보기 3.리뷰정보 등록, 4.리뷰정보 수정, 5.리뷰정보 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.리뷰 목록보기 2.리뷰정보 상세보기 3.리뷰정보 등록 4.리뷰정보 수정 5.리뷰정보 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { // 6-1.리뷰 목록보기
@@ -439,8 +442,7 @@ public class LibraryMain_il {
 					} else if (no==7) { // 공지사항 관리
 						int num=0;
 						do {				
-							System.out.print("1.공지사항 목록보기, 2.공지사항 상세정보 확인, 3.공지사항 등록, 4.공지사항 수정, 5.공지사항 삭제, 6.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.공지사항 목록보기 2.공지사항 상세정보 확인 3.공지사항 등록 4.공지사항 수정 5.공지사항 삭제 6.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { //7-1.공지사항 목록보기
@@ -486,8 +488,7 @@ public class LibraryMain_il {
 					} else if (no==8) { // Q&A 관리						
 						int num=0;
 						do {				
-							System.out.print("1.Q&A 목록보기, 2.Q&A 상세정보 확인, 3.Q&A 답변 등록, 4.Q&A 삭제, 5.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.Q&A 목록보기 2.Q&A 상세정보 확인 3.Q&A 답변 등록 4.Q&A 삭제 5.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { //8-1.Q&A 목록보기
@@ -523,8 +524,7 @@ public class LibraryMain_il {
 					} else if (no==9) { // 통계 관리				
 						int num=0;
 						do {				
-							System.out.print("1.도서별 대여 횟수 2.회원별 대여 횟수, 3.회원별 리뷰 횟수, 4.뒤로가기\n"
-									+ "번호를 입력하세요.> ");
+							System.out.print("1.도서별 대여 횟수 2.회원별 대여 횟수 3.회원별 리뷰 횟수 4.뒤로가기\n > ");
 							try {
 								num = Integer.parseInt(br.readLine());				
 								if (num==1) { //8-1.도서별 대여 횟수
@@ -549,8 +549,6 @@ public class LibraryMain_il {
 						
 					} else if (no==11) { // 11.프로그램 종료 
 						System.out.println("프로그램 종료");
-						main_mg = new LibraryMain_mg();
-						main_mg.closeReader();
 						System.exit(0);
 
 					} else {
@@ -730,6 +728,4 @@ public class LibraryMain_il {
 		return qna_num;		
 	} //checkQnA()
 	
-	
-
 } // class

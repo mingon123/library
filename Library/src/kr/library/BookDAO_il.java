@@ -29,7 +29,7 @@ public class BookDAO_il {
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
 				// 출력항목: ID,이름,전화번호,e-mail,대여정지기한 (나머지는 상세보기에서 확인)
-				System.out.printf("%-12s %s\t%s\t\t%-20s %s\n","ID","이름","전화번호","e-mail","대여정지기한");
+				System.out.printf("%-12s %s\t\t%s\t\t%-20s %s\n","ID","이름","전화번호","e-mail","대여정지기한");
 				System.out.println("-".repeat(100));
 				do {
 					System.out.printf("%-12s ", rs.getString("mem_id"));
@@ -93,8 +93,12 @@ public class BookDAO_il {
 				System.out.println("전화번호 : " + rs.getString("mem_cell"));						
 				System.out.println("이메일 : " + rs.getString("mem_email"));
 				System.out.println("가입일 : " + rs.getDate("mem_date"));
-				System.out.println("마지막 정보수정일 : " + rs.getDate("mem_mdate"));		
-				System.out.println("정지일 : " + rs.getDate("mem_stop_date"));
+				System.out.print("마지막 정보수정일 : ");	
+				if(rs.getDate("mem_mdate") == null) System.out.println("-");
+				else System.out.println(rs.getDate("mem_mdate"));	
+				System.out.print("정지일 : ");
+				if(rs.getDate("mem_stop_date") == null) System.out.println("-");
+				else System.out.println(rs.getDate("mem_stop_date"));	
 			} else {
 				System.out.println("검색된 정보가 없습니다.");
 			}			
@@ -175,7 +179,7 @@ public class BookDAO_il {
 		}
 	} // deleteMember()
 
-	//도서 목록 조회(우선 20개만-> 조회 범위 재검토요망)
+	//도서 목록 조회
 	public void selectBook() {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -183,14 +187,15 @@ public class BookDAO_il {
 		String sql = null;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT * FROM book WHERE book_num<=20 ORDER BY book_num DESC"; // 20개만 출력(랜덤으로 출력되게 수정요망)
+			//최근 등록한 책 10개만 출력
+			sql = "SELECT * FROM (SELECT * FROM book ORDER BY book_num DESC) WHERE ROWNUM <= 10"; 
 			pstmt = conn.prepareStatement(sql);
 			rs = pstmt.executeQuery();
-			System.out.println("-".repeat(100));
+			System.out.println("-".repeat(110));
 			if (rs.next()) {
 				// 출력항목 검토요망 - 추천순위 제외 출력
-				System.out.println("책번호\t제목\t\t\t저자\t\t출판사\t\t출판년도\t카테고리\t보유권수\t등록일");
-				System.out.println("-".repeat(100));
+				System.out.println("책번호\t제목\t\t\t저자\t\t\t출판사\t\t출판년도\t카테고리\t보유권수\t등록일");
+				System.out.println("-".repeat(110));
 				do {
 					System.out.print(rs.getInt("book_num")+"\t");
 					// 제목 길이 제한출력(20자)
@@ -199,8 +204,8 @@ public class BookDAO_il {
 					else System.out.printf("%-15s\t", title);
 					// 저자 길이 제한출력(10자)
 					String author=rs.getString("book_author");	
-					if (author.length()>=10) System.out.printf("%-10s..\t", author.substring(0, 11));
-					else System.out.printf("%-10s\t", author);
+					if (author.length()>=10) System.out.printf("%-10s..\t\t", author.substring(0, 10));
+					else System.out.printf("%-10s\t\t", author);
 					System.out.printf("%-10s\t", rs.getString("book_publisher"));			
 					System.out.print(rs.getInt("book_p_year")+"\t");					
 					System.out.print(rs.getString("book_category")+"\t");					
@@ -210,7 +215,7 @@ public class BookDAO_il {
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");	
 			} //if-else
-			System.out.println("-".repeat(100));
+			System.out.println("-".repeat(110));
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -1166,12 +1171,11 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("qna번호\t질문제목\t조회수\t질문날짜\t\t답변날짜 ");		
+				System.out.println("qna번호\t질문제목\t질문날짜\t\t답변날짜 ");		
 				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("qna_num")+"\t");							
 					System.out.print(rs.getString("qna_title")+"\t");
-					System.out.print(rs.getInt("qna_view")+"\t");	
 					System.out.print(rs.getDate("q_date")+"\t");
 					if(rs.getDate("a_date") == null) System.out.println("-");
 					else System.out.println(rs.getDate("a_date")+"\t");
@@ -1226,7 +1230,6 @@ public class BookDAO_il {
 			if (rs.next()) {
 				System.out.println("질문제목 : " + rs.getString("qna_title"));
 				System.out.println("질문내용 : " + rs.getString("qna_content"));	
-				System.out.println("조회수 : " + rs.getString("qna_view"));	
 				System.out.println("답변내용 : " + rs.getString("qna_re"));	
 				System.out.println("질문날짜 : " + rs.getString("q_date"));	
 				System.out.println("답변날짜 : " + rs.getString("a_date"));

@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class LibraryMain_mg {
 	private BufferedReader br;
-	private String mem_id; // 로그인한 아이디 저장
+	private String mem_id="aasd"; // 로그인한 아이디 저장
 //	private String mem_id;
 
 	private boolean isSelectSeven = false;
@@ -28,7 +28,7 @@ public class LibraryMain_mg {
 			dao = new BookDAO_mg();
 			il = new BookDAO_il();
 			jw = new BookDAO_Jw();
-			//callMenu();
+			callMenu();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -660,13 +660,12 @@ public class LibraryMain_mg {
 		String qnaTitle = br.readLine();
 		if(qnaTitle.equalsIgnoreCase("q")) {
 			System.out.println("이전화면으로 돌아갑니다.");
-			manageQNA();
+			return;
 		}
 		System.out.print("질문 내용을 입력하세요 : ");
 		String qnaContent = br.readLine();
 		dao.insertQNA(qnaTitle, qnaContent, mem_id);
 	} // insertQNA
-	// qna목록확인
 
 	// qna 삭제
 	private void deleteQNA() throws IOException {
@@ -730,7 +729,7 @@ public class LibraryMain_mg {
 		String name = br.readLine();
 		String email;
 		while(true) {			
-			System.out.print("변경할 이메일을 입력하세요: 뒤로가기:q(Q)입력 \n");
+			System.out.print("변경할 이메일을 입력하세요 (뒤로가기:q) :  \n");
 			email = br.readLine();
 			if(isValidEmail(email)) break;
 			else if(email.equalsIgnoreCase("q")) {
@@ -796,6 +795,6 @@ public class LibraryMain_mg {
 
 
 	public static void main(String[] args) {
-		//new LibraryMain_mg();
+		new LibraryMain_mg();
 	} // main
 } // class
