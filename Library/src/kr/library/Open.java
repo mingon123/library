@@ -35,7 +35,7 @@ public class Open {
                 "  ██       ██  ██    ███  ██    ██    ██    ██   ██    ██      ██ \n" +
                 "  ██████   ██  ███████    ██     ██   ██    ██   ██     ██     ██   \n" +
                 "                                                             \n" +
-                "               				📚 Welcome to the LIBRARY 📚                 ";
+                "                   📚 Welcome to the LIBRARY 📚                 ";
 
     	        System.out.println(libraryArt);
     	        System.out.println();

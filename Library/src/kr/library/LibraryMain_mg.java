@@ -666,7 +666,6 @@ public class LibraryMain_mg {
 		String qnaContent = br.readLine();
 		dao.insertQNA(qnaTitle, qnaContent, mem_id);
 	} // insertQNA
-	// qna목록확인
 
 	// qna 삭제
 	private void deleteQNA() throws IOException {
