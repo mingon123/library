@@ -93,8 +93,12 @@ public class BookDAO_il {
 				System.out.println("전화번호 : " + rs.getString("mem_cell"));						
 				System.out.println("이메일 : " + rs.getString("mem_email"));
 				System.out.println("가입일 : " + rs.getDate("mem_date"));
-				System.out.println("마지막 정보수정일 : " + rs.getDate("mem_mdate"));		
-				System.out.println("정지일 : " + rs.getDate("mem_stop_date"));
+				System.out.print("마지막 정보수정일 : ");	
+				if(rs.getDate("mem_mdate") == null) System.out.println("-");
+				else System.out.print(rs.getDate("mem_mdate"));	
+				System.out.print("정지일 : ");
+				if(rs.getDate("mem_stop_date") == null) System.out.println("-");
+				else System.out.print(rs.getDate("mem_stop_date"));	
 			} else {
 				System.out.println("검색된 정보가 없습니다.");
 			}			
