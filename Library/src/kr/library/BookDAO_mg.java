@@ -556,7 +556,7 @@ public class BookDAO_mg {
 	} // isReservationNotification
 
 	
-	// 카테고리별 책 TODO
+	// 카테고리별 책 
 	public void selectCategoryOfBook(String category) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;

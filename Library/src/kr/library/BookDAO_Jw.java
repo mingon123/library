@@ -11,7 +11,7 @@ import util.DBUtil;
 public class BookDAO_Jw {
 
 	//랜덤 책 정보 - 숫자 입력받아 하나로 재사용
-	public void randomBookInfo(int num) { // 평점 정보 출력하게 추가? TODO
+	public void randomBookInfo(int num) {
 		BookDAO_mg mg = new BookDAO_mg();
 		
 		Connection conn = null;
@@ -319,7 +319,7 @@ public class BookDAO_Jw {
 	}//checkNowOrderNum
 
 
-	// 공지사항 번호가 유효한지 확인해주는 함수  / 유효 : true , 유효X : false TODO
+	// 공지사항 번호가 유효한지 확인해주는 함수  / 유효 : true , 유효X : false 
 	public boolean checkNoticeNum(int notice_num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -347,7 +347,7 @@ public class BookDAO_Jw {
 	}//checkNoticeNum
 
 
-	// 공지사항 조회수 조정 함수 (조회시 + 1) TODO
+	// 공지사항 조회수 조정 함수 (조회시 + 1) 
 	public void updateNoticeViewCount(int notice_num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
