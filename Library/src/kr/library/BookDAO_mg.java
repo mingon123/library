@@ -976,12 +976,13 @@ public class BookDAO_mg {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
-				System.out.println("책번호\t카테고리\t책제목\t\t\t저자");
+				System.out.println("책번호\t카테고리\t책제목\t\t\t\t\t\t저자");
 				do {
-					System.out.print(rs.getInt("book_num")+"\t");
-					System.out.print(rs.getString("book_category")+"\t");
-					System.out.print(rs.getString("book_title")+"\t");
-					System.out.println(rs.getString("book_author")+"\t");
+					System.out.printf("%d\t%s\t%-40s\t%-30s\n",
+							rs.getInt("book_num"),
+							rs.getString("book_category"),
+							rs.getString("book_title"),
+							rs.getString("book_author"));
 				} while(rs.next());
 			} else {
 				System.out.println("표시할 정보가 없습니다.");
@@ -1032,12 +1033,13 @@ public class BookDAO_mg {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
-				System.out.println("책번호\t카테고리\t책제목\t\t\t저자");
+				System.out.println("책번호\t카테고리\t책제목\t\t\t\t\t\t저자");
 				do {
-					System.out.print(rs.getInt("book_num")+"\t");
-					System.out.print(rs.getString("book_category")+"\t");
-					System.out.print(rs.getString("book_title")+"\t");
-					System.out.println(rs.getString("book_author")+"\t");
+					System.out.printf("%d\t%s\t%-40s\t%-30s\n",
+							rs.getInt("book_num"),
+							rs.getString("book_category"),
+							rs.getString("book_title"),
+							rs.getString("book_author"));
 				} while(rs.next());
 			} else {
 				System.out.println("표시할 정보가 없습니다.");
