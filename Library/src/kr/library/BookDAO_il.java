@@ -1230,9 +1230,11 @@ public class BookDAO_il {
 			if (rs.next()) {
 				System.out.println("질문제목 : " + rs.getString("qna_title"));
 				System.out.println("질문내용 : " + rs.getString("qna_content"));	
-				System.out.println("답변내용 : " + rs.getString("qna_re"));	
+				System.out.println("답변내용 : " + 
+						((rs.getString("qna_re") == null) ? "-" : (rs.getString("qna_re")+"\t")));
 				System.out.println("질문날짜 : " + rs.getString("q_date"));	
-				System.out.println("답변날짜 : " + rs.getString("a_date"));
+				System.out.println("답변날짜 : " + 
+						((rs.getDate("a_date") == null) ? "-" : (rs.getDate("a_date")+"\t")));
 				System.out.println("회원아이디 : " + rs.getString("mem_id"));
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");	
