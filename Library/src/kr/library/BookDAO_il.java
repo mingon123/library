@@ -707,13 +707,15 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {			
-				System.out.println("희망도서번호\t제목\t저자\t출판사\t희망도서신청일\t회원아이디");	
+				System.out.println("희망도서번호\t제목\t\t\t저자\t출판사\t희망도서신청일\t회원아이디");	
 				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("wish_num")+"\t\t");							
-					System.out.print(rs.getString("wish_title")+"\t");
-					System.out.print(rs.getString("wish_author")+"\t");
-					System.out.print(rs.getString("wish_publisher")+"\t");
+					System.out.printf("%-20s\t", rs.getString("wish_title"));
+					System.out.print(rs.getString("wish_author")+"\t");					
+					if(rs.getString("wish_publisher") == null) System.out.print("-"+"\t");
+					else System.out.print(rs.getString("wish_publisher")+"\t");	
+					
 					System.out.print(rs.getDate("wish_date")+"\t");
 					System.out.println(rs.getString("mem_id"));
 				} while (rs.next());
