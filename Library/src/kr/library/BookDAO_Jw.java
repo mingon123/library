@@ -656,7 +656,7 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%5s \t%s \t%5s \t%s\n", "번호", "대여일자", "반납여부(O/X)", "책제목");
+				System.out.printf("%5s \t\t%s \t\t%5s \t%s\n", "번호", "대여일자", "반납여부(O/X)", "책제목");
 				do {
 					System.out.printf("%5d \t\t%7s \t%5s \t\t%-30s\n", 
 							rs.getInt("ORDER_NUM"),
@@ -693,10 +693,10 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%5s \t%7s \t\t%7s \t%5s \t\t%5s\n", 
+				System.out.printf("%5s \t%7s \t%7s \t%5s \t\t%5s\n", 
 						"대여번호", "대여일자", "반납예정일자","연장가능", "책제목");
 				do {
-					System.out.printf("%5s \t\t%s \t%s \t%5s \t\t%s\n", 
+					System.out.printf("%5s \t%s \t%s \t%5s \t\t%s\n", 
 							rs.getInt("ORDER_NUM"),
 							rs.getDate("ORDER_DATE").toString(),
 							rs.getDate("RETURN_DATE").toString(),
@@ -729,12 +729,12 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%5s \t%s  %s \t%s \n", 
+				System.out.printf("%5s \t%s     %s \t%s \n", 
 						"번호", "총 예약인원", "예약순위", "책제목");
 				int reNum = rs.getInt("RE_NUM");
 
 				do {
-					System.out.printf("%5d \t\t%5d \t%10d \t%-27s \n", 
+					System.out.printf("%5d \t%5d %10d \t%-27s \n", 
 							rs.getInt("RE_NUM"),
 							calcReserveRank(reNum, 1),
 							calcReserveRank(reNum, 2),

@@ -464,11 +464,11 @@ public class BookDAO_mg {
 			pstmt.setString(1, memId);
 			rs = pstmt.executeQuery();
 			if(rs.next()) {
-				System.out.print("연체일/책제목 : \n");
+				System.out.print("연체도서 - 연체일/책제목 \n");
 				do {
 					int overReturnDays = rs.getInt("over_return");
 					if (overReturnDays > 0) {
-						System.out.print(overReturnDays + "일 / ");
+						System.out.print("- "+overReturnDays + "일 / ");
 						System.out.println(rs.getString("book_title"));
 					}
 				} while (rs.next());
@@ -496,7 +496,7 @@ public class BookDAO_mg {
 					+ "AND o.mem_id=? AND o.return_date>=sysdate AND o.is_return=0 ORDER BY o.return_date) WHERE ROWNUM = 1";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, numId);
-			rs = pstmt.executeQuery();
+			rs = pstmt.executeQuery(); 
 			if(rs.next()) {
 				System.out.print("반납예정일/책제목 : ");
 				do {
@@ -535,9 +535,9 @@ public class BookDAO_mg {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.print("예약도서 - 책제목/책권수 : ");
+				System.out.println("예약도서 - 책제목/책권수");
 				do {
-					System.out.print(rs.getString("book_title"));
+					System.out.print("- "+rs.getString("book_title"));
 					System.out.print(" / ");
 					System.out.println(rs.getString("book_volm_cnt") + "권");
 				} while (rs.next());

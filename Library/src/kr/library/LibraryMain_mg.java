@@ -112,6 +112,9 @@ public class LibraryMain_mg {
 			if(overReturn) System.out.println();			
 			if(returnDateNotification) System.out.println();
 			if(reservationNotification) System.out.println();
+		} else {
+			System.out.println("알림이 없습니다.");
+			System.out.println("-".repeat(90));
 		}
 		return;
 	} // checkUserNotifications
