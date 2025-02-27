@@ -423,7 +423,7 @@ public class BookDAO_Jw {
 		} finally {
 			DBUtil.executeClose(rs, pstmt, conn);
 		}
-		if(check == -9999) System.out.println("에러 발생!");
+		//if(check == -9999) System.out.println("에러 발생!");
 
 		return check >= 1? true: false; 
 	}//checkMemStop
@@ -656,9 +656,9 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%5s \t%s \t\t%5s \t%s\n", "번호", "대여일자", "반납여부(O/X)", "책제목");
+				System.out.printf("%5s \t%s \t%5s \t%s\n", "번호", "대여일자", "반납여부(O/X)", "책제목");
 				do {
-					System.out.printf("%5d \t%7s \t%5s \t\t%s\n", 
+					System.out.printf("%5d \t\t%7s \t%5s \t\t%-30s\n", 
 							rs.getInt("ORDER_NUM"),
 							rs.getDate("ORDER_DATE").toString(),
 							rs.getString("RETURN"),
