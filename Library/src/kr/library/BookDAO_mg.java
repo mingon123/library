@@ -82,17 +82,14 @@ public class BookDAO_mg {
 			System.out.println("-".repeat(90));
 			
 			if(rs.next()) {
-				System.out.println("번호\t신청일\t\t제목\t저자\t출판사");
+				System.out.printf("번호\t신청일\t\t %-20s   %-15s   %-10s\n","제목","저자","출판사");
 				do {
-					System.out.print(rs.getInt("wish_num"));
-					System.out.print("\t");
-					System.out.print(rs.getDate("wish_date"));
-					System.out.print("\t");
-					System.out.print(rs.getString("wish_title"));
-					System.out.print("\t");
-					System.out.print(rs.getString("wish_author"));
-					System.out.print("\t");
-					System.out.println(rs.getString("wish_publisher"));
+					System.out.printf("%d\t%s\t %-20s   %-15s   %-10s\n",
+							rs.getInt("wish_num"),
+							rs.getDate("wish_date"),
+							rs.getString("wish_title"),
+							rs.getString("wish_author"),
+							rs.getString("wish_publisher"));
 				} while(rs.next());
 			} else {
 				System.out.println("대여,예약도서가 없습니다.");
@@ -120,17 +117,14 @@ public class BookDAO_mg {
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
 				hasBook = true;
-				System.out.println("번호\t신청일\t\t제목\t저자\t출판사");
+				System.out.printf("번호\t신청일\t\t %-20s   %-15s   %-10s\n","제목","저자","출판사");
 				do {
-					System.out.print(rs.getInt("wish_num"));
-					System.out.print("\t");
-					System.out.print(rs.getDate("wish_date"));
-					System.out.print("\t");
-					System.out.print(rs.getString("wish_title"));
-					System.out.print("\t");
-					System.out.print(rs.getString("wish_author"));
-					System.out.print("\t");
-					System.out.println(rs.getString("wish_publisher"));
+					System.out.printf("%d\t%s\t %-20s   %-15s   %-10s\n",
+							rs.getInt("wish_num"),
+							rs.getDate("wish_date"),
+							rs.getString("wish_title"),
+							rs.getString("wish_author"),
+							rs.getString("wish_publisher"));
 				} while(rs.next());
 			}
 		}catch (Exception e) {
@@ -199,12 +193,13 @@ public class BookDAO_mg {
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
 				System.out.println("Q&A 목록");
-				System.out.println("번호\t문의일\t\t제목\t내용\t\t답변일\t\t답변내용");
+				System.out.printf("번호\t문의일\t\t %-20s      %-20s   %s\t\t%-20s \n","제목","내용","답변일","답변내용");
 				do {
-					System.out.print(rs.getInt("qna_num")+"\t");
-					System.out.print(rs.getDate("q_date")+"\t");
-					System.out.print(rs.getString("qna_title")+"\t");
-					System.out.print(rs.getString("qna_content") +"\t\t");
+					System.out.printf("%d\t%s\t %-20s   %-20s ",
+							rs.getInt("qna_num"),
+							rs.getDate("q_date"),
+							rs.getString("qna_title"),
+							rs.getString("qna_content"));
 					if(rs.getString("qna_title").startsWith("RE:")) {
 						System.out.print(rs.getDate("a_date")+"\t");
 						System.out.println(rs.getString("qna_re"));
@@ -236,14 +231,12 @@ public class BookDAO_mg {
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
 				hasQNA = true;
-				System.out.println("번호\t제목\t등록일\t\t답변일\t\t답변");
+				System.out.printf("번호\t등록일\t\t%-20s   답변일\t\t답변 \n","제목");
 				do {
-					System.out.print(rs.getInt("qna_num"));
-					System.out.print("\t");
-					System.out.print(rs.getString("qna_title"));
-					System.out.print("\t");
-					System.out.print(rs.getDate("q_date"));
-					System.out.print("\t");
+					System.out.printf("%d\t%s\t%-20s ",
+							rs.getInt("qna_num"),
+							rs.getDate("q_date"),
+							rs.getString("qna_title"));
 					if(rs.getString("qna_title").startsWith("RE:")) {
 						System.out.print(rs.getDate("a_date"));
 						System.out.print("\t");
