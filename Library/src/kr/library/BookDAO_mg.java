@@ -464,7 +464,7 @@ public class BookDAO_mg {
 			pstmt.setString(1, memId);
 			rs = pstmt.executeQuery();
 			if(rs.next()) {
-				System.out.print("연체일/책제목 : ");
+				System.out.print("연체일/책제목 : \n");
 				do {
 					int overReturnDays = rs.getInt("over_return");
 					if (overReturnDays > 0) {
