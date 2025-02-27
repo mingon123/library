@@ -65,7 +65,6 @@ public class LibraryMain_mg {
 					} else if(no==3) {
 						showThreeMemu();
 					} else if(no==4) {
-						isSelectFour = true;
 						showFourMenu();
 					} else if(no==5) {
 						main_jw = new LibraryMain_jw2(no, mem_id);
@@ -342,7 +341,7 @@ public class LibraryMain_mg {
 	// 3번 선택 시 나오는 메뉴
 	public void showThreeMemu() throws IOException {
 		isSelectThree = true;
-		while(isSelectThree) {
+		while(true) {
 			System.out.println("도서 검색");
 			System.out.print("1.제목 2.저자 3.뒤로가기\n > ");
 			try {
@@ -405,7 +404,7 @@ public class LibraryMain_mg {
 
 	// 4번 선택시 나오는 화면
 	private void showFourMenu() throws IOException {
-		while(isSelectFour) {
+		while(true) {
 			System.out.println("리뷰 메뉴입니다.");
 			System.out.print("1.전체리뷰 2.책제목검색 3.내리뷰 4.뒤로가기\n > ");
 			try {
@@ -430,8 +429,10 @@ public class LibraryMain_mg {
 	}
 	// 4.리뷰 상세정보 확인
 	private void selectDetailReview() throws NumberFormatException, IOException {
-		System.out.print("조회할 리뷰번호 입력 : ");
-		int num = Integer.parseInt(br.readLine());
+		System.out.print("조회할 리뷰번호 입력 (뒤로가기:q) : ");
+		String q = br.readLine();
+		if(q.equalsIgnoreCase("q")) return;
+		int num = Integer.parseInt(q);
 		int count = dao.checkReviewRecord(num);
 		do {
 			if(count==0) {
@@ -452,7 +453,7 @@ public class LibraryMain_mg {
 		String bookTitle = br.readLine();
 		if(bookTitle.equalsIgnoreCase("q")) {
 			System.out.println("메뉴로 돌아갑니다.");
-			showFourMenu();
+			return;
 		}
 		int count = dao.checkReviewRecordOfBookTile(bookTitle);
 		do {
@@ -499,8 +500,10 @@ public class LibraryMain_mg {
 		if(!MyReview) return;
 		
 		try {
-			System.out.print("수정할 번호를 입력하세요: ");
-			int num = Integer.parseInt(br.readLine());
+			System.out.print("수정할 번호를 입력하세요 (뒤로가기:q) : ");
+			String q = br.readLine();
+			if(q.equalsIgnoreCase("q")) return;
+			int num = Integer.parseInt(q);
 			int count = dao.checkMyReviewRecord(num,mem_id);
 			if(count==1) {
 				System.out.print("새로운 리뷰내용 입력 : ");
@@ -526,8 +529,9 @@ public class LibraryMain_mg {
 		if(!MyReview) return;
 
 		try {
-			System.out.print("삭제할 번호를 입력하세요: ");
-			int num = Integer.parseInt(br.readLine());
+			System.out.print("삭제할 번호를 입력하세요 (뒤로가기:q) : ");
+			String q = br.readLine();
+			int num = Integer.parseInt(q);
 			int count = dao.checkMyReviewRecord(num,mem_id);
 			if(count>0) {
 				il.deleteReview(num);

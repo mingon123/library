@@ -732,14 +732,15 @@ public class BookDAO_mg {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(90));
 			if (rs.next()) {
-				System.out.println("리뷰번호\t책번호\t평점\t리뷰등록일\t\t책제목\t\t\t리뷰내용\t");			
+				System.out.printf("리뷰번호\t책번호\t평점\t리뷰등록일\t\t %-30s %-30s \n","책제목","리뷰내용");
 				do {
-					System.out.print(rs.getInt("review_num")+"\t");							
-					System.out.print(rs.getInt("book_num")+"\t");
-					System.out.print(rs.getDouble("review_rate")+"\t");
-					System.out.print(rs.getDate("review_reg_date")+"\t");
-					System.out.print(rs.getString("book_title")+"\t");
-					System.out.println(rs.getString("review_content")+"\t");
+					System.out.printf("%d\t%d\t%.1f\t%s\t %-30s %-30s \n",
+							rs.getInt("review_num"),
+							rs.getInt("book_num"),
+							rs.getDouble("review_rate"),
+							rs.getDate("review_reg_date"),
+							rs.getString("book_title"),
+							rs.getString("review_content"));
 				} while (rs.next());
 			} else {
 				System.out.println("표시할 데이터가 없습니다.");	
@@ -875,14 +876,15 @@ public class BookDAO_mg {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(90));
 			if(rs.next()) {
-				System.out.println("리뷰번호\t등록일\t\t평점\t책제목\t\t\t저자\t\t");
+				System.out.printf("리뷰번호\t등록일\t\t평점\t %-30s %-20s \n","책제목","저자");
 				do {
-				System.out.print(rs.getInt("review_num")+"\t");
-				System.out.print(rs.getDate("review_reg_date")+"\t");
-				System.out.print(rs.getDouble("review_rate")+"\t");
-				System.out.print(rs.getString("book_title")+"\t");
-				System.out.println(rs.getString("book_author")+"\t");
-				} while(rs.next());
+					System.out.printf("%d\t%s\t %.1f\t %-30s %-30s \n",
+							rs.getInt("review_num"),
+							rs.getDate("review_reg_date"),
+							rs.getDouble("review_rate"),
+							rs.getString("book_title"),
+							rs.getString("book_author"));
+				} while(rs.next());				
 			} else {
 				System.out.println("검색된 책에 대한 리뷰가 없습니다.");
 			}
