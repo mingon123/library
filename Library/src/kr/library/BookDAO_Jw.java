@@ -291,8 +291,8 @@ public class BookDAO_Jw {
 
 
 	// 대여번호가 연장이 가능한지 확인하는 함수
-	//	- 먼저 대여번호가 유효한지 체크하기때문에 연장유무만
-	public boolean checkOrderAdd(int order_num) {
+	//	- 먼저 대여번호가 유효한지 체크하기때문에 연장유무만 TODO -> 본인 것이여만 함
+	public boolean checkOrderAdd(int order_num, String mem_id) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -300,9 +300,10 @@ public class BookDAO_Jw {
 		int check = -1;
 		try {
 			conn = DBUtil.getConnection();
-			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND IS_ADD=0";
+			sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND MEM_ID=? AND IS_ADD=0";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setInt(1, order_num);
+			pstmt.setString(2, mem_id);
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) check = rs.getInt(1);
@@ -692,10 +693,10 @@ public class BookDAO_Jw {
 			rs = pstmt.executeQuery();
 
 			if(rs.next()) {
-				System.out.printf("%5s \t%7s \t%7s \t%5s \t\t%5s\n", 
+				System.out.printf("%5s \t%7s \t\t%7s \t%5s \t\t%5s\n", 
 						"대여번호", "대여일자", "반납예정일자","연장가능", "책제목");
 				do {
-					System.out.printf("%5s \t%s \t%s \t%5s \t\t%s\n", 
+					System.out.printf("%5s \t\t%s \t%s \t%5s \t\t%s\n", 
 							rs.getInt("ORDER_NUM"),
 							rs.getDate("ORDER_DATE").toString(),
 							rs.getDate("RETURN_DATE").toString(),
@@ -733,7 +734,7 @@ public class BookDAO_Jw {
 				int reNum = rs.getInt("RE_NUM");
 
 				do {
-					System.out.printf("%5d \t%4d \t%5d %27s \n", 
+					System.out.printf("%5d \t\t%5d \t%10d \t%-27s \n", 
 							rs.getInt("RE_NUM"),
 							calcReserveRank(reNum, 1),
 							calcReserveRank(reNum, 2),

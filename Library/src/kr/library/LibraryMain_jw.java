@@ -374,7 +374,7 @@ public class LibraryMain_jw {
 
 									System.out.println();
 
-									if(dao.checkOrderAdd(sNum)) {
+									if(dao.checkOrderAdd(sNum,mem_id)) {
 										if(!dao.checkOrderAddReturnDate(sNum)) {
 											System.out.println(sNum +"번의 반납기한이 지났으므로 연장이 불가능합니다.");
 											System.out.println("이전화면으로 돌아갑니다.");
@@ -408,7 +408,7 @@ public class LibraryMain_jw {
 											} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
 										}
 									}
-									else if(sNum != -1 && !dao.checkOrderAdd(sNum)){
+									else if(sNum != -1 && !dao.checkOrderAdd(sNum,mem_id)){
 										System.out.println(sNum +"번은 연장이 불가능합니다.");
 										System.out.println("이전화면으로 돌아갑니다.");
 										isSelectView = false;
