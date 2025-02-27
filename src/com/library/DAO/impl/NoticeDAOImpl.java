@@ -61,6 +61,8 @@ public class NoticeDAOImpl implements NoticeDAO {
 			pstmt.setInt(1, num);
 			rs = pstmt.executeQuery();
 			if (rs.next()) count = 1;
+		} catch (NumberFormatException e) {
+			count = -1;
 		} catch (Exception e) {
 			count = -1;
 		} finally {
