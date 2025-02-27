@@ -204,8 +204,10 @@ public class LibraryMain_mg {
 
 		if(mem_id != null && jw.checkMemStop(mem_id)) { //TODO
 			orderOrReserveMenu(book_num); // 대여 예약
-		}else if(!jw.checkMemStop(mem_id)) {
+		}else if(mem_id != null && !jw.checkMemStop(mem_id)) {
 			System.out.println("정지상태입니다. 대여/예약이 불가능합니다.");
+		}else if(mem_id == null) {
+			System.out.println("비회원입니다. 대여/예약은 로그인 후 이용바랍니다.");
 		}
 	}
 
