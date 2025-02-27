@@ -539,7 +539,7 @@ public class BookDAO_mg {
 				do {
 					System.out.print(rs.getString("book_title"));
 					System.out.print(" / ");
-					System.out.println(rs.getString("book_volm_cnt"));
+					System.out.println(rs.getString("book_volm_cnt") + "권");
 				} while (rs.next());
 				System.out.println("예약도서 대여 가능!");
 				System.out.println("-".repeat(90));
@@ -555,7 +555,6 @@ public class BookDAO_mg {
 		return false;
 	} // isReservationNotification
 
-	
 	// 카테고리별 책 
 	public void selectCategoryOfBook(String category) {
 		Connection conn = null;

@@ -100,7 +100,7 @@ public class LibraryMain_mg {
 
 	// 1번선택 시 나오는 화면
 	private void checkUserNotifications() throws IOException {
-		System.out.println("정지상태/연체/반납일/예약도서알림");
+		System.out.println("정지상태 / 연체상태 / 반납예정일 / 예약도서 대출가능 알림");
 		System.out.println("-".repeat(90));
 		boolean memStop = dao.isMemStop(mem_id);
 		boolean overReturn = dao.isOverReturn(mem_id);
@@ -108,13 +108,10 @@ public class LibraryMain_mg {
 		boolean reservationNotification = dao.isReservationNotification(mem_id);
 
 		if((memStop||overReturn||returnDateNotification||reservationNotification)) {
-			if(memStop)
-				if(overReturn)
-					if(returnDateNotification)
-						if(reservationNotification) System.out.println();
-		} else {
-			System.out.println("알림이 없습니다.");
-			System.out.println("-".repeat(90));
+			if(memStop) System.out.println();
+			if(overReturn) System.out.println();			
+			if(returnDateNotification) System.out.println();
+			if(reservationNotification) System.out.println();
 		}
 		return;
 	} // checkUserNotifications
