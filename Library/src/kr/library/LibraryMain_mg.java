@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class LibraryMain_mg {
 	private BufferedReader br;
-	private String mem_id="aasd"; // 로그인한 아이디 저장
+	private String mem_id; // 로그인한 아이디 저장
 //	private String mem_id;
 
 	private boolean isSelectSeven = false;
@@ -28,7 +28,7 @@ public class LibraryMain_mg {
 			dao = new BookDAO_mg();
 			il = new BookDAO_il();
 			jw = new BookDAO_Jw();
-			callMenu();
+//			callMenu();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -151,6 +151,7 @@ public class LibraryMain_mg {
 					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
 					isStart = true;
 					isSelectTwo = false;
+					return;
 				} else System.out.println("잘못 입력하셨습니다.");
 			} catch (NumberFormatException e) {
 				System.out.println("[숫자만 입력 가능]");
@@ -186,7 +187,7 @@ public class LibraryMain_mg {
 			}
 			else if(no==6) {
 				System.out.println("뒤로가기를 선택하셨습니다.");
-				showTwoMenu();
+				return;
 			} else System.out.println("잘못 입력하셨습니다.");
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
@@ -331,6 +332,7 @@ public class LibraryMain_mg {
 
 			}else if(no==3) {
 				System.out.println("\n뒤로가기를 선택하셨습니다.");
+				return;
 			}else {
 				System.out.println("잘못 입력하셨습니다.");
 			}
@@ -360,6 +362,7 @@ public class LibraryMain_mg {
 					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
 					isStart = true;
 					isSelectThree = false;
+					return;
 				} else System.out.println("잘못 입력하셨습니다.");
 			} catch (NumberFormatException e) {
 				System.out.println("[숫자만 입력 가능]");
@@ -427,6 +430,7 @@ public class LibraryMain_mg {
 					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
 					isStart = true;
 					isSelectFour = false;
+					return;
 				} else System.out.println("잘못 입력하셨습니다.");
 			} catch (NumberFormatException e) {
 				System.out.println("[숫자만 입력 가능]");
@@ -482,6 +486,7 @@ public class LibraryMain_mg {
 
 	// 내 리뷰 관리 
 	private void manageMyReview() throws NumberFormatException, IOException {
+		while(true) {
 		System.out.print("1.내리뷰확인 2.리뷰수정 3.리뷰삭제 4.뒤로가기\n > ");
 		int no = Integer.parseInt(br.readLine());
 		if(no==1) {
@@ -493,9 +498,10 @@ public class LibraryMain_mg {
 			deleteMyReview();
 		} else if(no==4) {
 			System.out.println("뒤로가기를 선택하셨습니다.");
-			showFourMenu();
+			return;
 		}
 		else System.out.println("잘못 입력하셨습니다.");
+		}
 	}
 
 	// 리뷰 수정
@@ -561,6 +567,7 @@ public class LibraryMain_mg {
 					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
 					isStart = true;
 					isSelectSeven = false;
+					return;
 				} else System.out.println("잘못 입력하셨습니다.");
 			} catch (NumberFormatException e) {
 				System.out.println("[숫자만 입력 가능]");
@@ -583,7 +590,7 @@ public class LibraryMain_mg {
 				System.out.println("-".repeat(90));
 			} else if(no==4) {
 				System.out.println("뒤로가기를 선택하셨습니다.");
-				showSevenMenu();
+				return;
 			}
 			else System.out.println("잘못 입력하셨습니다.");
 
@@ -595,8 +602,8 @@ public class LibraryMain_mg {
 	} // manageWishBook
 	// 희망도서등록
 	private void insertWishBook() throws IOException {
-		System.out.println("희망도서 신청화면입니다. 뒤로가시길 원하시면 q(Q)를 입력하세요.");
-		System.out.print("희망도서 제목을 입력하세요: ");
+		System.out.println("희망도서 신청화면입니다.");
+		System.out.print("희망도서 제목을 입력하세요: (뒤로가기:q) : ");
 		String title = br.readLine();
 		if(title.equalsIgnoreCase("q")) {
 			System.out.println("이전 화면으로 돌아갑니다.");
@@ -649,14 +656,14 @@ public class LibraryMain_mg {
 			System.out.println("-".repeat(90));
 		} else if(no==4) {
 			System.out.println("뒤로가기를 선택하셨습니다.");
-			showSevenMenu();
+			return;
 		}
 		else System.out.println("잘못 입력하셨습니다.");
 	} // manageQNA
 	// qna등록
 	private void insertQNA() throws IOException {
-		System.out.println("질문 등록화면입니다. 뒤로가시길 원하시면 q(Q)를 입력하세요.");
-		System.out.print("질문 제목을 입력하세요 : ");
+		System.out.println("질문 등록화면입니다.");
+		System.out.print("질문 제목을 입력하세요 (뒤로가기:q) : ");
 		String qnaTitle = br.readLine();
 		if(qnaTitle.equalsIgnoreCase("q")) {
 			System.out.println("이전화면으로 돌아갑니다.");
@@ -703,7 +710,7 @@ public class LibraryMain_mg {
 			else if(no==3) deleteMemberInfo();
 			else if(no==4) {
 				System.out.println("뒤로가기를 선택하셨습니다.");
-				showSevenMenu();
+				return;
 			} else System.out.println("잘못 입력하셨습니다.");
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
@@ -714,7 +721,7 @@ public class LibraryMain_mg {
 	// 회원정보수정
 	private void updateMemberInfo() throws IOException {
 		String memId = mem_id;
-		System.out.printf("현재 계정은 %s입니다. 뒤로가기:q(Q)입력 \n",memId);
+		System.out.printf("현재 계정은 %s입니다. (뒤로가기:q) : \n",memId);
 		String password;
 		while(true) {
 			System.out.print("현재 비밀번호를 입력하세요(문자,숫자,특수문자 포함 8~15자리) : ");
@@ -771,7 +778,7 @@ public class LibraryMain_mg {
 			}
 			else if(no==2) {
 				System.out.println("뒤로가기를 선택하셨습니다.");
-				manageMemberInfo();
+				return;
 			} else System.out.println("잘못 입력하셨습니다.");
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
@@ -795,6 +802,6 @@ public class LibraryMain_mg {
 
 
 	public static void main(String[] args) {
-		new LibraryMain_mg();
+//		new LibraryMain_mg();
 	} // main
 } // class

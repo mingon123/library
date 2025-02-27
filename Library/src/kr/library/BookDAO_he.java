@@ -48,11 +48,7 @@ public class BookDAO_he {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, id);
 			rs = pstmt.executeQuery();
-
-			if (rs.next() && rs.getInt(1) > 0) {
-				System.out.println("이미 존재하는 아이디입니다.");
-				return true;
-			}
+			if (rs.next() && rs.getInt(1) > 0) return true;
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -71,7 +67,7 @@ public class BookDAO_he {
 	
     // 이름 검증(알파벳,한글,숫자만 가능)
     public boolean checkValidName(String name) {
-        return name != null && name.matches("^[a-zA-Z가-힣]+$");
+        return name != null && name.matches("^[a-zA-Z가-힣0-9]+$");
     }
 
     
@@ -89,11 +85,7 @@ public class BookDAO_he {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, cell);
 			rs = pstmt.executeQuery();
-
-			if (rs.next() && rs.getInt(1) > 0) {
-				System.out.println("이미 존재하는 전화번호입니다.");
-				return true;
-			}
+			if (rs.next() && rs.getInt(1) > 0) return true;
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {

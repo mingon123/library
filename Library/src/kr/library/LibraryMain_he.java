@@ -44,10 +44,15 @@ public class LibraryMain_he {
 					int num; boolean flag = false;
 					do {
 						if(flag) {
-							System.out.print("\n존재하지 않는 글 번호 입니다.\n다시 ");
+							System.out.println("존재하지 않는 글 번호 입니다. 다시 입력하세요 ");
 						}
-						System.out.print("조회하실 글의 번호 입력 : ");
-						num = Integer.parseInt(br.readLine());
+						System.out.print("조회하실 글의 번호 입력 (뒤로가기:q) : ");
+						String q = br.readLine();
+						if(q.equalsIgnoreCase("q")) {
+							System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
+							callMenu();
+						}
+						num = Integer.parseInt(q);
 						flag = true;
 					} while (!dao_jw.checkNoticeNum(num));
 					System.out.println("-".repeat(90));
