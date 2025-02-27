@@ -706,10 +706,10 @@ public class LibraryMain_mg {
 	// 회원정보수정
 	private void updateMemberInfo() throws IOException {
 		String memId = mem_id;
-		System.out.printf("현재 계정은 %s입니다. (뒤로가기:q) : \n",memId);
+		System.out.printf("현재 계정은 %s입니다. \n",memId);
 		String password;
 		while(true) {
-			System.out.print("현재 비밀번호를 입력하세요(문자,숫자,특수문자 포함 8~15자리) : ");
+			System.out.print("현재 비밀번호를 입력하세요(문자,숫자,특수문자 포함 8~15자리) (뒤로가기:q) : ");
 			password = br.readLine();
 			if(isValidPassword(password)) break;
 			else if(password.equalsIgnoreCase("q")) {
