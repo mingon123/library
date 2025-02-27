@@ -61,31 +61,24 @@ public class LibraryMain_mg {
 					if(no==1) {
 						checkUserNotifications();
 					} else if(no==2) {
-						isStart = false;
 						showTwoMenu();
 					} else if(no==3) {
-						isStart = false;
 						showThreeMemu();
 					} else if(no==4) {
-						isStart = false;
 						isSelectFour = true;
 						showFourMenu();
 					} else if(no==5) {
-						isStart = false;
 						main_jw = new LibraryMain_jw2(no, mem_id);
 						main_jw.test(isStart);
 					}else if(no==6) {
-						isStart = false;
 						main_jw = new LibraryMain_jw2(no, mem_id);
 						main_jw.test(isStart);
 						showFourMenu();
 					}else if(no==7) {
-						isStart = false;
 						isSelectSeven = true;
 						System.out.println("기타 메뉴를 선택하셨습니다.");
 						showSevenMenu();
 					}else if(no==8) {
-						isStart = false;
 						System.out.println("로그아웃을 선택하셨습니다.");
 						main_he = new LibraryMain_he();
 					}else if(no==9) {
@@ -123,7 +116,7 @@ public class LibraryMain_mg {
 			System.out.println("알림이 없습니다.");
 			System.out.println("-".repeat(90));
 		}
-		callMenu();
+		return;
 	} // checkUserNotifications
 
 	// 2번선택 시 나오는 화면
@@ -350,18 +343,10 @@ public class LibraryMain_mg {
 			System.out.print("1.제목 2.저자 3.뒤로가기\n > ");
 			try {
 				int no = Integer.parseInt(br.readLine());
-				if(no==1) {
-					selectSearchBookTitle();
-					selectDetailBook();
-				}
-				else if(no==2) {
-					selectSearchBookAuthor();
-					selectDetailBook();
-				}
+				if(no==1) selectSearchBookTitle();
+				else if(no==2) selectSearchBookAuthor();
 				else if(no==3) { //뒤로가기
 					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
-					isStart = true;
-					isSelectThree = false;
 					return;
 				} else System.out.println("잘못 입력하셨습니다.");
 			} catch (NumberFormatException e) {
@@ -376,13 +361,13 @@ public class LibraryMain_mg {
 	private void selectSearchBookTitle() throws IOException {
 		System.out.print("검색할 책 제목 검색 (뒤로가기:q) : ");
 		String title = br.readLine();
-		if(title.equalsIgnoreCase("q")) showThreeMemu();
+		if(title.equalsIgnoreCase("q")) return;
 		int count = dao.checkBookTitleRecord(title);
 		do {
 			if(count==0) {
 				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 (뒤로가기:q) : ");
 				title = br.readLine();
-				if(title.equalsIgnoreCase("q")) showThreeMemu();
+				if(title.equalsIgnoreCase("q")) return;
 				count = dao.checkBookTitleRecord(title);
 			} else if (count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
@@ -390,19 +375,20 @@ public class LibraryMain_mg {
 		} while(count<=0);
 		dao.selectSearchBookTitle(title);
 		System.out.println("-".repeat(90));
+		selectDetailBook();
 	}
 
 	// 저자로 도서 검색
 	private void selectSearchBookAuthor() throws IOException {
 		System.out.print("검색할 책 저자 검색 (뒤로가기:q) : ");
 		String author = br.readLine();
-		if(author.equalsIgnoreCase("q")) showThreeMemu();
+		if(author.equalsIgnoreCase("q")) return;
 		int count = dao.checkBookAuthorRecord(author);
 		do {
 			if(count==0) {
 				System.out.print("입력한 단어가 포함된 도서가 없습니다. 다시입력하세요 (뒤로가기:q) : ");
 				author = br.readLine();
-				if(author.equalsIgnoreCase("q")) showThreeMemu();
+				if(author.equalsIgnoreCase("q")) return;
 				count = dao.checkBookAuthorRecord(author);
 			} else if(count==-1) {
 				System.out.println("정보 처리 중 오류 발생");
@@ -410,6 +396,7 @@ public class LibraryMain_mg {
 		} while(count<=0);
 		dao.selectSearchBookAuthor(author);
 		System.out.println("-".repeat(90));
+		selectDetailBook();
 	}
 
 	// 4번 선택시 나오는 화면
@@ -428,8 +415,6 @@ public class LibraryMain_mg {
 					manageMyReview();
 				}else if(no==4) { //뒤로가기
 					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
-					isStart = true;
-					isSelectFour = false;
 					return;
 				} else System.out.println("잘못 입력하셨습니다.");
 			} catch (NumberFormatException e) {

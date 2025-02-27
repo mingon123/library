@@ -744,7 +744,7 @@ public class BookDAO_mg {
 				do {
 					System.out.print(rs.getInt("review_num")+"\t");							
 					System.out.print(rs.getInt("book_num")+"\t");
-					System.out.print(rs.getInt("review_rate")+"\t");
+					System.out.print(rs.getDouble("review_rate")+"\t");
 					System.out.print(rs.getDate("review_reg_date")+"\t");
 					System.out.print(rs.getString("book_title")+"\t");
 					System.out.println(rs.getString("review_content")+"\t");
@@ -779,7 +779,7 @@ public class BookDAO_mg {
 				System.out.println("책번호 : "+ rs.getInt("book_num"));
 				System.out.println("책제목 : "+ rs.getString("book_title"));
 				System.out.println("리뷰내용 : "+ rs.getString("review_content"));
-				System.out.println("평점 : "+ rs.getInt("review_rate"));
+				System.out.println("평점 : "+ rs.getDouble("review_rate"));
 				System.out.println("작성일 : "+ rs.getDate("review_reg_date"));
 				System.out.println("작성자 : "+ rs.getString("mem_id"));
 			} else {
@@ -887,7 +887,7 @@ public class BookDAO_mg {
 				do {
 				System.out.print(rs.getInt("review_num")+"\t");
 				System.out.print(rs.getDate("review_reg_date")+"\t");
-				System.out.print(rs.getInt("review_rate")+"\t");
+				System.out.print(rs.getDouble("review_rate")+"\t");
 				System.out.print(rs.getString("book_title")+"\t");
 				System.out.println(rs.getString("book_author")+"\t");
 				} while(rs.next());
@@ -923,7 +923,7 @@ public class BookDAO_mg {
 				do {
 					System.out.print(rs.getInt("review_num")+"\t");
 					System.out.print(rs.getDate("review_reg_date")+"\t");
-					System.out.print(rs.getInt("review_rate")+"\t");
+					System.out.print(rs.getDouble("review_rate")+"\t");
 					System.out.print(rs.getString("book_title")+"\t");
 					System.out.println(rs.getString("review_content")+"\t");
 				} while(rs.next());
@@ -1091,7 +1091,7 @@ public class BookDAO_mg {
 	                + "COALESCE(AVG(r.review_rate), NULL) AS review_rate, "
 	                + "b.book_title, b.book_author, b.book_publisher, b.book_p_year, "
 	                + "b.book_rank, b.book_volm_cnt, b.book_reg_date, "
-	                + "COALESCE(LISTAGG(r.review_content, ' | ') WITHIN GROUP (ORDER BY r.review_rate), '리뷰 없음') AS review_content "
+	                + "COALESCE(LISTAGG(r.review_content, ' | ') WITHIN GROUP (ORDER BY r.review_rate), '없음') AS review_content "
 	                + "FROM book b LEFT JOIN review r ON b.book_num = r.book_num "
 	                + "WHERE b.book_num = ? "
 	                + "GROUP BY b.book_num, b.book_category, b.book_title, b.book_author, "
@@ -1112,8 +1112,11 @@ public class BookDAO_mg {
 				System.out.println("등록일 : " + rs.getDate("book_reg_date"));
 				
 	            double reviewRate = rs.getDouble("review_rate");
-	            String reviewRateStr = rs.wasNull() ? "정보 없음" : String.valueOf(reviewRate);
-	            System.out.println("평균 평점 : " + reviewRateStr);
+	            if(rs.wasNull()) {
+	            	String reviewRateStr = "없음";
+	            	System.out.println("평균 평점 : "+reviewRateStr);
+	            }
+	            else System.out.printf("평균 평점 : %.1f \n", reviewRate);
 
 	            System.out.println("리뷰 내용 : " + rs.getString("review_content"));
 	        } else {
