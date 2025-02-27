@@ -1175,7 +1175,7 @@ public class BookDAO_il {
 				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("qna_num")+"\t");							
-					System.out.print(rs.getString("qna_title")+"\t");
+					System.out.printf("%-17s\t", rs.getString("qna_title"));
 					System.out.print(rs.getDate("q_date")+"\t");
 					if(rs.getDate("a_date") == null) System.out.println("-");
 					else System.out.println(rs.getDate("a_date")+"\t");
