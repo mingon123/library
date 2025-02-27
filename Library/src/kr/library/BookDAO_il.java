@@ -1171,7 +1171,7 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("qna번호\t질문제목\t질문날짜\t\t답변날짜 ");		
+				System.out.println("qna번호\t질문제목\t\t\t질문날짜\t\t답변날짜 ");		
 				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("qna_num")+"\t");							
