@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 
 public class LibraryMain_jw2 {
 	private BufferedReader br;
-	//private String mem_id; // 로그인한 아이디 저장
+	private String mem_id; // 로그인한 아이디 저장
 	private boolean isSelectFive = false;
 	private BookDAO_Jw dao;
 	private LibraryMain_mg main;
@@ -14,6 +14,7 @@ public class LibraryMain_jw2 {
 
 	public LibraryMain_jw2(int no, String mem_id) {
 		try {
+			this.mem_id = mem_id;
 			dao = new BookDAO_Jw();
 			br = new BufferedReader(new InputStreamReader(System.in));
 			// 메뉴 호출
@@ -368,6 +369,10 @@ public class LibraryMain_jw2 {
 
 									boolean flag = false; String s; int sNum = -1;
 									do {
+										if(sNum != -1 && !dao.checkOrderAdd(sNum,mem_id)){
+											System.out.println(sNum +"번은 연장이 불가능합니다.");
+										}
+										sNum = -1;
 										if(flag) {
 											System.out.println("잘못 입력하셨습니다. 다시 입력해주세요.");
 										}
@@ -390,7 +395,7 @@ public class LibraryMain_jw2 {
 
 									System.out.println();
 
-									if(dao.checkOrderAdd(sNum)) {
+									if(dao.checkOrderAdd(sNum, mem_id)) {
 										if(!dao.checkOrderAddReturnDate(sNum)) {
 											System.out.println(sNum +"번의 반납기한이 지났으므로 연장이 불가능합니다.");
 											System.out.println("이전화면으로 돌아갑니다.");
@@ -424,12 +429,14 @@ public class LibraryMain_jw2 {
 											} while (!s.equals("N") && !s.equals("n") && !s.equals("Y") && !s.equals("y"));
 										}
 									}
-									else if(sNum != -1 && !dao.checkOrderAdd(sNum)){
+									
+									else if(sNum != -1 && !dao.checkOrderAdd(sNum,mem_id)){
 										System.out.println(sNum +"번은 연장이 불가능합니다.");
 										System.out.println("이전화면으로 돌아갑니다.");
 										isSelectView = false;
 										continue;
 									}
+									
 									else {
 										//
 									}
