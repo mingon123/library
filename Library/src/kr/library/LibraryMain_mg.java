@@ -729,7 +729,7 @@ public class LibraryMain_mg {
 		String name = br.readLine();
 		String email;
 		while(true) {			
-			System.out.print("변경할 이메일을 입력하세요 (뒤로가기:q) :  \n");
+			System.out.print("변경할 이메일을 입력하세요 (뒤로가기:q) : ");
 			email = br.readLine();
 			if(isValidEmail(email)) break;
 			else if(email.equalsIgnoreCase("q")) {

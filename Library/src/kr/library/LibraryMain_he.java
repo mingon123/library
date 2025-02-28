@@ -95,7 +95,7 @@ public class LibraryMain_he {
 					String name;
 					boolean isValidName;
 					do {
-						System.out.print("이름(한글,영문만 입력 가능) (뒤로가기:q) :");
+						System.out.print("이름(한글,영문,숫자만 입력 가능) (뒤로가기:q) :");
 						name = br.readLine();
 						if(name.equalsIgnoreCase("q")) {
 							System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
