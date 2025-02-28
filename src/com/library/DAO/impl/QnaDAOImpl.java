@@ -14,15 +14,12 @@ public class QnaDAOImpl implements QnaDAO{
 	public QnaDAOImpl() {} 
 	
 	// Q&A 질문 등록
+	@Override
 	public void insertQNA(String qnaTitle, String qnaContent,String memId) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		String sql = null;
+		String sql = "INSERT INTO qna (qna_num,qna_title,qna_content,q_date,mem_id) VALUES (qna_seq.nextval,?,?,SYSDATE,?)";
 		int cnt = 0;
-		try {
-			conn = DBUtil.getConnection();
-			sql = "INSERT INTO qna (qna_num,qna_title,qna_content,q_date,mem_id) VALUES (qna_seq.nextval,?,?,SYSDATE,?)";
-			pstmt = conn.prepareStatement(sql);
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setString(++cnt, qnaTitle);
 			pstmt.setString(++cnt, qnaContent);
 			pstmt.setString(++cnt, memId);
@@ -30,92 +27,76 @@ public class QnaDAOImpl implements QnaDAO{
 			System.out.println("질문 등록 완료!");
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			DBUtil.executeClose(null, pstmt, conn);
 		}
 	} // insertQNA
 	
 	// Q&A 목록보기
+	@Override
 	public void selectQNAInfo() {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		String sql = null;
-		try {
-			conn = DBUtil.getConnection();
-			sql = "SELECT qna_num,qna_title,qna_content,q_date FROM qna ORDER BY q_date DESC";
-			pstmt = conn.prepareStatement(sql);
-			rs = pstmt.executeQuery();
+		String sql = "SELECT qna_num,qna_title,qna_content,q_date,a_date,qna_re FROM qna ORDER BY q_date DESC";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);
+			 ResultSet rs = pstmt.executeQuery();){
 			System.out.println("-".repeat(90));
-			
 			if(rs.next()) {
 				System.out.println("Q&A 목록");
-				System.out.println("번호\t문의일\t\t제목\t내용");
+				System.out.printf("번호\t문의일\t\t %-20s      %-20s   %s\t\t%-20s \n","제목","내용","답변일","답변내용");
 				do {
-					System.out.print(rs.getInt("qna_num"));
-					System.out.print("\t");
-					System.out.print(rs.getDate("q_date"));
-					System.out.print("\t");
-					System.out.print(rs.getString("qna_title"));
-					System.out.print("\t");
-					System.out.println(rs.getString("qna_content"));
+					System.out.printf("%d\t%s\t %-20s   %-20s ",
+							rs.getInt("qna_num"),
+							rs.getDate("q_date"),
+							rs.getString("qna_title"),
+							rs.getString("qna_content"));
+					if(rs.getString("qna_title").startsWith("RE:")) {
+						System.out.print(rs.getDate("a_date")+"\t");
+						System.out.println(rs.getString("qna_re"));
+					} else System.out.println();
 				} while(rs.next());
 			} else {
 				System.out.println("Q&A 내역이 없습니다.");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			DBUtil.executeClose(rs, pstmt, conn);
-		} 
+		}
 	} // selectQNAInfo
 	
 	// 내 qna 목록보기
+	@Override
 	public boolean selectMyQNAInfo(String memId) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		String sql = null;
-		boolean hasQNA = false;
-		try {
-			conn = DBUtil.getConnection();
-			sql = "SELECT qna_num,qna_title,q_date,qna_re,a_date FROM qna WHERE mem_id=? ORDER BY q_date DESC";
-			pstmt = conn.prepareStatement(sql);
+		String sql = "SELECT qna_num,qna_title,q_date,qna_re,a_date FROM qna WHERE mem_id=? ORDER BY q_date DESC";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setString(1, memId);
-			rs = pstmt.executeQuery();
-			System.out.println("-".repeat(90));
-			if(rs.next()) {
-				hasQNA = true;
-				System.out.println("번호\t제목\t등록일\t\t답변\t답변일");
-				do {
-					System.out.print(rs.getInt("qna_num"));
-					System.out.print("\t");
-					System.out.print(rs.getString("qna_title"));
-					System.out.print("\t");
-					System.out.print(rs.getDate("q_date"));
-					System.out.print("\t");
-					System.out.print(rs.getString("qna_re"));
-					System.out.print("\t");
-					System.out.println(rs.getDate("a_date"));
-				} while(rs.next());
+			try(ResultSet rs = pstmt.executeQuery();){
+				System.out.println("-".repeat(90));
+				if(rs.next()) {
+					System.out.printf("번호\t등록일\t\t%-20s   답변일\t\t답변 \n","제목");
+					do {
+						System.out.printf("%d\t%s\t%-20s ",
+								rs.getInt("qna_num"),
+								rs.getDate("q_date"),
+								rs.getString("qna_title"));
+						if(rs.getString("qna_title").startsWith("RE:")) {
+							System.out.print(rs.getDate("a_date"));
+							System.out.print("\t");
+							System.out.println(rs.getString("qna_re"));
+						} else System.out.println();
+					} while(rs.next());
+					return true;
+				}
 			}
 		}catch (Exception e) {
 			e.printStackTrace();
-		}finally {
-			DBUtil.executeClose(rs, pstmt, conn);
 		}
-		return hasQNA;
+		return false;
 	} // selectMyQNAInfo
 	
 	// qna삭제
+	@Override
 	public void deleteQNAInfo(String memId, int QNANum) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		String sql = null;
-		try { 
-			conn = DBUtil.getConnection();
-			sql = "DELETE FROM qna WHERE mem_id=? AND qna_num=?";
-			pstmt = conn.prepareStatement(sql);
+		String sql = "DELETE FROM qna WHERE mem_id=? AND qna_num=?";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){ 
 			pstmt.setString(1, memId);
 			pstmt.setInt(2, QNANum);
 			int rows = pstmt.executeUpdate();
@@ -123,12 +104,11 @@ public class QnaDAOImpl implements QnaDAO{
 			else System.out.println("QNA를 삭제할 수 없습니다.");
 		} catch(Exception e) {
 			e.printStackTrace();
-		} finally {
-			DBUtil.executeClose(null, pstmt, conn);
 		}
 	} // deleteQNA	
 	
 	// qna 레코드 확인
+	@Override
 	public int checkQnaRecordNumId(int qnaNum, String memId){
 	    String sql = "SELECT COUNT(*) FROM qna WHERE qna_num = ? AND mem_id = ?";
 	    try (Connection conn = DBUtil.getConnection(); 

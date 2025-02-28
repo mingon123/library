@@ -17,59 +17,34 @@ import com.library.service.MemberService;
 
 public class MemberServiceImpl implements MemberService {
 	private MemberDAO memberDAO;
-	private BookOrderDAO bookOrderDAO;
-	private ReservationDAO reservationDAO;
-	private BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+	private BookOrderDAO bookOrderDAO = new BookOrderDAOImpl();
+	private ReservationDAO reservationDAO = new ReservationDAOImpl();
+	private BufferedReader br;
 	private String memId;
 	
-	public MemberServiceImpl() {
-		this.memberDAO = new MemberDAOImpl();
-	}
-
-	public MemberServiceImpl(MemberDAO memberDAO) {
-		super();
+	public MemberServiceImpl(MemberDAO memberDAO, BookOrderDAO bookOrderDAO, String memId, BufferedReader br) {
 		this.memberDAO = memberDAO;
+		this.bookOrderDAO = bookOrderDAO;
+		this.memId = memId;
+		this.br = br;
 	}
 	
-	public MemberServiceImpl(MemberDAO memberDAO, String memId) {
-		this.memberDAO = new MemberDAOImpl();
-		this.memId = memId;
-	}
-
-	public MemberServiceImpl(String memId) {
-		this.memberDAO = new MemberDAOImpl();
-		this.bookOrderDAO = new BookOrderDAOImpl();
-		this.reservationDAO = new ReservationDAOImpl();
-		this.memId = memId;
-	}
-
 	@Override
 	public boolean isValid(String fieldType, String value) {
 		switch (fieldType) {
-		case "mem_id":
-			return value.matches("^[a-zA-Z0-9]{6,12}$"); // 6~12자의 알파벳, 숫자만 허용
-		case "mem_pw":
-			return value.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,16}$"); // 영문자 + 숫자 + 특수문자 포함, 8~16자리
-		case "mem_name":
-			return value.matches("^[a-zA-Z가-힣0-9]+$"); // 문자+숫자
-		case "mem_cell":
-			return value.matches("^010-\\d{4}-\\d{4}$"); // 10~11자리 숫자
-		case "mem_email":
-			return value.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$"); // 이메일 형식
-		default:
-			return false;
+		case "mem_id": return value.matches("^[a-zA-Z0-9]{6,12}$"); // 6~12자의 알파벳, 숫자만 허용
+		case "mem_pw": return value.matches("^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,16}$"); // 영문자 + 숫자 + 특수문자 포함, 8~16자리
+		case "mem_name": return value.matches("^[a-zA-Z가-힣0-9]+$"); // 문자+숫자
+		case "mem_cell": return value.matches("^010-\\d{4}-\\d{4}$"); // 10~11자리 숫자
+		case "mem_email": return value.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$"); // 이메일 형식
+		default: return false;
 		}
 	}
 
 	@Override
 	public boolean signUp(String id, String passwd, String name, String cell, String email) {
 		if (memberDAO.isDuplicate("mem_id", id) || memberDAO.isDuplicate("mem_cell", cell)) return false;
-
-		if (!isValid("mem_id", id)) return false;
-		if (!isValid("mem_pw", passwd)) return false;
-		if (!isValid("mem_name", name)) return false;
-		if (!isValid("mem_cell", cell)) return false;
-		if (!isValid("mem_email", email)) return false;
+	    if (!isValid("mem_id", id) || !isValid("mem_pw", passwd) || !isValid("mem_name", name) || !isValid("mem_cell", cell) || !isValid("mem_email", email)) return false;
 		return memberDAO.insertMember(id, passwd, name, cell, email);
 	}
 
@@ -80,12 +55,8 @@ public class MemberServiceImpl implements MemberService {
 		do {
 			System.out.print("아이디(영문,숫자 최소 6~12자) (뒤로가기:q) :");
 			id = br.readLine().trim();
-			if(id.equalsIgnoreCase("q")) {
-				System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
-				return;
-			}
+			if(util.Util.goBack(id)) return;
 			isValidId = isValid("mem_id", id);
-
 			if (!isValidId) System.out.println("형식에 맞지 않습니다.");
 		} while(!isValidId);
 
@@ -94,10 +65,7 @@ public class MemberServiceImpl implements MemberService {
 		do {
 			System.out.print("비밀번호(영문,숫자,특수문자 포함 최소8자 이상) (뒤로가기:q) :");
 			passwd = br.readLine();
-			if(passwd.equalsIgnoreCase("q")) {
-				System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
-				return;
-			}
+			if(util.Util.goBack(passwd)) return;
 			isValidPw = isValid("mem_pw", passwd);
 
 			if(!isValidPw) System.out.println("형식에 맞지 않습니다.");
@@ -108,10 +76,7 @@ public class MemberServiceImpl implements MemberService {
 		do {
 			System.out.print("이름(한글,영문,숫자만 입력 가능) (뒤로가기:q) :");
 			name = br.readLine();
-			if(name.equalsIgnoreCase("q")) {
-				System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
-				return;
-			}
+			if(util.Util.goBack(name)) return;
 			isValidName = isValid("mem_name", name);
 
 			if(!isValidName) System.out.println("형식에 맞지 않습니다.");
@@ -122,10 +87,7 @@ public class MemberServiceImpl implements MemberService {
 		do {
 			System.out.print("전화번호(010-0000-0000 형식) (뒤로가기:q) :");
 			cell  = br.readLine();
-			if(cell.equalsIgnoreCase("q")) {
-				System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
-				return;
-			}
+			if(util.Util.goBack(cell)) return;
 			isValidCell = isValid("mem_cell", cell);
 
 			if(!isValidCell) System.out.println("형식에 맞지 않습니다.");
@@ -136,10 +98,7 @@ public class MemberServiceImpl implements MemberService {
 		do {
 			System.out.print("이메일(test@test.com 형식) (뒤로가기:q) :");
 			email = br.readLine();
-			if(email.equalsIgnoreCase("q")) {
-				System.out.println("뒤로가기를 선택하셨습니다. 홈으로 이동합니다.");
-				return;
-			}
+			if(util.Util.goBack(email)) return;
 			isValidEmail = isValid("mem_email", email);
 
 			if(!isValidEmail) System.out.println("형식에 맞지 않습니다.");
@@ -158,10 +117,7 @@ public class MemberServiceImpl implements MemberService {
 	    while (true) {
 	        System.out.print("아이디(입력취소:q): ");
 	        String mem_id = br.readLine().trim();
-	        if (mem_id.equalsIgnoreCase("q")) {
-	            System.out.println("로그인을 취소했습니다.");
-	            return;
-	        }
+	        if(util.Util.goBack(mem_id)) return;
 	        System.out.print("비밀번호: ");
 	        String passwd = br.readLine().trim();
 	        boolean flag = memberDAO.loginCheck(mem_id, passwd);
@@ -182,27 +138,28 @@ public class MemberServiceImpl implements MemberService {
 	
 	
 	// 회원정보관리
+	@Override
 	public void manageMemberInfo() {
 		System.out.print("1.회원정보조회 2.회원정보수정 3.회원탈퇴 4.뒤로가기\n > ");
 		try {
-			int no = Integer.parseInt(br.readLine());
-			if(no==1) {
-				memberDAO.selectMemberInfo(memId);
-				System.out.println("-".repeat(90));
+			String input = br.readLine();
+			int no = Integer.parseInt(input);
+			switch (no) {
+			case 1: memberDAO.selectMemberInfo(memId);System.out.println("-".repeat(90));break;
+			case 2: updateMemberInfo();break;
+			case 3: deleteMemberInfo();break;
+			case 4: System.out.println("뒤로가기를 선택하셨습니다.");return;
+			default: System.out.println("잘못 입력하셨습니다."); break;
 			}
-			else if(no==2) updateMemberInfo();
-			else if(no==3) deleteMemberInfo();
-			else if(no==4) {
-				System.out.println("뒤로가기를 선택하셨습니다.");
-				return;
-			} else System.out.println("잘못 입력하셨습니다.");
 		} catch (NumberFormatException e) {
 			System.out.println("[숫자만 입력 가능]");
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	} // manageMemberInfo
+	
 	// 회원정보수정
+	@Override
 	public void updateMemberInfo() throws IOException {
 		System.out.printf("현재 계정은 %s입니다. 뒤로가기:q(Q)입력 \n",memId);
 		String password;
@@ -210,10 +167,8 @@ public class MemberServiceImpl implements MemberService {
 			System.out.print("현재 비밀번호를 입력하세요(문자,숫자,특수문자 포함 8~15자리) : ");
 			password = br.readLine();
 			if(isValidPassword(password)) break;
-			else if(password.equalsIgnoreCase("q")) {
-				System.out.println("이전화면으로 돌아갑니다.");
-				return;
-			} else System.out.println("비밀번호 형식이 올바르지 않습니다.");			
+			else if(util.Util.goBack(password)) return;
+			else System.out.println("비밀번호 형식이 올바르지 않습니다.");			
 		}
 		System.out.print("변경할 이름을 입력하세요: ");
 		String name = br.readLine();
@@ -222,32 +177,36 @@ public class MemberServiceImpl implements MemberService {
 			System.out.print("변경할 이메일을 입력하세요: 뒤로가기:q(Q)입력 \n");
 			email = br.readLine();
 			if(isValidEmail(email)) break;
-			else if(email.equalsIgnoreCase("q")) {
-				System.out.println("이전화면으로 돌아갑니다.");
-				return;
-			}
+			else if(util.Util.goBack(email)) return;
 			else System.out.println("이메일 형식이 올바르지 않습니다.");
 		}
+		System.out.println("회원정보가 수정되었습니다.");
 		memberDAO.updateMemberInfo(memId, password, name, email);
 	} // updateMemberInfo
+	
 	// 비밀번호 유효성검사
+	@Override
 	public boolean isValidPassword(String password) {
 		String regex = "^(?=.*[a-zA-Z])(?=.*[!@#$%^*+=-])(?=.*[0-9]).{8,15}$";
 		return Pattern.matches(regex, password);
 	} // isValidPassword
+	
 	// 이메일 유효성검사
+	@Override
 	public boolean isValidEmail(String email) {
 		String regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 		return Pattern.matches(regex, email);
 	} // isValidEmail
+	
 	// 회원탈퇴
+	@Override
 	public void deleteMemberInfo() {
 		System.out.println("계정을 삭제하시겠습니까?");
 		System.out.print("1.회원탈퇴 2.뒤로가기\n > ");
 		try {
 			int no = Integer.parseInt(br.readLine());
 			if(no==1) {
-				if(true) System.out.println("정말로 회원탈퇴하시겠습니까?(Y/N)");
+				System.out.println("정말로 회원탈퇴하시겠습니까?(Y/N)");
 				String s = br.readLine();
 				if(s.equalsIgnoreCase("n")) {
 					System.out.println("회원탈퇴를 취소하셨습니다.");
@@ -271,6 +230,7 @@ public class MemberServiceImpl implements MemberService {
 	} // deleteMemberInfo
 	
 	// 1번선택 시 나오는 화면
+	@Override
 	public void checkUserNotifications() throws IOException {
 		System.out.println("정지상태/연체/반납일/예약도서알림");
 		System.out.println("-".repeat(90));
@@ -281,7 +241,7 @@ public class MemberServiceImpl implements MemberService {
 
 		if((memStop||overReturn||returnDateNotification||reservationNotification)) {
 			if(memStop)
-				if(overReturn)
+				if(overReturn)	
 					if(returnDateNotification)
 						if(reservationNotification) System.out.println();
 		} else {

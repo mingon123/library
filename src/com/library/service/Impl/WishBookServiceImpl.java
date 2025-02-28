@@ -11,59 +11,55 @@ import com.library.DAO.impl.WishBookDAOImpl;
 import com.library.DTO.wishBook;
 import com.library.service.WishBookService;
 
+import util.DBUtil;
+
 public class WishBookServiceImpl implements WishBookService{
 	private WishBookDAO wishBookDAO = new WishBookDAOImpl(); 
-	private MemberDAO memberDAO;
+	private BufferedReader br;
 	private String memId;
 	
-	public WishBookServiceImpl(String memId) {
+	public WishBookServiceImpl(BufferedReader br, String memId) {
+		this.br = br;
 		this.memId = memId;
+		
 	}
 	
+	// 희망도서 관리
 	@Override
-	public void manageWishBook(BufferedReader br) throws IOException {
+	public void manageWishBook() throws IOException {
+		
+		
 		while(true) {
 			System.out.print("1.희망도서신청 2.희망도서신청내역확인 3.희망도서신청취소 4.뒤로가기\n > ");
 			try {
 				int choice = Integer.parseInt(br.readLine());
 				switch (choice) {
-				case 1:
-					insertWishBook(br);
-					break;
-				case 2:
-					showWishBooks();
-					break;
-				case 3:
-					deleteWishBook(br);
-					break;
-				case 4:
-					System.out.println("뒤로가기를 선택하셨습니다.");
-					return;
-				default:
-					System.out.println("잘못된 입력입니다. 다시 입력해주세요.");
+				case 1:	insertWishBook();break;
+				case 2:	showWishBooks();break;
+				case 3:	deleteWishBook();break;
+				case 4:	System.out.println("뒤로가기를 선택하셨습니다.");return;
+				default: System.out.println("잘못된 입력입니다. 다시 입력해주세요.");
 				}
 			} catch (NumberFormatException e) {
 				System.out.println("[숫자만 입력 가능]");
 			}
 		}	
 	}
-
+	// 희망도서 신청
 	@Override
-	public void insertWishBook(BufferedReader br) throws IOException {
+	public void insertWishBook() throws IOException {
 		System.out.println("희망도서 신청화면입니다. (뒤로가기:q) ");
 		System.out.print("희망도서 제목을 입력하세요: ");
 		String title = br.readLine();
-		if(title.equalsIgnoreCase("q")) {
-			System.out.println("이전 화면으로 돌아갑니다.");
-			return;
-		}
+		if(util.Util.goBack(title)) return;
 		System.out.print("저자를 입력하세요: ");
 		String author = br.readLine();
 		System.out.print("출판사를 입력하세요: ");
 		String publisher = br.readLine();
 		wishBookDAO.insertWishBook(title, author, publisher, memId);
 	}
-
+	// 희망도서 목록 
+	@Override
 	public void showWishBooks() {
 		List<wishBook> wishBooks = wishBookDAO.selectWishBookInfo();
 		if(wishBooks.isEmpty()) {
@@ -71,36 +67,53 @@ public class WishBookServiceImpl implements WishBookService{
 			return;
 		}
 		System.out.println("-".repeat(90));
-		System.out.println("번호\t제목\t저자\t출판사\t신청일");
+		System.out.printf("번호\t신청일\t\t %-20s   %-15s   %-10s\n","제목","저자","출판사");
 		for (wishBook wishBook : wishBooks) {
-			System.out.print(wishBook.getWishNum() + "\t");
-			System.out.print(wishBook.getWishTitle() + "\t");
-			System.out.print(wishBook.getWishAuthor() + "\t");
-			System.out.print(wishBook.getWishPublisher() + "\t");
-			System.out.println(wishBook.getWishDate() + "\t");
+			System.out.printf("%d\t%s\t %-20s   %-15s   %-10s\n",
+					wishBook.getWishNum(),
+					wishBook.getWishDate(),
+					wishBook.getWishTitle(),
+					wishBook.getWishAuthor(),
+					wishBook.getWishPublisher(),
+					wishBook.getWishDate());
 		}
 	}
-
+	
+	// 내 희망도서 목록
 	@Override
-	public void deleteWishBook(BufferedReader br) {
-		List<wishBook> wishBooks = wishBookDAO.selectWishBookInfo(memId);
+	public void showMyWishBooks(BufferedReader br, String memId) {
+		List<wishBook> wishBooks = wishBookDAO.selectMyWishBookInfo(memId);
+		if(wishBooks.isEmpty()) {
+			System.out.println("신청한 희망도서가 없습니다.");
+			return;
+		}
+		System.out.println("-".repeat(90));
+		System.out.printf("번호\t신청일\t\t %-20s   %-15s   %-10s\n","제목","저자","출판사");
+		for (wishBook wishBook : wishBooks) {
+			System.out.printf("%d\t%s\t %-20s   %-15s   %-10s\n",
+					wishBook.getWishNum(),
+					wishBook.getWishDate(),
+					wishBook.getWishTitle(),
+					wishBook.getWishAuthor(),
+					wishBook.getWishPublisher(),
+					wishBook.getWishDate());
+		}
+	}
+	// 희망도서 삭제
+	@Override
+	public void deleteWishBook() {
+		List<wishBook> wishBooks = wishBookDAO.selectMyWishBookInfo(memId);
 		if (wishBooks == null || wishBooks.isEmpty()) {
 		    System.out.println("신청한 희망도서가 없습니다.");
 		    return;
 		}
 	    System.out.println("신청한 희망 도서 목록:");
-	    for (wishBook book : wishBooks) {
-	        System.out.println("번호: " + book.getWishNum() + " | 제목: " + book.getWishTitle() + 
-                    " | 저자: " + book.getWishAuthor() + " | 출판사: " + book.getWishPublisher());
-	    }
+	    showMyWishBooks(br, memId);
 	    while(true) {
 	    	try {
 	    		System.out.print("삭제할 번호를 입력하세요 (뒤로가기:q) : ");
 	    		String del = br.readLine();
-	    		if(del!=null && del.equalsIgnoreCase("q")) {
-	    			System.out.println("이전 화면으로 돌아갑니다.");
-	    			return;
-	    		}
+	    		if(util.Util.goBack(del)) return;
 	    		int num = Integer.parseInt(del);
 	    		int count = wishBookDAO.checkWishBookRecordNumId(num, memId);
 	    		if(count==1) {

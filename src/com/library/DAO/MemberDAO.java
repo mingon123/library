@@ -7,7 +7,7 @@ public interface MemberDAO {
 	public int checkMemberRecord(String memId);
 	public void selectMemberInfo(String memId);
 	public int checkPassword(String memId, String password);
-	public void updateMemberInfo(String memId,String password,String newName,String newEmail);
+	public boolean updateMemberInfo(String memId,String password,String newName,String newEmail);
 	public void deleteMemberInfo(String memId);
 	boolean isMemStop(String memId); // 정지상태알림
 	

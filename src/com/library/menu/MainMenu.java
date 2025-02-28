@@ -3,11 +3,13 @@ package com.library.menu;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.List;
 
+import com.library.DAO.BookOrderDAO;
+import com.library.DAO.MemberDAO;
 import com.library.DAO.NoticeDAO;
+import com.library.DAO.impl.BookOrderDAOImpl;
+import com.library.DAO.impl.MemberDAOImpl;
 import com.library.DAO.impl.NoticeDAOImpl;
-import com.library.DTO.Notice;
 import com.library.service.BookService;
 import com.library.service.MemberService;
 import com.library.service.NoticeService;
@@ -20,20 +22,24 @@ public class MainMenu {
     private BookService bookService;
     private NoticeService noticeService;
     private MemberService memberService;
+    private String memId;
 	
 	public MainMenu() {
 		try {
 			br = new BufferedReader(new InputStreamReader(System.in));			
 			this.bookService = new BookServiceImpl();
-			this.memberService = new MemberServiceImpl();
+			
+			BookOrderDAO bookOrderDAO = new BookOrderDAOImpl();
+            MemberDAO memberDAO = new MemberDAOImpl();
+            this.memberService = new MemberServiceImpl(memberDAO, bookOrderDAO, memId, br); 
 			
 	        NoticeDAO noticeDAO = new NoticeDAOImpl();
 	        this.noticeService = new NoticeServiceImpl(noticeDAO, br);
 			callMenu();
         } catch (IOException e) {
-            System.out.println("입력 오류 발생: " + e.getMessage());
+            e.printStackTrace();
         } catch (Exception e) {
-            System.out.println("예상치 못한 오류 발생: " + e.getMessage());
+            e.printStackTrace();
         }
 	}
 	

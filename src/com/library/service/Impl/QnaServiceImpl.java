@@ -12,33 +12,29 @@ public class QnaServiceImpl implements QnaService {
 	private BufferedReader br;
 	private QnaDAO qnaDAO;
 	
-	public QnaServiceImpl(String memId) {
+	public QnaServiceImpl(BufferedReader br, String memId) {
+		this.br = br;
 		this.memId = memId;
-		this.qnaDAO = new QnaDAOImpl();
+		this.qnaDAO = new QnaDAOImpl(); 
 	}
 	
 	// qna관리
-	public void manageQNA(BufferedReader br) throws NumberFormatException, IOException {
-		this.br = br;
+	public void manageQNA() throws NumberFormatException, IOException {
 		System.out.print("1.질문등록 2.질문내역확인 3.질문삭제 4.뒤로가기\n > ");
 		int no = Integer.parseInt(br.readLine());
-		if(no==1) insertQNA(br);
-		else if(no==2) {
-			qnaDAO.selectQNAInfo();
-			System.out.println("-".repeat(90));
-		} else if(no==3) {
-			deleteQNA(br);
-			System.out.println("-".repeat(90));
-		} else if(no==4) {
-			System.out.println("뒤로가기를 선택하셨습니다.");
-			return;
+		switch (no) {
+		case 1: insertQNA();break;
+		case 2: qnaDAO.selectQNAInfo();System.out.println("-".repeat(90));break;
+		case 3: deleteQNA(); System.out.println("-".repeat(90));break;
+		case 4:	System.out.println("뒤로가기를 선택하셨습니다.");return;
+		default: System.out.println("잘못 입력하셨습니다.");
 		}
-		else System.out.println("잘못 입력하셨습니다.");
 	} // manageQNA
+		
 	// qna등록
-	public void insertQNA(BufferedReader br) throws IOException {
-		System.out.println("질문 등록화면입니다. 뒤로가시길 원하시면 q(Q)를 입력하세요.");
-		System.out.print("질문 제목을 입력하세요 : ");
+	public void insertQNA() throws IOException {
+		System.out.println("질문 등록화면입니다.");
+		System.out.print("질문 제목을 입력하세요 (뒤로가기:q) : ");
 		String qnaTitle = br.readLine();
 		if(qnaTitle.equalsIgnoreCase("q")) {
 			System.out.println("이전화면으로 돌아갑니다.");
@@ -51,9 +47,8 @@ public class QnaServiceImpl implements QnaService {
 	// qna목록확인
 
 	// qna 삭제
-	public void deleteQNA(BufferedReader br) throws IOException {
-		boolean hasQNA = qnaDAO.selectMyQNAInfo(memId);
-		if(!hasQNA) {
+	public void deleteQNA() throws IOException {
+		if(!qnaDAO.selectMyQNAInfo(memId)) {
 			System.out.println("등록한 Q&A가 없습니다.");
 			return;
 		}
@@ -61,7 +56,7 @@ public class QnaServiceImpl implements QnaService {
 			try {
 				System.out.print("삭제할 번호를 입력하세요 (뒤로가기:q) : ");
 				String del = br.readLine();
-				if(del.equalsIgnoreCase("q")) return;
+				if(util.Util.goBack(del)) return;
 				int num = Integer.parseInt(del);
 				int count = qnaDAO.checkQnaRecordNumId(num, memId);
 				if(count==1) qnaDAO.deleteQNAInfo(memId, num);

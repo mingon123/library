@@ -71,7 +71,7 @@ public class WishBookDAOImpl implements WishBookDAO {
 	}
 	// 내 희망도서 신청 목록 확인
 	@Override
-	public List<wishBook> selectWishBookInfo(String memId) {
+	public List<wishBook> selectMyWishBookInfo(String memId) {
 		String sql = "SELECT wish_num,wish_title,wish_author,wish_publisher,wish_date FROM wish_book WHERE mem_id=? ORDER BY wish_date DESC";
 		List<wishBook> wishBooks = new ArrayList<>();
 		try (Connection conn = DBUtil.getConnection();
@@ -93,17 +93,12 @@ public class WishBookDAOImpl implements WishBookDAO {
 		}
 		return wishBooks;
 	}
-
 	// 희망도서 신청 삭제
 	@Override
 	public void deleteWishMyBookInfo(String memId, int wishNum) {
-		Connection conn = null;
-		PreparedStatement pstmt = null;
-		String sql = null;
-		try {
-			conn = DBUtil.getConnection();
-			sql = "DELETE FROM wish_book WHERE mem_id=? AND wish_num=?";
-			pstmt = conn.prepareStatement(sql);
+		String sql = "DELETE FROM wish_book WHERE mem_id=? AND wish_num=?";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setString(1, memId);
 			pstmt.setInt(2, wishNum);
 			int rows = pstmt.executeUpdate();
@@ -111,9 +106,7 @@ public class WishBookDAOImpl implements WishBookDAO {
 			else System.out.println("희망도서를 삭제할 수 없습니다.");
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			DBUtil.executeClose(null, pstmt, conn);
-		}
+		} 
 	}
 	// 희망도서 레코드 확인
 	public int checkWishBookRecordNumId(int wishNum, String memId){
