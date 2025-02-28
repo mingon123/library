@@ -373,11 +373,11 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("대여번호\t회원아이디\t책번호\t책제목\t\t\t대여일\t\t반납기한일\t\t연장유무\t반납유무");
+				System.out.println("대여번호\t회원아이디\t\t책번호\t책제목\t\t\t대여일\t\t반납기한일\t\t연장유무\t반납유무");
 				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("order_num")+"\t");		
-					System.out.print(rs.getString("mem_id")+"\t");		
+					System.out.print(rs.getString("mem_id")+"   \t");		
 					System.out.print(rs.getInt("book_num")+"\t");	
 					String title=rs.getString("책제목");					
 					if (title.length()>=15) System.out.printf("%-15s..\t", title.substring(0, 15));
