@@ -373,11 +373,11 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {
-				System.out.println("대여번호\t회원아이디\t책번호\t책제목\t\t\t대여일\t\t반납기한일\t\t연장유무\t반납유무");
+				System.out.println("대여번호\t회원아이디\t\t책번호\t책제목\t\t\t대여일\t\t반납기한일\t\t연장유무\t반납유무");
 				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("order_num")+"\t");		
-					System.out.print(rs.getString("mem_id")+"\t");		
+					System.out.print(rs.getString("mem_id")+"   \t");		
 					System.out.print(rs.getInt("book_num")+"\t");	
 					String title=rs.getString("책제목");					
 					if (title.length()>=15) System.out.printf("%-15s..\t", title.substring(0, 15));
@@ -707,13 +707,15 @@ public class BookDAO_il {
 			rs = pstmt.executeQuery();
 			System.out.println("-".repeat(100));
 			if (rs.next()) {			
-				System.out.println("희망도서번호\t제목\t저자\t출판사\t희망도서신청일\t회원아이디");	
+				System.out.println("희망도서번호\t제목\t\t\t저자\t출판사\t희망도서신청일\t회원아이디");	
 				System.out.println("-".repeat(100));
 				do {
 					System.out.print(rs.getInt("wish_num")+"\t\t");							
-					System.out.print(rs.getString("wish_title")+"\t");
-					System.out.print(rs.getString("wish_author")+"\t");
-					System.out.print(rs.getString("wish_publisher")+"\t");
+					System.out.printf("%-20s\t", rs.getString("wish_title"));
+					System.out.print(rs.getString("wish_author")+"\t");					
+					if(rs.getString("wish_publisher") == null) System.out.print("-"+"\t");
+					else System.out.print(rs.getString("wish_publisher")+"\t");	
+					
 					System.out.print(rs.getDate("wish_date")+"\t");
 					System.out.println(rs.getString("mem_id"));
 				} while (rs.next());
