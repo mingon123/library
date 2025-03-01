@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import com.library.DAO.BookDAO;
 import com.library.DAO.BookOrderDAO;
 import com.library.DAO.MemberDAO;
 import com.library.DAO.NoticeDAO;
@@ -20,22 +21,35 @@ import com.library.service.Impl.NoticeServiceImpl;
 
 public class MainMenu {
 	private BufferedReader br;
+	private String memId;
+	
+	private BookDAO bookDAO;
+	private BookOrderDAO bookOrderDAO;
+	private MemberDAO memberDAO;
+	private NoticeDAO noticeDAO;
+	
     private BookService bookService;
     private NoticeService noticeService;
     private MemberService memberService;
-    private String memId;
+    
+	private BookMenu bookMenu; 
 	
+
 	public MainMenu() {
 		try {
 			br = new BufferedReader(new InputStreamReader(System.in));			
 			this.bookService = new BookServiceImpl(br, new BookDAOImpl(), memId);
 			
-			BookOrderDAO bookOrderDAO = new BookOrderDAOImpl();
-            MemberDAO memberDAO = new MemberDAOImpl(memId);
+			this.bookOrderDAO = new BookOrderDAOImpl();
+            this.memberDAO = new MemberDAOImpl(memId);
+            this.noticeDAO = new NoticeDAOImpl();
+            this.bookDAO = new BookDAOImpl();
+            
             this.memberService = new MemberServiceImpl(memberDAO, memId, br); 
-			
-	        NoticeDAO noticeDAO = new NoticeDAOImpl();
 	        this.noticeService = new NoticeServiceImpl(noticeDAO, br);
+	        
+	        this.bookMenu = new BookMenu(br, bookService, bookDAO);
+	        
 			callMenu();
         } catch (IOException e) {
             e.printStackTrace();
@@ -65,11 +79,10 @@ public class MainMenu {
             
             switch (choice) {
                 case 1: // 도서 목록
-                    System.out.println("도서 목록 메뉴로 이동");
+                    bookMenu.showBookList();
                     break;
                 case 2: // 도서 검색
-                    System.out.println("도서 검색 메뉴로 이동");
-                    
+                    bookMenu.searchBooks();
                     break;
                 case 3: // 공지사항 확인
                 	System.out.println("공지사항 메뉴로 이동");

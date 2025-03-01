@@ -14,14 +14,18 @@ import com.library.DAO.impl.BookOrderDAOImpl;
 import com.library.DAO.impl.MemberDAOImpl;
 import com.library.DAO.impl.ReservationDAOImpl;
 import com.library.DAO.impl.ReviewDAOImpl;
+import com.library.service.BookOrderService;
 import com.library.service.BookService;
 import com.library.service.MemberService;
 import com.library.service.QnaService;
+import com.library.service.ReservationService;
 import com.library.service.ReviewService;
 import com.library.service.WishBookService;
+import com.library.service.Impl.BookOrderServiceImpl;
 import com.library.service.Impl.BookServiceImpl;
 import com.library.service.Impl.MemberServiceImpl;
 import com.library.service.Impl.QnaServiceImpl;
+import com.library.service.Impl.ReservationServiceImpl;
 import com.library.service.Impl.ReviewServiceImpl;
 import com.library.service.Impl.WishBookServiceImpl;
 
@@ -37,11 +41,15 @@ public class UserMenu {
 	private ReviewDAO reviewDAO;
 
 	private BookService bookService;
+	private BookOrderService bookOrderService;
 	private MemberService memberService;
 	private WishBookService wishBookService;
 	private QnaService qnaService;
 	private ReviewService reviewService;
+	private ReservationService reservationService;
 
+	private BookMenu bookMenu;
+	
 	public UserMenu(String memId, BufferedReader br) throws IOException {
 		this.memId = memId;
 		this.br = br;
@@ -54,12 +62,16 @@ public class UserMenu {
 		this.reviewDAO = new ReviewDAOImpl();
 
 		// Service 객체 초기화
-		this.bookService = new BookServiceImpl(br, bookDAO, memId);
+		this.bookService = new BookServiceImpl(br, this.bookDAO, memId);
+		this.bookOrderService = new BookOrderServiceImpl(br, memId, this.bookOrderDAO, this.reservationService);
 		this.memberService = new MemberServiceImpl(this.memberDAO, memId, br);
 		this.wishBookService = new WishBookServiceImpl(br, memId);
 		this.qnaService = new QnaServiceImpl(br, memId);
 		this.reviewService = new ReviewServiceImpl(br, memId);
+		this.reservationService = new ReservationServiceImpl(br, memId);
 
+		this.bookMenu = new BookMenu(br, bookService, bookDAO);
+		
 		showUserMenu();
 	}
 
@@ -74,7 +86,8 @@ public class UserMenu {
 			try {
 				int choice = Integer.parseInt(br.readLine().trim());
 				if (choice == UserMenuEnum.LOGOUT.getNumber()) {
-					System.out.println("로그아웃합니다.");
+					System.out.println("로그아웃합니다. \n");
+					new MainMenu();
 					return;
 				} else if (choice == UserMenuEnum.EXIT.getNumber()) {
 					System.out.println("프로그램을 종료합니다.");
@@ -92,8 +105,8 @@ public class UserMenu {
 		// 선택한 메뉴에 맞는 기능을 호출
 		switch (choice) {
 		case 1:	showUserAlerts();break;  // 사용자 알림 화면
-		case 2:	showBookList();break; // 도서 목록 화면
-		case 3: searchBooks();break; // 도서 검색 화면
+		case 2:	bookMenu.showBookList();break; // 도서 목록 화면
+		case 3: bookMenu.searchBooks();break; // 도서 검색 화면
 		case 4: showReviewPage();break; // 리뷰 화면
 		case 5:	showRentReservePage();break;  // 대여/예약 화면
 		case 6: showReturnPage();break; // 반납 화면
@@ -126,149 +139,95 @@ public class UserMenu {
 		}
 		return;
 	}
-
-	// 도서 목록 화면(2)
-	private void showBookList() {
-		System.out.println("도서 목록 화면입니다.");
-		while (true) {			
-			System.out.print("1.카테고리별 2.추천순위 3.신간책 4.대여베스트 5.뒤로가기\n > ");
-			try {
-				int no = Integer.parseInt(br.readLine());
-				switch(no) {
-				case 1: bookService.selectCategoryOfBook();break;
-				case 2: 
-					bookService.selectCategoryOfBook();
-					bookService.selectDetailBook();
-					break;
-				case 3:
-					bookDAO.selectNewOfBook();
-					bookService.selectDetailBook();
-					break;
-				case 4:
-					bookDAO.selectOrderBestOfBook();
-					bookService.selectDetailBook();
-					break;
-				case 5:
-					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
-					return;
-				default: System.out.println("잘못 입력하셨습니다.");
-				}
-			} catch (NumberFormatException e) {
-				System.out.println("[숫자만 입력 가능]");
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-	} // showTwoMenu
-
-
-	// 도서 검색 화면(3)
-	private void searchBooks() {
-		System.out.println("도서 검색 화면입니다.");
-		while(true) {
-			System.out.println("도서 검색");
-			System.out.print("1.제목 2.저자 3.뒤로가기\n > ");
-			try {
-				int no = Integer.parseInt(br.readLine());
-				if(no==1) {
-					System.out.print("검색할 책 제목 검색 (뒤로가기:q) : ");
-					String title = br.readLine();
-					bookService.selectSearchBook("book_title",title);
-				}
-				else if(no==2) {
-					System.out.print("검색할 책 저자 검색 (뒤로가기:q) : ");
-					String author = br.readLine();
-					bookService.selectSearchBook("book_author",author);
-				}
-				else if(no==3) { //뒤로가기
-					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
-					return;
-				} else System.out.println("잘못 입력하셨습니다.");
-			} catch (NumberFormatException e) {
-				System.out.println("[숫자만 입력 가능]");
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
+	
 	// 리뷰 화면(4)
 	private void showReviewPage() throws IOException {
 		System.out.println("리뷰 화면입니다.");
 		while(true) {
-			System.out.print("1.전체리뷰 2.책제목검색 3.내리뷰 4.뒤로가기\n > ");
 			try {
+				System.out.print("1.전체리뷰 2.책제목검색 3.내리뷰 4.뒤로가기\n > ");
 				int no = Integer.parseInt(br.readLine());
-				if(no==1) {
+				switch (no) {
+				case 1:
 					reviewDAO.selectReviewInfo();
 					reviewService.selectDetailReview();
-				} else if(no==2) {
-					reviewService.selectBookTitleReview();
-				} else if(no==3) {
-					while(true) {
-						System.out.print("1.내리뷰확인 2.리뷰수정 3.리뷰삭제 4.뒤로가기\n > ");
-						no = Integer.parseInt(br.readLine());
-						switch (no) {
-						case 1: reviewDAO.selectMyReviewInfo(memId);break;
-						case 2: reviewService.updateMyReview();break;
-						case 3: reviewService.deleteMyReview();break;
-						case 4: System.out.println("뒤로가기를 선택하셨습니다.");return;
-						default: System.out.println("잘못 입력하셨습니다.");
-						}
-					}
-				}else if(no==4) { //뒤로가기
-					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
-					return;
-				} else System.out.println("잘못 입력하셨습니다.");
-			} catch (NumberFormatException e) {
-				System.out.println("[숫자만 입력 가능]");
-			} catch (Exception e) {
-				e.printStackTrace();
+					break;
+				case 2: reviewService.selectBookTitleReview();break;
+				case 3:	showMyReviewMenu();break;
+				case 4: System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");return;
+				default: System.out.println("잘못 입력하셨습니다.");
+				}
+			} catch (NumberFormatException e) {System.out.println("[숫자만 입력 가능]");
+			} catch (Exception e) {e.printStackTrace();}
+		}
+	}
+	private void showMyReviewMenu() throws IOException {
+		while(true) {
+			System.out.print("1.내리뷰확인 2.리뷰수정 3.리뷰삭제 4.뒤로가기\n > ");
+			int num = Integer.parseInt(br.readLine());
+			switch (num) {
+			case 1: reviewDAO.selectMyReviewInfo(memId);break;
+			case 2: reviewService.updateMyReview();break;
+			case 3: reviewService.deleteMyReview();break;
+			case 4: System.out.println("뒤로가기를 선택하셨습니다.");return;
+			default: System.out.println("잘못 입력하셨습니다.");
 			}
 		}
 	}
-
+	
 	// 대여/예약 화면(5)
 	private void showRentReservePage() {
-		System.out.println("대여/예약 화면입니다.");
-		// 실제 대여/예약 기능 구현
+//		if (memberDAO.checkMemStop(memId)==null) {
+//	        System.out.println("현재 정지상태입니다. 대여/예약이 불가능합니다.");
+//	        System.out.println("홈화면으로 돌아갑니다.\n");
+//	        return;
+//	    }
+//	    System.out.println("\n대여/예약 메뉴를 선택하셨습니다.");
+//	    bookDAO.randomBookInfo(5); // 랜덤 책 목록 출력
+//	    int bookNum = getBookNumber();
+//	    processRental(bookNum);
+	    
+	    
 	}
 
 	// 반납 화면(6)
 	private void showReturnPage() {
-		System.out.println("반납 화면입니다.");
-		// 실제 반납 기능 구현
+//	    System.out.println("\n반납 메뉴를 선택하셨습니다.");
+//	    System.out.println("-".repeat(90));
+//	    System.out.println("\t\t\t\t\t\t대여 현황");
+//	    System.out.println("-".repeat(90));
+//	    dao.selectUserNowOrderInfo(mem_id);
+//	    System.out.println("-".repeat(90));
+//
+//	    if (dao.checkZeroOrder(memId)) {
+//	        System.out.println("\n대여기록이 존재하지 않습니다.");
+//	        System.out.println("이전화면으로 돌아갑니다.\n");
+//	        return;
+//	    }
+//
+//	    int orderNum = getOrderNumber();
+//	    if (orderNum == -1) return;
+//
+//	    System.out.println(orderNum + "번을 선택하셨습니다.");
+//	    processReturn(orderNum);
 	}
 
 	// 기타 기능 화면(7)
 	private void showOtherFunctions() throws IOException {
 		System.out.println("기타 기능 화면입니다.");
 		while(true) {
-			System.out.print("1.희망도서 2.Q&A 3.회원정보관리 4.뒤로가기\n > ");
 			try {
+				System.out.print("1.희망도서 2.Q&A 3.회원정보관리 4.뒤로가기\n > ");
 				int choice = Integer.parseInt(br.readLine());
 				switch (choice) {
-				case 1:
-					wishBookService.manageWishBook();
-					break;
-				case 2:
-					qnaService.manageQNA();
-					break;
-				case 3:
-					memberService.manageMemberInfo();
-					break;
-				case 4:
-					System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");
-					return;
-				default:
-					System.out.println("잘못 입력하셨습니다.");
-					break;
+				case 1:	wishBookService.manageWishBook();break;
+				case 2:	qnaService.manageQNA();break;
+				case 3: memberService.manageMemberInfo();break;
+				case 4: System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");return;
+				default: System.out.println("잘못 입력하셨습니다.");
 				} 
-			} catch (NumberFormatException e) {
-				System.out.println("[숫자만 입력 가능]");
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
+			} catch (NumberFormatException e) {System.out.println("[숫자만 입력 가능]");
+			} catch(Exception e) {e.printStackTrace();}
 		}
 	}
 }

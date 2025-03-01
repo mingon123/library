@@ -7,6 +7,8 @@ public interface BookDAO {
 	void selectOrderBestOfBook();
 	int checkBookRecord(String columnName, String value);
 	void selectDetailBook(int bookNum);
-	void selectSearchBook(String searchType, String searchValue);	
+	void selectSearchBook(String searchType, String searchValue);
+	
+	void randomBookInfo(int num);	
 	
 }

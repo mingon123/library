@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import com.library.DAO.MemberDAO;
 import com.library.menu.AdminMenu;
+import com.library.menu.MainMenu;
 import com.library.menu.UserMenu;
 import com.library.service.MemberService;
 
@@ -208,6 +209,7 @@ public class MemberServiceImpl implements MemberService {
 				}else if(s.equalsIgnoreCase("y")) {
 					memberDAO.deleteMemberInfo(memId);
 					System.out.println("첫화면으로 돌아갑니다.");
+					new MainMenu();
 					return;
 				} else System.out.println("잘못 입력하셨습니다.");
 			}

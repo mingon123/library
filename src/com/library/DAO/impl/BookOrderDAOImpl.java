@@ -76,6 +76,7 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 	} // isReturnDateNotification
 
 	// 대여가능 여부 판별 함수. 대여가능:1 책남아있는 권수0:0 대여권수 다 참:-1
+	@Override
 	public int canOrder(String mem_id,int book_num) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
