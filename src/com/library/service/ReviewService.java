@@ -8,5 +8,8 @@ public interface ReviewService {
 	void selectBookTitleReview() throws IOException;
 	void updateMyReview() throws IOException;
 	void deleteMyReview() throws IOException;
+	
+	boolean confirmReview() throws IOException;
+	void processReview(int orderNum, String memId) throws IOException;
 
 }

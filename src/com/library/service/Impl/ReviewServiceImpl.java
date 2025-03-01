@@ -3,19 +3,24 @@ package com.library.service.Impl;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import com.library.DAO.BookOrderDAO;
 import com.library.DAO.ReviewDAO;
+import com.library.DAO.impl.BookOrderDAOImpl;
 import com.library.DAO.impl.ReviewDAOImpl;
 import com.library.service.ReviewService;
 
 public class ReviewServiceImpl implements ReviewService {
 	private BufferedReader br;
 	private String memId;
+	private int orderNum;
 	private ReviewDAO reviewDAO;
+	private BookOrderDAO bookOrderDAO;
 	
 	public ReviewServiceImpl(BufferedReader br, String memId) {
 		this.br = br;
 		this.memId = memId;
 		this.reviewDAO = new ReviewDAOImpl();
+		this.bookOrderDAO = new BookOrderDAOImpl();
 	}
 
 	// 4.리뷰 상세정보 확인
@@ -120,5 +125,82 @@ public class ReviewServiceImpl implements ReviewService {
 			e.printStackTrace();
 		}
 	} // deleteMyReview
+	
+	// 리뷰 작성
+	@Override
+	public boolean confirmReview() throws IOException {
+	    if (!util.Util.choiceYN(br, "반납하신 책에 대한 리뷰를 작성하시겠습니까?")) {
+	        System.out.println("\n리뷰작성을 취소하셨습니다.");
+	        return false; // 리뷰 작성 취소
+	    }
+
+	    System.out.println("\n리뷰작성을 선택하셨습니다.");
+	    System.out.print("다음의 책에 대한 리뷰를 작성합니다.\n\n");
+	    System.out.println("-*".repeat(60));
+	    bookOrderDAO.selectOrderNumToBookInfo(orderNum);
+	    System.out.println("-*".repeat(60));
+
+	    String rate = getValidReviewScore();  // 리뷰 점수 받기
+	    String content = getReviewContent();  // 리뷰 내용 받기
+	    int book_num = bookOrderDAO.selectOrderNumToBookNum(orderNum);
+	    int rateInt = Integer.parseInt(rate);
+
+	    System.out.println("리뷰 등록 중 입니다.");
+	    reviewDAO.insertReviewInfo(book_num, content, rateInt, memId);
+	    return true;
+	}
+	
+	// 리뷰 범위
+	private String getValidReviewScore() throws IOException {
+	    boolean flag = false;
+	    String rate;
+	    String regex = "^[1-5]$";
+	    do {
+	        if (flag) {
+	            System.out.println("\n점수는 1~5 사이의 정수여야 합니다.");
+	        }
+	        System.out.print("점수 입력(1~5 사이의 정수) : ");
+	        rate = br.readLine();
+	        flag = true;
+	    } while (!rate.matches(regex));
+	    return rate;
+	}
+	
+	// 리뷰 내용 입력
+	private String getReviewContent() throws IOException {
+	    boolean flag = false;
+	    String content, rewrite = "";
+	    System.out.print("\n리뷰 내용 입력(엔터 누를 시 입력 종료)\n > ");
+	    content = br.readLine();
+	    do {
+	        if (flag) {
+	            System.out.println("Y/N(y/n) 중 입력해주세요.");
+	        }
+	        System.out.print("\n내용을 다시 입력하시겠습니까? (Y/N) : ");
+	        rewrite = br.readLine();
+
+	        if (rewrite.equals("Y") || rewrite.equals("y")) {
+	            System.out.print("내용을 다시 입력해주세요.(엔터누를시 입력 종료)\n > ");
+	            content = br.readLine();
+	        } else if (rewrite.equals("N") || rewrite.equals("n")) {
+	            System.out.println("리뷰 등록을 그대로 진행합니다.");
+	        }
+	        flag = true;
+	    } while (!rewrite.equals("N") && !rewrite.equals("n") && !rewrite.equals("Y") && !rewrite.equals("y"));
+	    return content;
+	}
+	
+	// 리뷰 등록 처리
+	@Override
+	public void processReview(int orderNum, String memId) throws IOException {
+        String rate = getValidReviewScore();  // 리뷰 점수 받기
+        String content = getReviewContent();  // 리뷰 내용 받기
+        int book_num = bookOrderDAO.selectOrderNumToBookNum(orderNum); // 책 번호 찾기
+        int rateInt = Integer.parseInt(rate); // 점수 변환
+
+        // 리뷰 DB에 삽입
+        System.out.println("리뷰 등록 중 입니다.");
+        reviewDAO.insertReviewInfo(book_num, content, rateInt, memId); // 올바른 메서드 호출
+	}
 	
 }

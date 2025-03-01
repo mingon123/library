@@ -182,4 +182,27 @@ public class ReviewDAOImpl implements ReviewDAO {
 			System.out.println(count + "개의 리뷰 정보를 삭제했습니다.");
 		} catch (Exception e) {e.printStackTrace();}
 	} // deleteReview()
+	
+	// 리뷰 등록
+	@Override
+	public void insertReviewInfo(int bookNum, String content, int rate, String memId) {
+		String sql = "INSERT INTO REVIEW(REVIEW_NUM,BOOK_NUM,REVIEW_CONTENT,REVIEW_RATE,MEM_ID) VALUES (review_seq.nextval,?,?,?,?)";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, bookNum);
+			pstmt.setString(2, content);
+			pstmt.setInt(3, rate);
+			pstmt.setString(4, memId);
+			int count = pstmt.executeUpdate();
+			if(count > 0) System.out.println("리뷰등록이 완료되었습니다.");
+			else System.out.println("리뷰 등록 오류!");
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("리뷰 등록 오류");
+		}
+	}
+	
+	
+	
+	
 }

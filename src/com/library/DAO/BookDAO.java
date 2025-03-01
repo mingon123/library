@@ -9,6 +9,7 @@ public interface BookDAO {
 	void selectDetailBook(int bookNum);
 	void selectSearchBook(String searchType, String searchValue);
 	
-	void randomBookInfo(int num);	
+	void randomBookInfo(int num);
+
 	
 }

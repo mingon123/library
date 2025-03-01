@@ -11,9 +11,9 @@ import util.DBUtil;
 public class BookOrderDAOImpl implements BookOrderDAO {
 	private int bookNum;
 	private String memId;
-	
+
 	public BookOrderDAOImpl() {}
-	
+
 	public BookOrderDAOImpl(int bookNum,String memId) {
 		this.bookNum = bookNum;
 		this.memId = memId;
@@ -23,14 +23,14 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 	@Override
 	public boolean isOverReturn(String memId) {
 		String sql = "SELECT b.book_title, b.book_author, (SYSDATE - o.return_date) AS over_return " +
-                "FROM book_order o, book b " +
-                "WHERE b.book_num = o.book_num " +
-                "AND mem_id = ? " +
-                "AND is_return = 0 " +
-                "AND return_date < SYSDATE " +
-                "ORDER BY o.return_date DESC";
+				"FROM book_order o, book b " +
+				"WHERE b.book_num = o.book_num " +
+				"AND mem_id = ? " +
+				"AND is_return = 0 " +
+				"AND return_date < SYSDATE " +
+				"ORDER BY o.return_date DESC";
 		try (Connection conn = DBUtil.getConnection();
-			PreparedStatement pstmt = conn.prepareStatement(sql);) {
+				PreparedStatement pstmt = conn.prepareStatement(sql);) {
 			pstmt.setString(1, memId);
 			try(ResultSet rs = pstmt.executeQuery();){
 				if(rs.next()) {
@@ -49,7 +49,7 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 		}catch (Exception e) {e.printStackTrace();}
 		return false;
 	} // isOverReturn
-	
+
 	// 반납일 알림(가장 임박한 책의 반납일)
 	@Override
 	public boolean isReturnDateNotification(String memId) {
@@ -57,7 +57,7 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 				+ "FROM book b,book_order o WHERE b.book_num=o.book_num "
 				+ "AND o.mem_id=? AND o.return_date>=sysdate AND o.is_return=0 ORDER BY o.return_date) WHERE ROWNUM = 1";
 		try (Connection conn = DBUtil.getConnection();
-			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setString(1, memId);
 			try(ResultSet rs = pstmt.executeQuery()){
 				if(rs.next()) {
@@ -114,13 +114,13 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 			}else return -1;
 		}else return 0;
 	}//canOrder
-	
+
 	// 대여(insert book_order) - 대여 추가후 책 갯수 조정
 	@Override
 	public void insertBookOrder(String memId,int bookNum) {
 		String sql = "INSERT INTO book_order (ORDER_NUM, MEM_ID, BOOK_NUM)VALUES(book_order_seq.nextval,?,?)";
 		try (Connection conn = DBUtil.getConnection();
-			 PreparedStatement pstmt = conn.prepareStatement(sql);) {
+				PreparedStatement pstmt = conn.prepareStatement(sql);) {
 			boolean bookReserve = checkReserveBookNum(bookNum, memId);
 
 			if(bookReserve) {
@@ -159,13 +159,13 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 			}
 		} catch (Exception e) {e.printStackTrace();}
 	} // insertBookOrder
-	
+
 	// 책번호가 해당유저로 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
 	@Override
 	public boolean checkReserveBookNum(int bookNum, String memId) {
 		String sql = "SELECT COUNT(*) FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
 		try (Connection conn = DBUtil.getConnection();
-			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setInt(1, bookNum);			
 			pstmt.setString(2, memId);
 			try(ResultSet rs = pstmt.executeQuery();){
@@ -174,14 +174,14 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 		} catch (Exception e) {e.printStackTrace();}
 		return false;
 	}//checkReserveBookNum
-	
+
 	// Book_num 이랑 Mem_id 로 Re_num 구하는 함수
 	@Override
 	public int selectBookNumToReNum(int bookNum, String memId) {
 		String sql = "SELECT RE_NUM FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
 		int res = -1;
 		try (Connection conn = DBUtil.getConnection();
-			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setInt(1, bookNum);
 			pstmt.setString(2, memId);
 			try(ResultSet rs = pstmt.executeQuery();){
@@ -190,42 +190,55 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 		} catch (Exception e) {e.printStackTrace();}
 		return res;
 	} // selectBookNumToReNum
-	
+
 	// 예약 순위 관련 함수 - num==1 : 총 인원수, num==2 예약 순위
-	@Override
-	public int calcReserveRank(int reNum, int num) {
-		String sql = "SELECT COUNT(*) FROM RESERVATION WHERE BOOK_NUM = "
-				+ "(SELECT BOOK_NUM FROM RESERVATION WHERE RE_NUM = ?)";
+	// 예약 순위 관련 함수 - num==1 : 총 인원수, num==2 예약 순위
+	public int calcReserveRank(int re_num, int num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
 		int allCount = -1; // 같은 책을 예약한 총 인원 수 
 		int lowCount = -1; // 해당 유저보다 같은 책을 더 늦게 예약한 사람의 수 
-		try (Connection conn = DBUtil.getConnection();
-			 PreparedStatement pstmt = conn.prepareStatement(sql);){
-			pstmt.setInt(1, reNum);
-			try(ResultSet rs1 = pstmt.executeQuery();){
-				if(rs1.next()) allCount = rs1.getInt(1);
-			}
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM RESERVATION WHERE BOOK_NUM = "
+					+ "(SELECT BOOK_NUM FROM RESERVATION WHERE RE_NUM = ?)";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, re_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) allCount = rs.getInt(1);
+
 			sql = "SELECT COUNT(*) FROM RESERVATION WHERE RE_NUM > ? AND "
 					+ "BOOK_NUM = (SELECT BOOK_NUM FROM RESERVATION WHERE RE_NUM = ?)";
-			pstmt.clearParameters();
-			pstmt.setInt(1, reNum);
-			pstmt.setInt(2, reNum);
-			try(ResultSet rs2 = pstmt.executeQuery();){
-				if(rs2.next()) lowCount = rs2.getInt(1);
-				if(lowCount == -1 || allCount == -1) System.out.println("에러발생!");
-			}
-		} catch (Exception e) {System.out.println("에러발생");}
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, re_num);
+			pstmt.setInt(2, re_num);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) lowCount = rs.getInt(1);
+
+			if(lowCount == -1 || allCount == -1) System.out.println("에러발생!");
+
+		} catch (Exception e) {
+			System.out.println("에러발생");
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		} 
 		if(num == 1) return allCount;
 		else if(num == 2) return allCount - lowCount;
 		else return -1;
 	} // calcReserveRank
-	
+
 	// book_num으로 book_volm_cnt 구하는 함수
 	@Override
 	public int selectBookCount(int bookNum) {
 		String sql = "SELECT BOOK_VOLM_CNT FROM BOOK WHERE BOOK_NUM=?";
 		int res = -1;
 		try (Connection conn = DBUtil.getConnection();
-			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setInt(1, bookNum);
 			try(ResultSet rs = pstmt.executeQuery();){
 				if(rs.next()) res = rs.getInt(1);
@@ -237,26 +250,26 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 		return res;
 
 	}//checkNowOrderNum
-	
+
 	// 책갯수 조정 함수 (book_volm_cnt + k)
 	@Override
 	public void updateBookCount(int bookNum, int bookVolmCnt) {
 		String sql = "UPDATE book SET book_volm_cnt = book_volm_cnt + ? WHERE book_num = ?";
 		try (Connection conn = DBUtil.getConnection();
-			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setInt(1, bookVolmCnt);
 			pstmt.setInt(2, bookNum);
 			int count = pstmt.executeUpdate();
 			if(count <= 0) {System.out.println("책갯수 조정 중 오류발생!");}
 		} catch (Exception e) {e.printStackTrace();}
 	} // updateBookCount
-	
+
 	// 예약테이블 행 삭제 - book num
 	@Override
 	public void deleteReserveBookNum(int bookNum, String memId) {
 		String sql = "DELETE FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
 		try (Connection conn = DBUtil.getConnection();
-			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setInt(1, bookNum);
 			pstmt.setString(2, memId);
 			int count = pstmt.executeUpdate();
@@ -267,5 +280,208 @@ public class BookOrderDAOImpl implements BookOrderDAO {
 	} // deleteReserveBookNum
 
 
+	// 대여번호가 현황기록에 존재하는지 확인하며, 해당 유저의 것인지 확인하는 함수 
+	//	- 존재:true / 존재X 또는 에러:false
+	@Override
+	public boolean checkNowOrderNum(int orderNum, String memId) {
+		String sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND IS_RETURN=0 AND MEM_ID=?";
+		int check = -1;
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, orderNum);
+			pstmt.setString(2, memId);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) check = rs.getInt(1);
+			}
+		} catch (Exception e) {e.printStackTrace();}
+		if(check == -1)	System.out.println("에러 발생!");
+		return check >= 1? true:false;
+	}//checkNowOrderNum
 
+	// 로그인한 유저의 대여 현황만 출력
+	@Override
+	public void selectUserNowOrderInfo(String memId) {
+		String sql = "SELECT ORDER_NUM, BOOK_TITLE, ORDER_DATE, RETURN_DATE, "
+				+"CASE WHEN IS_ADD=1 THEN 'X' WHEN IS_ADD=0 THEN 'O' END AS CAN_ADD FROM BOOK_ORDER "
+				+ "JOIN BOOK USING(BOOK_NUM) WHERE mem_id = ? AND IS_RETURN = 0 ORDER BY ORDER_NUM";
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(1, memId);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) {
+					System.out.printf("%5s \t%7s \t%7s \t%5s \t\t%5s\n", 
+							"대여번호", "대여일자", "반납예정일자","연장가능", "책제목");
+					do {
+						System.out.printf("%5s \t%s \t%s \t%5s \t\t%s\n", 
+								rs.getInt("ORDER_NUM"),
+								rs.getDate("ORDER_DATE").toString(),
+								rs.getDate("RETURN_DATE").toString(),
+								rs.getString("CAN_ADD"),
+								rs.getString("BOOK_TITLE")
+								);
+					} while(rs.next());
+				} else {
+					System.out.println("표시할 데이터가 없습니다.");
+				}
+			}
+		} catch (Exception e) {e.printStackTrace();}
+	} // selectUserNowOrderInfo
+
+	//	해당 유저의 현재 대여 수 	0: true	1이상: false 
+	@Override
+	public boolean checkZeroOrder(String memId) {
+		String sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE MEM_ID=? AND IS_RETURN=0";
+		int check = -1;
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(1, memId);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) check = rs.getInt(1);
+			}
+		} catch (Exception e) {e.printStackTrace();}
+		if(check == -1) System.out.println("에러 발생!");
+		return check >= 1? false: true; 
+	}//checkZeroOrder
+
+	// order_num -> 책이름, 저자 출력
+	@Override
+	public void selectOrderNumToBookInfo(int orderNum) {
+		String sql = "SELECT BOOK_TITLE, BOOK_AUTHOR FROM book WHERE BOOK_NUM = "
+				+ "(SELECT BOOK_NUM FROM BOOK_ORDER WHERE ORDER_NUM = ?)";
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, orderNum);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) {
+					System.out.println("제목 : " + rs.getString("BOOK_TITLE"));
+					System.out.println("저자 : " + rs.getString("BOOK_AUTHOR"));
+				} else {
+					System.out.println("책 정보를 불러오는 것에 실패했습니다.");
+				}
+			}
+		} catch (Exception e) {e.printStackTrace();}
+	} // selectOrderNumToBookInfo
+
+	// order_num -> book_num
+	@Override
+	public int selectOrderNumToBookNum(int orderNum) {
+		String sql =  "SELECT book_num FROM book_order WHERE order_num = ?";
+		int res = -1;
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);) {
+			pstmt.setInt(1, orderNum);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) res = rs.getInt("book_num");
+				if(res == -1)
+					System.out.println("book_num을 불러오던중 오류 발생!");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("book_num을 불러오던중 오류 발생");
+		}
+		return res;
+	} // selectOrderNumToBookNum
+
+	// 반납 진행 함수 - update is_return
+	@Override
+	public void updateOrderReturn(int order_num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		String sql = null;
+		try {
+			conn = DBUtil.getConnection();
+			sql = "UPDATE BOOK_ORDER SET IS_RETURN = 1 WHERE ORDER_NUM=?";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1,order_num);
+			int count = pstmt.executeUpdate();
+
+			sql = "UPDATE BOOK SET BOOK_VOLM_CNT = BOOK_VOLM_CNT + 1 WHERE BOOK_NUM IN "
+					+ "(SELECT BOOK_NUM FROM BOOK_ORDER WHERE ORDER_NUM = ?)";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, order_num);
+			int count2 = pstmt.executeUpdate();
+
+			if(count > 0 && count2 > 0) System.out.println("반납 진행중입니다.");
+		} catch (Exception e) {
+			System.out.println("에러발생");
+		} finally {
+			DBUtil.executeClose(null, pstmt, conn);
+		}
+	} // updateOrderReturn
+
+	// 지정한 대여번호에 대한 연체일 알림 / 연체가 아닐 시 정상 반납 알림
+	@Override
+	public void selectLateReturn(int orderNum) {
+		String sql = "SELECT TRUNC(SYSDATE - RETURN_DATE) AS res FROM BOOK_ORDER WHERE ORDER_NUM = ?";
+		int res = -1;
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, orderNum);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) res = rs.getInt("res");
+				if(res > 0) System.out.println(res+"일 연체되었습니다.");
+				else System.out.println("정상 반납 되었습니다.");
+			}
+		} catch (Exception e) {e.printStackTrace();}
+	} // selectLateReturn
+
+	// 로그인한 유저의 대여내역보기(현황 + 기록) - 1번 최신순, 2번 오래된순
+	@Override
+	public void selectUserOrderInfo(String memId, int selectNum) {
+		String sql = "SELECT ORDER_NUM, BOOK_TITLE, ORDER_DATE, "
+				+ "CASE WHEN IS_RETURN=1 THEN 'O' WHEN IS_RETURN=0 THEN 'X' END AS RETURN "
+				+ "FROM BOOK_ORDER  JOIN BOOK USING(BOOK_NUM) WHERE mem_id = ? ORDER BY ORDER_NUM ";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			if(selectNum == 1) sql += "DESC";
+			pstmt.setString(1, memId);
+			try(ResultSet rs = pstmt.executeQuery();) {
+				if(rs.next()) {
+					System.out.printf("%5s \t\t%s \t\t%5s \t%s\n", "번호", "대여일자", "반납여부(O/X)", "책제목");
+					do {
+						System.out.printf("%5d \t\t%7s \t%5s \t\t%-30s\n", 
+								rs.getInt("ORDER_NUM"),
+								rs.getDate("ORDER_DATE").toString(),
+								rs.getString("RETURN"),
+								rs.getString("BOOK_TITLE")
+								);
+	
+					} while(rs.next());
+				} else System.out.println("표시할 데이터가 없습니다.");
+			}
+		} catch (Exception e) {e.printStackTrace();}
+	} // selectUserOrderInfo
+
+	// 대여번호가 연장이 가능한지 확인하는 함수
+	@Override
+	public boolean checkOrderAdd(int orderNum, String memId) {
+		String sql = "SELECT COUNT(*) FROM BOOK_ORDER WHERE ORDER_NUM=? AND MEM_ID=? AND IS_ADD=0";
+		int check = -1;
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);) {
+			pstmt.setInt(1, orderNum);
+			pstmt.setString(2, memId);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) check = rs.getInt(1);
+			}
+		} catch (Exception e) {e.printStackTrace();}
+		if(check == -1) System.out.println("에러 발생!");
+		return check >= 1? true: false; 
+	}//checkNowOrderNum
+	
+	// 연장 진행 함수 - update return_date
+	@Override
+	public void updateReturnDate(int orderNum) {
+		String sql = "UPDATE BOOK_ORDER SET RETURN_DATE = (SELECT RETURN_DATE FROM BOOK_ORDER WHERE ORDER_NUM = ?) + 7,IS_ADD=1 WHERE ORDER_NUM=?";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1,orderNum);
+			pstmt.setInt(2,orderNum);
+			int count = pstmt.executeUpdate();
+			if(count > 0) System.out.println("연장을 성공했습니다.");
+		} catch (Exception e) {
+			System.out.println("에러발생");
+		}
+	} // updateReturnDate
+	
 }

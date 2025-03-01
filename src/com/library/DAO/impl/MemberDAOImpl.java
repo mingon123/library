@@ -177,5 +177,27 @@ public class MemberDAOImpl implements MemberDAO {
 		}
 	} // deleteMemberInfo
 
-	
+	// 정지일수 update - 이전에 정지일수가 있는 경우 + , 새로 생길경우 그대로
+	@Override
+	public void updateStopDate(int orderNum) {
+		String sql = "UPDATE MEMBER SET MEM_STOP_DATE = "
+				+ "CASE "
+				+ "WHEN (SELECT RETURN_DATE FROM BOOK_ORDER WHERE ORDER_NUM = ?) >= SYSDATE THEN MEM_STOP_DATE "  
+				+ "WHEN NVL(MEM_STOP_DATE, SYSDATE) > SYSDATE "
+				+ "THEN MEM_STOP_DATE + (SYSDATE - (SELECT RETURN_DATE FROM BOOK_ORDER WHERE ORDER_NUM = ?)) "
+				+ "ELSE SYSDATE + (SYSDATE - (SELECT RETURN_DATE FROM BOOK_ORDER WHERE ORDER_NUM = ?)) "
+				+ "END "
+				+ "WHERE MEM_ID = (SELECT MEM_ID FROM BOOK_ORDER WHERE ORDER_NUM = ?)";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1,orderNum);
+			pstmt.setInt(2,orderNum);
+			pstmt.setInt(3,orderNum);
+			pstmt.setInt(4,orderNum);
+			int count = pstmt.executeUpdate();
+			if(count <= 0) System.out.println("갱신 실패");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	} // updateStopDate
 }

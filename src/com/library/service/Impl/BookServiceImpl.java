@@ -30,7 +30,7 @@ public class BookServiceImpl implements BookService {
 		this.br = br;
 		this.memId = memId;
 		this.memberDAO = new MemberDAOImpl(memId);
-		this.bookOrderService = new BookOrderServiceImpl(br, memId, new BookOrderDAOImpl(), new ReservationServiceImpl(br, memId));
+		this.bookOrderService = new BookOrderServiceImpl(br, memId);
 		this.bookDAO = new BookDAOImpl();
 	}
 	

@@ -10,5 +10,6 @@ public interface ReviewDAO {
 	boolean selectMyReviewInfo(String memId);
 	void updateMyReview(int reviewNum, String reviewContent, int reviewRate, String memId);
 	void deleteReview(int reviewNum);
+	void insertReviewInfo(int bookNum, String content, int rate, String memId);
 
 }

@@ -13,6 +13,7 @@ public interface MemberDAO {
 	public void deleteMemberInfo(String memId);
 
 	Date checkMemStop(String memId); // 정지상태알림
+	void updateStopDate(int orderNum);
 	
 	
 }

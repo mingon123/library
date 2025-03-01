@@ -63,7 +63,7 @@ public class UserMenu {
 
 		// Service 객체 초기화
 		this.bookService = new BookServiceImpl(br, this.bookDAO, memId);
-		this.bookOrderService = new BookOrderServiceImpl(br, memId, this.bookOrderDAO, this.reservationService);
+		this.bookOrderService = new BookOrderServiceImpl(br, memId);
 		this.memberService = new MemberServiceImpl(this.memberDAO, memId, br);
 		this.wishBookService = new WishBookServiceImpl(br, memId);
 		this.qnaService = new QnaServiceImpl(br, memId);
@@ -77,6 +77,7 @@ public class UserMenu {
 
 	private void showUserMenu() throws IOException {
 		while (true) {
+			Open.main(null);
 			System.out.println("\n===== 사용자 메뉴 =====");
 			for (UserMenuEnum menu : UserMenuEnum.values()) {
 				System.out.println(menu.getNumber() + ". " + menu.getTitle());
@@ -109,7 +110,7 @@ public class UserMenu {
 		case 3: bookMenu.searchBooks();break; // 도서 검색 화면
 		case 4: showReviewPage();break; // 리뷰 화면
 		case 5:	showRentReservePage();break;  // 대여/예약 화면
-		case 6: showReturnPage();break; // 반납 화면
+		case 6: showReturnPage(memId);break; // 반납 화면
 		case 7:	showOtherFunctions();break;  // 기타 기능 화면
 		default: System.out.println("잘못된 선택입니다.");
 		}
@@ -176,40 +177,52 @@ public class UserMenu {
 	}
 	
 	// 대여/예약 화면(5)
-	private void showRentReservePage() {
-//		if (memberDAO.checkMemStop(memId)==null) {
-//	        System.out.println("현재 정지상태입니다. 대여/예약이 불가능합니다.");
-//	        System.out.println("홈화면으로 돌아갑니다.\n");
-//	        return;
-//	    }
-//	    System.out.println("\n대여/예약 메뉴를 선택하셨습니다.");
-//	    bookDAO.randomBookInfo(5); // 랜덤 책 목록 출력
-//	    int bookNum = getBookNumber();
-//	    processRental(bookNum);
-	    
-	    
+	private void showRentReservePage() throws IOException {
+		if (memberDAO.checkMemStop(memId)!=null) {
+	        System.out.println("현재 정지상태입니다. 대여/예약이 불가능합니다.");
+	        System.out.println("홈화면으로 돌아갑니다.\n");
+	        return;
+	    }
+	    System.out.print("1.대여/예약하기 2.대여/예약 내역확인 3.예약취소 4.뒤로가기\n >");
+	    try {
+	        int no = Integer.parseInt(br.readLine());
+	        switch (no) {
+	            case 1: bookOrderService.handleBookOrder();break;
+	            case 2: bookOrderService.viewOrderHistory();break;
+	            case 3: reservationService.cancelReservation(memId);break;
+	            case 4: System.out.println("뒤로가기를 선택하셨습니다. 홈으로 돌아갑니다.");break;
+	            default: System.out.println("잘못 입력하셨습니다.");
+	        }
+	    } catch (NumberFormatException e) { System.out.println("[숫자만 입력 가능]");}
 	}
 
 	// 반납 화면(6)
-	private void showReturnPage() {
-//	    System.out.println("\n반납 메뉴를 선택하셨습니다.");
-//	    System.out.println("-".repeat(90));
-//	    System.out.println("\t\t\t\t\t\t대여 현황");
-//	    System.out.println("-".repeat(90));
-//	    dao.selectUserNowOrderInfo(mem_id);
-//	    System.out.println("-".repeat(90));
-//
-//	    if (dao.checkZeroOrder(memId)) {
-//	        System.out.println("\n대여기록이 존재하지 않습니다.");
-//	        System.out.println("이전화면으로 돌아갑니다.\n");
-//	        return;
-//	    }
-//
-//	    int orderNum = getOrderNumber();
-//	    if (orderNum == -1) return;
-//
-//	    System.out.println(orderNum + "번을 선택하셨습니다.");
-//	    processReturn(orderNum);
+	public void showReturnPage(String memId) throws IOException {
+	    System.out.println("\n반납 메뉴를 선택하셨습니다.");
+	    System.out.println("-".repeat(90));
+	    System.out.println("\t\t\t\t\t\t대여 현황");
+	    System.out.println("-".repeat(90));
+	    bookOrderDAO.selectUserNowOrderInfo(memId);
+	    System.out.println("-".repeat(90));
+
+	    if (bookOrderDAO.checkZeroOrder(memId)) {
+	        System.out.println("\n대여기록이 존재하지 않습니다.");
+	        System.out.println("이전화면으로 돌아갑니다.\n");
+	        return;
+	    }
+
+	    int orderNum = bookOrderService.getValidBookNumber(memId, true);  // 대여번호 입력 받기
+	    if (orderNum == -1) return;  // 대여번호가 유효하지 않으면 종료
+
+	    // 반납 여부 확인
+	    if (bookOrderService.confirmReturn()) {
+	        bookOrderService.processReturn(orderNum);
+	        if (reviewService.confirmReview()) {
+	            reviewService.processReview(orderNum, memId);
+	        }
+	    }
+
+	    System.out.println("\n이전화면으로 돌아갑니다.");
 	}
 
 	// 기타 기능 화면(7)

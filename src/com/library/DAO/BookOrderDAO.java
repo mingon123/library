@@ -12,4 +12,15 @@ public interface BookOrderDAO {
 	void updateBookCount(int bookNum, int bookVolmCnt);
 	void deleteReserveBookNum(int bookNum, String memId);
 	
+	boolean checkNowOrderNum(int orderNum, String memId);
+	void selectUserNowOrderInfo(String memId);
+	boolean checkZeroOrder(String memId);
+	void selectOrderNumToBookInfo(int orderNum);
+	int selectOrderNumToBookNum(int orderNum);
+	void updateOrderReturn(int orderNum);
+	void selectLateReturn(int orderNum);
+	void selectUserOrderInfo(String memId, int selectNum);
+	boolean checkOrderAdd(int orderNum, String memId);
+	void updateReturnDate(int orderNum);
+	
 }
