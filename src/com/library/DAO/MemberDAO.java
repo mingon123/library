@@ -1,5 +1,7 @@
 package com.library.DAO;
 
+import java.util.Date;
+
 public interface MemberDAO {
 	public boolean loginCheck(String memId, String memPw);
 	public boolean isDuplicate(String fieldType, String value);
@@ -9,7 +11,8 @@ public interface MemberDAO {
 	public int checkPassword(String memId, String password);
 	public boolean updateMemberInfo(String memId,String password,String newName,String newEmail);
 	public void deleteMemberInfo(String memId);
-	boolean isMemStop(String memId); // 정지상태알림
+
+	Date checkMemStop(String memId); // 정지상태알림
 	
 	
 }

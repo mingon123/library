@@ -2,29 +2,20 @@ package com.library.service.Impl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
-import com.library.DAO.BookOrderDAO;
 import com.library.DAO.MemberDAO;
-import com.library.DAO.ReservationDAO;
-import com.library.DAO.impl.BookOrderDAOImpl;
-import com.library.DAO.impl.MemberDAOImpl;
-import com.library.DAO.impl.ReservationDAOImpl;
 import com.library.menu.AdminMenu;
 import com.library.menu.UserMenu;
 import com.library.service.MemberService;
 
 public class MemberServiceImpl implements MemberService {
 	private MemberDAO memberDAO;
-	private BookOrderDAO bookOrderDAO = new BookOrderDAOImpl();
-	private ReservationDAO reservationDAO = new ReservationDAOImpl();
 	private BufferedReader br;
 	private String memId;
 	
-	public MemberServiceImpl(MemberDAO memberDAO, BookOrderDAO bookOrderDAO, String memId, BufferedReader br) {
+	public MemberServiceImpl(MemberDAO memberDAO, String memId, BufferedReader br) {
 		this.memberDAO = memberDAO;
-		this.bookOrderDAO = bookOrderDAO;
 		this.memId = memId;
 		this.br = br;
 	}
@@ -113,11 +104,11 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public void login() throws IOException {
+	public boolean login() throws IOException {
 	    while (true) {
 	        System.out.print("아이디(입력취소:q): ");
 	        String mem_id = br.readLine().trim();
-	        if(util.Util.goBack(mem_id)) return;
+	        if(util.Util.goBack(mem_id)) break;
 	        System.out.print("비밀번호: ");
 	        String passwd = br.readLine().trim();
 	        boolean flag = memberDAO.loginCheck(mem_id, passwd);
@@ -125,15 +116,17 @@ public class MemberServiceImpl implements MemberService {
 	            System.out.println(mem_id + "님 로그인 되었습니다.");
 	            if (mem_id.equals("admin")) {
 	                new AdminMenu(mem_id, br);
+	                return true;
 	            } else {
 	                // 일반 사용자 메인 메뉴 이동
 	                new UserMenu(mem_id, br);
+	                return true;
 	            }
-	            return;
 	        } else {
 	            System.out.println("아이디 또는 비밀번호가 불일치합니다.");
 	        }
 	    }
+		return false;
 	}
 	
 	
@@ -229,25 +222,4 @@ public class MemberServiceImpl implements MemberService {
 		}
 	} // deleteMemberInfo
 	
-	// 1번선택 시 나오는 화면
-	@Override
-	public void checkUserNotifications() throws IOException {
-		System.out.println("정지상태/연체/반납일/예약도서알림");
-		System.out.println("-".repeat(90));
-	    boolean memStop = memberDAO.isMemStop(memId);
-	    boolean overReturn = bookOrderDAO.isOverReturn(memId);
-	    boolean returnDateNotification = bookOrderDAO.isReturnDateNotification(memId);
-	    boolean reservationNotification = reservationDAO.isReservationNotification(memId);
-
-		if((memStop||overReturn||returnDateNotification||reservationNotification)) {
-			if(memStop)
-				if(overReturn)	
-					if(returnDateNotification)
-						if(reservationNotification) System.out.println();
-		} else {
-			System.out.println("알림이 없습니다.");
-			System.out.println("-".repeat(90));
-		}
-		return;
-	} // checkUserNotifications
 }	

@@ -3,31 +3,33 @@ package com.library.DAO.impl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Date;
 
 import com.library.DAO.MemberDAO;
 
 import util.DBUtil;
 
 public class MemberDAOImpl implements MemberDAO {
-
+	private String memId;
+	
+	public MemberDAOImpl(String memId) {
+		this.memId = memId;
+	}
+	
 	// 정지상태
 	@Override
-	public boolean isMemStop(String memId) {
+	public Date checkMemStop(String memId) {
+		Date stopDate = null;
 		String sql = "SELECT mem_stop_date FROM member WHERE mem_id=? AND mem_stop_date>sysdate";
 		try (Connection conn = DBUtil.getConnection();
 			 PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setString(1, memId);
 			try(ResultSet rs = pstmt.executeQuery();){
-				if(rs.next()) {				
-					System.out.print("정지 상태입니다. 정지해제일 : ");
-					System.out.println(rs.getDate("mem_stop_date"));
-					System.out.println("-".repeat(90));
-					return true;
-				}
+				if(rs.next()) stopDate = rs.getDate("mem_stop_date");
 			}
 		} catch (Exception e) {e.printStackTrace();}
-		return false;
-	} // isMemStop
+		return stopDate;
+	} // checkMemStop
 
 	// 로그인 검증
 	@Override
@@ -174,6 +176,6 @@ public class MemberDAOImpl implements MemberDAO {
 			e.printStackTrace();
 		}
 	} // deleteMemberInfo
-	
+
 	
 }
