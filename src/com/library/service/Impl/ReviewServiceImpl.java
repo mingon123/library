@@ -14,13 +14,12 @@ public class ReviewServiceImpl implements ReviewService {
 	private String memId;
 	private int orderNum;
 	private ReviewDAO reviewDAO;
-	private BookOrderDAO bookOrderDAO;
+	private BookOrderDAO bookOrderDAO = new BookOrderDAOImpl(memId);;
 	
 	public ReviewServiceImpl(BufferedReader br, String memId) {
 		this.br = br;
 		this.memId = memId;
 		this.reviewDAO = new ReviewDAOImpl();
-		this.bookOrderDAO = new BookOrderDAOImpl();
 	}
 
 	// 4.리뷰 상세정보 확인
@@ -84,8 +83,16 @@ public class ReviewServiceImpl implements ReviewService {
 			if(count==1) {
 				System.out.print("새로운 리뷰내용 입력 : ");
 				String content = br.readLine();
-				System.out.print("새로운 평점 입력(1~5) : ");
-				int rate = Integer.parseInt(br.readLine());
+				int rate = 0;
+				while(true) {
+					System.out.print("새로운 평점 입력(1~5) : ");
+					rate = Integer.parseInt(br.readLine());
+					if(rate < 1 || rate > 5) {
+						System.out.println("평점은 1~5 점 가능");
+						continue;
+					}
+					break;
+				}
 				reviewDAO.updateMyReview(num, content, rate, memId);
 			}
 			else if(count==0) {

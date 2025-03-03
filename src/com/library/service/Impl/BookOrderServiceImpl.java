@@ -9,6 +9,7 @@ import com.library.DAO.MemberDAO;
 import com.library.DAO.ReservationDAO;
 import com.library.DAO.impl.BookDAOImpl;
 import com.library.DAO.impl.BookOrderDAOImpl;
+import com.library.DAO.impl.BookReturnDAOImpl;
 import com.library.DAO.impl.MemberDAOImpl;
 import com.library.DAO.impl.ReservationDAOImpl;
 import com.library.service.BookOrderService;
@@ -27,9 +28,9 @@ public class BookOrderServiceImpl implements BookOrderService {
         this.br = br;
         this.memId = memId;
         
-        this.bookOrderDAO = new BookOrderDAOImpl();
+        this.bookOrderDAO = new BookOrderDAOImpl(memId);
         this.bookDAO = new BookDAOImpl();
-        this.reservationDAO = new ReservationDAOImpl();
+        this.reservationDAO = new ReservationDAOImpl(memId);
         this.memberDAO = new MemberDAOImpl(memId);
 
         this.reservationService = new ReservationServiceImpl(br, memId);
@@ -38,10 +39,10 @@ public class BookOrderServiceImpl implements BookOrderService {
 	// 대여하기 처리
 	@Override
 	public void handleRental(int bookNum) throws IOException {
-	    int res = bookOrderDAO.canOrder(memId, bookNum);
+	    int res = bookOrderDAO.canOrder(bookNum);
 	    if (res == 1) {
 	        System.out.println("\n대여가 가능합니다.");
-	        bookOrderDAO.insertBookOrder(memId, bookNum);
+	        bookOrderDAO.insertBookOrder(bookNum);
 	        System.out.println("이전화면으로 돌아갑니다.");
 	    } else if (res == 0) {
 	        System.out.println("\n해당 번호의 책의 권수가 0권입니다.");
@@ -157,7 +158,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	
 	// 대여 연장 기능을 처리하는 메서드
 	public void handleExtension(int orderNum, String memId) throws IOException {
-	    if (bookOrderDAO.checkOrderAdd(orderNum, memId)) {
+	    if (bookOrderDAO.checkOrderAdd(orderNum)) {
 	        System.out.print("연장하시겠습니까? (Y/N): ");
 	        String choice = br.readLine();
 	        if (choice.equalsIgnoreCase("Y")) bookOrderDAO.updateReturnDate(orderNum);
@@ -178,7 +179,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	            }
 	            if (selectNum == 1 || selectNum == 2) {
 	                System.out.println("-".repeat(90));
-	                bookOrderDAO.selectUserOrderInfo(memId, selectNum);
+	                bookOrderDAO.selectUserOrderInfo(selectNum);
 	                System.out.println("-".repeat(90));
 	                return;
 	            }
@@ -195,7 +196,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 		System.out.println("-".repeat(90));
 	    System.out.println("대여 현황");
 	    System.out.println("-".repeat(90));
-	    bookOrderDAO.selectUserNowOrderInfo(memId);
+	    bookOrderDAO.selectUserNowOrderInfo();
 	    System.out.println("-".repeat(90));
 	    System.out.println("예약 현황");
 	    System.out.println("-".repeat(90));
@@ -213,7 +214,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	@Override
 	public void processReturn(int orderNum) {
 	    System.out.println();
-	    bookOrderDAO.updateOrderReturn(orderNum);
+	    new BookReturnDAOImpl(memId).updateOrderReturn(orderNum);
 	    memberDAO.updateStopDate(orderNum);
 	    bookOrderDAO.selectLateReturn(orderNum);
 	}

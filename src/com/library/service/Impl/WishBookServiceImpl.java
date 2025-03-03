@@ -27,8 +27,6 @@ public class WishBookServiceImpl implements WishBookService{
 	// 희망도서 관리
 	@Override
 	public void manageWishBook() throws IOException {
-		
-		
 		while(true) {
 			System.out.print("1.희망도서신청 2.희망도서신청내역확인 3.희망도서신청취소 4.뒤로가기\n > ");
 			try {
@@ -56,6 +54,11 @@ public class WishBookServiceImpl implements WishBookService{
 		String author = br.readLine();
 		System.out.print("출판사를 입력하세요: ");
 		String publisher = br.readLine();
+		if(wishBookDAO.checkWishBook(title, author)) {
+			System.out.println("해당 도서는 보유중입니다.");
+			return;
+		} 
+		System.out.println("희망도서 신청이 완료되었습니다.");
 		wishBookDAO.insertWishBook(title, author, publisher, memId);
 	}
 	// 희망도서 목록 
@@ -119,6 +122,7 @@ public class WishBookServiceImpl implements WishBookService{
 	    		if(count==1) {
 	    			wishBookDAO.deleteWishMyBookInfo(memId, num);
 	    			System.out.println("희망도서 신청을 취소했습니다.");
+	    			return;
 	    		}
 	    		else if(count==0) System.out.println("번호를 잘못입력했습니다.");
 	    		else if(count==-1) System.out.println("정보 처리 중 오류 발생");

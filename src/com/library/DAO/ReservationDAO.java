@@ -9,4 +9,8 @@ public interface ReservationDAO {
 	boolean checkReserveReNum(int reNum, String memId);
 	void deleteReserveReNum(int reNum);
 	int countUserReservations(String memId);
+	boolean checkReserveBookNum(int bookNum);
+	int selectBookNumToReNum(int bookNum);
+	int calcReserveRank(int reNum, int num);
+	void deleteReserveBookNum(int bookNum);
 }

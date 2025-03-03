@@ -6,11 +6,13 @@ import java.util.Date;
 
 import com.library.DAO.BookDAO;
 import com.library.DAO.BookOrderDAO;
+import com.library.DAO.BookReturnDAO;
 import com.library.DAO.MemberDAO;
 import com.library.DAO.ReservationDAO;
 import com.library.DAO.ReviewDAO;
 import com.library.DAO.impl.BookDAOImpl;
 import com.library.DAO.impl.BookOrderDAOImpl;
+import com.library.DAO.impl.BookReturnDAOImpl;
 import com.library.DAO.impl.MemberDAOImpl;
 import com.library.DAO.impl.ReservationDAOImpl;
 import com.library.DAO.impl.ReviewDAOImpl;
@@ -39,6 +41,7 @@ public class UserMenu {
 	private BookOrderDAO bookOrderDAO;
 	private ReservationDAO reservationDAO;
 	private ReviewDAO reviewDAO;
+	private BookReturnDAO bookReturnDAO;
 
 	private BookService bookService;
 	private BookOrderService bookOrderService;
@@ -57,9 +60,10 @@ public class UserMenu {
 		// DAO 객체 초기화
 		this.bookDAO = new BookDAOImpl();
 		this.memberDAO = new MemberDAOImpl(memId);
-		this.bookOrderDAO = new BookOrderDAOImpl();
-		this.reservationDAO = new ReservationDAOImpl();
+		this.bookOrderDAO = new BookOrderDAOImpl(memId);
+		this.reservationDAO = new ReservationDAOImpl(memId);
 		this.reviewDAO = new ReviewDAOImpl();
+		this.bookReturnDAO = new BookReturnDAOImpl(memId);
 
 		// Service 객체 초기화
 		this.bookService = new BookServiceImpl(br, this.bookDAO, memId);
@@ -122,8 +126,8 @@ public class UserMenu {
 		System.out.println("정지상태/연체/반납일/예약도서알림");
 		System.out.println("-".repeat(90));
 		Date memStop = memberDAO.checkMemStop(memId);
-		boolean overReturn = bookOrderDAO.isOverReturn(memId);
-		boolean returnDateNotification = bookOrderDAO.isReturnDateNotification(memId);
+		boolean overReturn = bookReturnDAO.isOverReturn();
+		boolean returnDateNotification = bookReturnDAO.isReturnDateNotification();
 		boolean reservationNotification = reservationDAO.isReservationNotification(memId);
 
 		if((memStop!=null||overReturn||returnDateNotification||reservationNotification)) {
@@ -202,10 +206,10 @@ public class UserMenu {
 	    System.out.println("-".repeat(90));
 	    System.out.println("\t\t\t\t\t\t대여 현황");
 	    System.out.println("-".repeat(90));
-	    bookOrderDAO.selectUserNowOrderInfo(memId);
+	    bookOrderDAO.selectUserNowOrderInfo();
 	    System.out.println("-".repeat(90));
 
-	    if (bookOrderDAO.checkZeroOrder(memId)) {
+	    if (bookOrderDAO.checkZeroOrder()) {
 	        System.out.println("\n대여기록이 존재하지 않습니다.");
 	        System.out.println("이전화면으로 돌아갑니다.\n");
 	        return;

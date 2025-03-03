@@ -62,6 +62,7 @@ public class QnaServiceImpl implements QnaService {
 				if(count==1) qnaDAO.deleteQNAInfo(memId, num);
 				else if(count==0) System.out.println("번호를 잘못입력했습니다.");
 				else if(count==-1) System.out.println("정보 처리 중 오류 발생");
+				return;
 			} catch (NumberFormatException e) {
 				System.out.println("[숫자만 입력 가능]");
 			} catch(Exception e) {

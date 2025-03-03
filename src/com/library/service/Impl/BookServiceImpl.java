@@ -78,8 +78,10 @@ public class BookServiceImpl implements BookService {
 			bookOrderService.orderOrReserveMenu(Integer.parseInt(bookNum)); // 대여 예약
 		}else if(memberDAO.checkMemStop(memId)!=null) {
 			System.out.println("정지상태입니다. 대여/예약이 불가능합니다.");
+			return;
 		}else if(memId == null) {
 			System.out.println("비회원입니다. 대여/예약은 로그인 후 이용바랍니다.");
+			return;
 		}
 	}
 	

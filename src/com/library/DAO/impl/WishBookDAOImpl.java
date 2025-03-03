@@ -19,7 +19,7 @@ public class WishBookDAOImpl implements WishBookDAO {
 	// 희망도서 신청
 	@Override
     public void insertWishBook(String title, String author, String publisher, String memId) {
-        String sql = "INSERT INTO wish_book(wish_num, wish_title, wish_author, wish_publisher, wish_date, mem_id) VALUES (wish_book_seq.nextval, ?, ?, ?, SYSDATE, ?)";
+		String sql = "INSERT INTO wish_book(wish_num, wish_title, wish_author, wish_publisher, wish_date, mem_id) VALUES (wish_book_seq.nextval, ?, ?, ?, SYSDATE, ?)";
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, title);
@@ -109,6 +109,7 @@ public class WishBookDAOImpl implements WishBookDAO {
 		} 
 	}
 	// 희망도서 레코드 확인
+	@Override
 	public int checkWishBookRecordNumId(int wishNum, String memId){
 	    String sql = "SELECT COUNT(*) FROM wish_book WHERE wish_num = ? AND mem_id = ?";
 	    try (Connection conn = DBUtil.getConnection(); 
@@ -127,5 +128,21 @@ public class WishBookDAOImpl implements WishBookDAO {
 		}
 	    return -1;  // 예외 처리
 	}
-	
+	// 희망도서 신청 시 동일한 제목+저자인 도서가 있으면 알림
+	@Override
+	public boolean checkWishBook(String bookTitle,String bookAuthor) {
+		String sql = "SELECT COUNT(*) FROM book WHERE book_title=? AND book_author=?";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(1, bookTitle);
+			pstmt.setString(2, bookAuthor);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) {
+					int count = rs.getInt(1);
+					if(count>0)	return true;
+				}
+			}
+		}catch (Exception e) {e.printStackTrace();}
+		return false;
+	} // isWishBook
 }

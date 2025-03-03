@@ -11,4 +11,5 @@ public interface WishBookDAO {
 	List<wishBook> selectMyWishBookInfo(String memId);
 	void deleteWishMyBookInfo(String memId, int wishNum);
 	int checkWishBookRecordNumId(int wishBookNum, String memId);
+	boolean checkWishBook(String bookTitle, String bookAuthor);
 }

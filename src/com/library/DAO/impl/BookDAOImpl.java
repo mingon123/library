@@ -132,6 +132,7 @@ public class BookDAOImpl implements BookDAO {
 			try(ResultSet rs = pstmt.executeQuery();){
 				if(rs.next()) count = 1; //레코드가 존재할 때 1 저장		
 			}
+		} catch (NumberFormatException e) {System.out.println("[숫자만 입력가능]");
 		} catch (Exception e) {
 			count = -1;
 			e.printStackTrace();
@@ -237,6 +238,37 @@ public class BookDAOImpl implements BookDAO {
 			DBUtil.executeClose(null, pstmt, conn);
 		}
 	} // randomBookInfo
+	
+	// book_num으로 book_volm_cnt 구하는 함수
+	@Override
+	public int selectBookCount(int bookNum) {
+		String sql = "SELECT BOOK_VOLM_CNT FROM BOOK WHERE BOOK_NUM=?";
+		int res = -1;
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, bookNum);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) res = rs.getInt(1);
+			}
+		} catch (Exception e) {
+			System.out.println("에러 발생!");
+		}
+		if(res == -1) System.out.println("에러 발생!");
+		return res;
 
+	}//checkNowOrderNum
+
+	// 책갯수 조정 함수 (book_volm_cnt + k)
+	@Override
+	public void updateBookCount(int bookVolmCnt, int bookNum) {
+		String sql = "UPDATE book SET book_volm_cnt = book_volm_cnt + ? WHERE book_num = ?";
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, bookVolmCnt);
+			pstmt.setInt(2, bookNum);
+			int count = pstmt.executeUpdate();
+			if(count <= 0) {System.out.println("책갯수 조정 중 오류발생!");}
+		} catch (Exception e) {e.printStackTrace();}
+	} // updateBookCount
 
 }

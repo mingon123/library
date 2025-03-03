@@ -40,7 +40,7 @@ public class MainMenu {
 			br = new BufferedReader(new InputStreamReader(System.in));			
 			this.bookService = new BookServiceImpl(br, new BookDAOImpl(), memId);
 			
-			this.bookOrderDAO = new BookOrderDAOImpl();
+			this.bookOrderDAO = new BookOrderDAOImpl(memId);
             this.memberDAO = new MemberDAOImpl(memId);
             this.noticeDAO = new NoticeDAOImpl();
             this.bookDAO = new BookDAOImpl();

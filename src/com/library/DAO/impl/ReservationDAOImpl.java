@@ -10,10 +10,10 @@ import com.library.DAO.ReservationDAO;
 import util.DBUtil;
 
 public class ReservationDAOImpl implements ReservationDAO {
-	private BookOrderDAO bookOrderDAO;
+	private String memId;
 	
-	public ReservationDAOImpl() {
-		this.bookOrderDAO = new BookOrderDAOImpl();
+	public ReservationDAOImpl(String memId) {
+		this.memId = memId;
 	}
 	
 	@Override
@@ -124,8 +124,8 @@ public class ReservationDAOImpl implements ReservationDAO {
 					do {
 						System.out.printf("%5d \t%5d %10d \t%-27s \n", 
 								rs.getInt("RE_NUM"),
-								bookOrderDAO.calcReserveRank(reNum, 1),
-								bookOrderDAO.calcReserveRank(reNum, 2),
+								calcReserveRank(reNum, 1),
+								calcReserveRank(reNum, 2),
 								rs.getString("BOOK_TITLE")
 								);
 					} while(rs.next());
@@ -178,4 +178,90 @@ public class ReservationDAOImpl implements ReservationDAO {
 	    return 0; // 오류 시 0 반환
 	}
 	
+	// 책번호가 해당유저로 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
+	@Override
+	public boolean checkReserveBookNum(int bookNum) {
+		String sql = "SELECT COUNT(*) FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, bookNum);			
+			pstmt.setString(2, memId);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) return rs.getInt(1)>0;
+			}
+		} catch (Exception e) {e.printStackTrace();}
+		return false;
+	}//checkReserveBookNum
+
+	// Book_num 이랑 Mem_id 로 Re_num 구하는 함수
+	@Override
+	public int selectBookNumToReNum(int bookNum) {
+		String sql = "SELECT RE_NUM FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
+		int res = -1;
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, bookNum);
+			pstmt.setString(2, memId);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if(rs.next()) res = rs.getInt("RE_NUM");
+			}
+		} catch (Exception e) {e.printStackTrace();}
+		return res;
+	} // selectBookNumToReNum
+	
+	// 예약 순위 관련 함수 - num==1 : 총 인원수, num==2 예약 순위
+	@Override
+	public int calcReserveRank(int reNum, int num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String sql = null;
+		int allCount = -1; // 같은 책을 예약한 총 인원 수 
+		int lowCount = -1; // 해당 유저보다 같은 책을 더 늦게 예약한 사람의 수 
+		try {
+			conn = DBUtil.getConnection();
+			sql = "SELECT COUNT(*) FROM RESERVATION WHERE BOOK_NUM = "
+					+ "(SELECT BOOK_NUM FROM RESERVATION WHERE RE_NUM = ?)";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, reNum);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) allCount = rs.getInt(1);
+
+			sql = "SELECT COUNT(*) FROM RESERVATION WHERE RE_NUM > ? AND "
+					+ "BOOK_NUM = (SELECT BOOK_NUM FROM RESERVATION WHERE RE_NUM = ?)";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, reNum);
+			pstmt.setInt(2, reNum);
+			rs = pstmt.executeQuery();
+
+			if(rs.next()) lowCount = rs.getInt(1);
+
+			if(lowCount == -1 || allCount == -1) System.out.println("에러발생!");
+
+		} catch (Exception e) {
+			System.out.println("에러발생");
+		} finally {
+			DBUtil.executeClose(rs, pstmt, conn);
+		} 
+		if(num == 1) return allCount;
+		else if(num == 2) return allCount - lowCount;
+		else return -1;
+	} // calcReserveRank
+	
+	// 예약테이블 행 삭제 - book num
+	@Override
+	public void deleteReserveBookNum(int bookNum) {
+		String sql = "DELETE FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, bookNum);
+			pstmt.setString(2, memId);
+			int count = pstmt.executeUpdate();
+			if(count > 0) System.out.println("예약한 책의 대여로 인해 예약목록에서 해당 책을 삭제합니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	} // deleteReserveBookNum
 }

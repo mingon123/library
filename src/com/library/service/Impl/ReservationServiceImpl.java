@@ -8,13 +8,14 @@ import com.library.DAO.impl.ReservationDAOImpl;
 import com.library.service.ReservationService;
 
 public class ReservationServiceImpl implements ReservationService {
-	private ReservationDAO reservationDAO = new ReservationDAOImpl();
+	private ReservationDAO reservationDAO;
 	private BufferedReader br;
 	private String memId;
 	
 	public ReservationServiceImpl(BufferedReader br, String memId) {
 		this.br = br;
 		this.memId = memId;
+		this.reservationDAO = new ReservationDAOImpl(memId);
 	}
 
 	// 예약하기 처리

@@ -8,8 +8,8 @@ public interface BookDAO {
 	int checkBookRecord(String columnName, String value);
 	void selectDetailBook(int bookNum);
 	void selectSearchBook(String searchType, String searchValue);
-	
 	void randomBookInfo(int num);
+	int selectBookCount(int bookNum);
+	void updateBookCount(int bookVolmCnt, int bookNum);
 
-	
 }

@@ -26,7 +26,7 @@ public class BookMenu {
 				switch(no) {
 				case 1: bookService.selectCategoryOfBook();break;
 				case 2: 
-					bookService.selectCategoryOfBook();
+					bookDAO.selectRankOfBook();
 					bookService.selectDetailBook();
 					break;
 				case 3:
