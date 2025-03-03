@@ -62,13 +62,13 @@ public class UserMenu {
 		this.memberDAO = new MemberDAOImpl(memId);
 		this.bookOrderDAO = new BookOrderDAOImpl(memId);
 		this.reservationDAO = new ReservationDAOImpl(memId);
-		this.reviewDAO = new ReviewDAOImpl();
+		this.reviewDAO = new ReviewDAOImpl(memId);
 		this.bookReturnDAO = new BookReturnDAOImpl(memId);
 
 		// Service 객체 초기화
-		this.bookService = new BookServiceImpl(br, this.bookDAO, memId);
+		this.bookService = new BookServiceImpl(br, memId);
 		this.bookOrderService = new BookOrderServiceImpl(br, memId);
-		this.memberService = new MemberServiceImpl(this.memberDAO, memId, br);
+		this.memberService = new MemberServiceImpl(memId, br);
 		this.wishBookService = new WishBookServiceImpl(br, memId);
 		this.qnaService = new QnaServiceImpl(br, memId);
 		this.reviewService = new ReviewServiceImpl(br, memId);
@@ -128,7 +128,7 @@ public class UserMenu {
 		Date memStop = memberDAO.checkMemStop(memId);
 		boolean overReturn = bookReturnDAO.isOverReturn();
 		boolean returnDateNotification = bookReturnDAO.isReturnDateNotification();
-		boolean reservationNotification = reservationDAO.isReservationNotification(memId);
+		boolean reservationNotification = reservationDAO.isReservationNotification();
 
 		if((memStop!=null||overReturn||returnDateNotification||reservationNotification)) {
 			if(memStop!=null) {
@@ -215,14 +215,20 @@ public class UserMenu {
 	        return;
 	    }
 
-	    int orderNum = bookOrderService.getValidBookNumber(memId, true);  // 대여번호 입력 받기
+	    int orderNum = bookOrderService.getValidBookNumber(true);  // 대여번호 입력 받기
 	    if (orderNum == -1) return;  // 대여번호가 유효하지 않으면 종료
-
+	    
+	    // 본인 대여 여부 확인
+	    if (!bookOrderDAO.checkOrderByUser(orderNum)) {
+	        System.out.println("본인의 대여 기록이 아닙니다. 반납을 취소합니다.");
+	        return;  // 본인 대여가 아니면 반납하지 않음
+	    }
+		
 	    // 반납 여부 확인
 	    if (bookOrderService.confirmReturn()) {
 	        bookOrderService.processReturn(orderNum);
-	        if (reviewService.confirmReview()) {
-	            reviewService.processReview(orderNum, memId);
+	        if (reviewService.confirmReview(orderNum)) {
+//	            reviewService.processReview(orderNum, memId);
 	        }
 	    }
 

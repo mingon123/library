@@ -50,7 +50,7 @@ public class WishBookDAOImpl implements WishBookDAO {
 	// 희망도서 신청 목록 확인
 	@Override
 	public List<wishBook> selectWishBookInfo() {
-		String sql = "SELECT wish_num,wish_title,wish_author,wish_publisher,wish_date FROM wish_book ORDER BY wish_date DESC";
+		String sql = "SELECT wish_num,wish_title,wish_author,wish_publisher,wish_date,mem_id FROM wish_book ORDER BY wish_date DESC";
 		List<wishBook> wishBooks = new ArrayList<>();
 		try (Connection conn = DBUtil.getConnection();
 			 PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -61,18 +61,17 @@ public class WishBookDAOImpl implements WishBookDAO {
 						rs.getString("wish_title"),
 						rs.getString("wish_author"),
 						rs.getString("wish_publisher"),
-						rs.getDate("wish_date")
+						rs.getDate("wish_date"),
+						rs.getString("mem_id")
 				));
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		} catch (Exception e) {	e.printStackTrace();}
 		return wishBooks;
 	}
 	// 내 희망도서 신청 목록 확인
 	@Override
 	public List<wishBook> selectMyWishBookInfo(String memId) {
-		String sql = "SELECT wish_num,wish_title,wish_author,wish_publisher,wish_date FROM wish_book WHERE mem_id=? ORDER BY wish_date DESC";
+		String sql = "SELECT wish_num,wish_title,wish_author,wish_publisher,wish_date,mem_id FROM wish_book WHERE mem_id=? ORDER BY wish_date DESC";
 		List<wishBook> wishBooks = new ArrayList<>();
 		try (Connection conn = DBUtil.getConnection();
 			 PreparedStatement pstmt = conn.prepareStatement(sql);){
@@ -84,7 +83,8 @@ public class WishBookDAOImpl implements WishBookDAO {
 							rs.getString("wish_title"),
 							rs.getString("wish_author"),
 							rs.getString("wish_publisher"),
-							rs.getDate("wish_date")
+							rs.getDate("wish_date"),
+							rs.getString("mem_id")
 					));
 				}
 			}
@@ -128,6 +128,21 @@ public class WishBookDAOImpl implements WishBookDAO {
 		}
 	    return -1;  // 예외 처리
 	}
+	//조회하는 희망도서 레코드 존재 여부 체크
+	@Override
+	public int checkWishRecord(int wishNum) {
+		String sql = "SELECT * FROM wish_book WHERE wish_num=?";
+		int count = 0;		
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, wishNum);
+			try(ResultSet rs = pstmt.executeQuery();){
+			if (rs.next()) count = 1; //레코드가 존재할 때 1 저장				
+			}		
+		} catch (Exception e) {count = -1;} //오류 발생
+		return count; 
+	} // checkWishRecord(대여번호)
+	
 	// 희망도서 신청 시 동일한 제목+저자인 도서가 있으면 알림
 	@Override
 	public boolean checkWishBook(String bookTitle,String bookAuthor) {
@@ -145,4 +160,33 @@ public class WishBookDAOImpl implements WishBookDAO {
 		}catch (Exception e) {e.printStackTrace();}
 		return false;
 	} // isWishBook
+	
+	// 희망도서정보 수정 
+	@Override
+	public void updateWish(String wishTitle, String wishAuthor, String wishPublisher,String memId,int wishNum) {
+		String sql = "UPDATE wish_book SET wish_title=?, wish_author=?, wish_publisher=?, mem_id=? WHERE wish_num=?";
+		int cnt = 0;
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(++cnt, wishTitle);
+			pstmt.setString(++cnt, wishAuthor); 
+			pstmt.setString(++cnt, wishPublisher); 
+			pstmt.setString(++cnt, memId); 
+			pstmt.setInt(++cnt, wishNum); 
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 희망도서 정보를 수정했습니다.");
+		} catch (Exception e) {e.printStackTrace();}
+	} // updateWish()
+	
+	// 희망도서정보 삭제
+	@Override
+	public void deleteWish(int wishNum) {
+		String sql = "DELETE FROM wish_book WHERE wish_num=?";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);) {
+			pstmt.setInt(1, wishNum);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 희망도서정보를 삭제했습니다.");
+		} catch (Exception e) {e.printStackTrace();}
+	} // deleteWish()
 }

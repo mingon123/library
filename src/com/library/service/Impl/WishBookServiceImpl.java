@@ -18,6 +18,10 @@ public class WishBookServiceImpl implements WishBookService{
 	private BufferedReader br;
 	private String memId;
 	
+	public WishBookServiceImpl(BufferedReader br) {
+		this.br = br;
+	}
+	
 	public WishBookServiceImpl(BufferedReader br, String memId) {
 		this.br = br;
 		this.memId = memId;

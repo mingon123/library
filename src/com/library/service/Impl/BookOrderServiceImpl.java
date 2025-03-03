@@ -24,7 +24,11 @@ public class BookOrderServiceImpl implements BookOrderService {
 	private ReservationDAO reservationDAO;
 	private ReservationService reservationService;
 
-    public BookOrderServiceImpl(BufferedReader br, String memId) {
+	public BookOrderServiceImpl(BufferedReader br) {
+		this.br = br;
+	}
+
+	public BookOrderServiceImpl(BufferedReader br, String memId) {
         this.br = br;
         this.memId = memId;
         
@@ -35,6 +39,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 
         this.reservationService = new ReservationServiceImpl(br, memId);
     }
+
 
 	// 대여하기 처리
 	@Override
@@ -66,7 +71,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	        switch (no) {
 	            case 1: handleRental(bookNum);break;
 	            case 2: {
-	    	        int reservationCount = reservationDAO.countUserReservations(memId);
+	    	        int reservationCount = reservationDAO.countUserReservations();
 	    	        if (reservationCount >= 2) {
 	    	            System.out.println("예약은 최대 2권까지 가능합니다. 기존 예약을 취소한 후 다시 시도해주세요.");
 	    	            return;
@@ -86,7 +91,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	    while (true) {
 	        System.out.println("랜덤 책 목록");
 	        bookDAO.randomBookInfo(5);
-	        int bookNum = getValidBookNumber(memId, false);
+	        int bookNum = getValidBookNumber(false);
 	        orderOrReserveMenu(bookNum);
 	        
 	        System.out.print("다시 검색하시겠습니까? (Y/N): ");
@@ -100,7 +105,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	
 	// 유효한 책 번호 입력 받기
 	@Override
-	public int getValidBookNumber(String memId, boolean isReturn) throws IOException {
+	public int getValidBookNumber(boolean isReturn) throws IOException {
 	    boolean flag = false;
 	    int bookNum = -1;
 	    while (true) {
@@ -122,7 +127,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 
 	// 대여/예약 처리
 	@Override
-	public void handleBookAction(String memId, int bookNum, int no) throws IOException {
+	public void handleBookAction(int bookNum, int no) throws IOException {
 	    switch (no) {
 	        case 1: handleRental(bookNum);break;
 	        case 2: reservationService.handleReservation(bookNum);break;
@@ -139,17 +144,17 @@ public class BookOrderServiceImpl implements BookOrderService {
 	        int no = Integer.parseInt(br.readLine());
 	        switch (no) {
 	            case 1: {
-	            	viewOrderAndReservationInfo(memId);
+	            	viewOrderAndReservationInfo();
 	            	System.out.print("연장할 대여 번호를 입력해주세요 (뒤로가기:q) : ");
 	            	String q = br.readLine();
 	            	if(util.Util.goBack(q)) break;
 	                try {
 	                    int num = Integer.parseInt(q);
-	                    handleExtension(num, memId); // 연장 처리
+	                    handleExtension(num); // 연장 처리
 	                } catch (NumberFormatException e) {System.out.println("[숫자만 입력 가능]");}
 	                break;
 	            }
-	            case 2: viewOrderHistoryByDate(memId);break;
+	            case 2: viewOrderHistoryByDate();break;
 	            case 3: System.out.println("뒤로가기를 선택하셨습니다.");return;
 	            default: System.out.println("잘못 입력하셨습니다.");
 	        }
@@ -157,7 +162,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	}
 	
 	// 대여 연장 기능을 처리하는 메서드
-	public void handleExtension(int orderNum, String memId) throws IOException {
+	public void handleExtension(int orderNum) throws IOException {
 	    if (bookOrderDAO.checkOrderAdd(orderNum)) {
 	        System.out.print("연장하시겠습니까? (Y/N): ");
 	        String choice = br.readLine();
@@ -168,7 +173,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	
 	// 로그인한 유저의 대여내역을 최신순/오래된 순으로 조회
 	@Override
-	public void viewOrderHistoryByDate(String memId) throws IOException {
+	public void viewOrderHistoryByDate() throws IOException {
 	    while (true) {
 	        System.out.print("1.최신순 2.오래된순 3.뒤로가기\n >");
 	        try {
@@ -192,7 +197,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	
 	// 대여 및 예약 현황 보기
 	@Override
-	public void viewOrderAndReservationInfo(String memId) {
+	public void viewOrderAndReservationInfo() {
 		System.out.println("-".repeat(90));
 	    System.out.println("대여 현황");
 	    System.out.println("-".repeat(90));
@@ -200,7 +205,7 @@ public class BookOrderServiceImpl implements BookOrderService {
 	    System.out.println("-".repeat(90));
 	    System.out.println("예약 현황");
 	    System.out.println("-".repeat(90));
-	    reservationDAO.selectUserNowReserveInfo(memId);
+	    reservationDAO.selectUserNowReserveInfo();
 	    System.out.println("-".repeat(90));
 	}
 	
@@ -213,9 +218,9 @@ public class BookOrderServiceImpl implements BookOrderService {
 	// 반납
 	@Override
 	public void processReturn(int orderNum) {
-	    System.out.println();
+	    System.out.println("반납을 진행합니다.");
 	    new BookReturnDAOImpl(memId).updateOrderReturn(orderNum);
-	    memberDAO.updateStopDate(orderNum);
+	    memberDAO.updateStopDate(memId,orderNum);
 	    bookOrderDAO.selectLateReturn(orderNum);
 	}
 	

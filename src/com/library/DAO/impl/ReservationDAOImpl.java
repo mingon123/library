@@ -12,12 +12,15 @@ import util.DBUtil;
 public class ReservationDAOImpl implements ReservationDAO {
 	private String memId;
 	
+	public ReservationDAOImpl() {}
+
 	public ReservationDAOImpl(String memId) {
 		this.memId = memId;
 	}
 	
+
 	@Override
-	public boolean isReservationNotification(String memId) {
+	public boolean isReservationNotification() {
 		String sql = "SELECT b.book_title,b.book_volm_cnt "
 				+ "FROM reservation r,book b WHERE r.book_num=b.book_num "
 				+ "AND r.mem_id=? "
@@ -45,7 +48,7 @@ public class ReservationDAOImpl implements ReservationDAO {
 	
 	// 예약가능 여부 판별 함수. 예약가능:1 책남아있는 권수0이 아님:0 예약권수 다 참:-1
 	@Override
-	public int canReservation(String memId,int bookNum) {
+	public int canReservation(int bookNum) {
 		String sql = "SELECT BOOK_VOLM_CNT FROM book WHERE BOOK_NUM=?";
 	    int bookCount = 0;  // 책의 남은 권수
 	    int reserveCount = 0;  // 사용자의 예약 수
@@ -80,7 +83,7 @@ public class ReservationDAOImpl implements ReservationDAO {
 
 	//이미 해당 유저가 같은 책을 예약했는지 확인  - 중복시 :true  중복 아닐시 :false
 	@Override
-	public boolean isDuplicatedReserve(int bookNum, String memId) {
+	public boolean isDuplicatedReserve(int bookNum) {
 		String sql = "SELECT COUNT(*) FROM RESERVATION WHERE BOOK_NUM=? AND MEM_ID=?";
 		int check = -1;
 		try (Connection conn = DBUtil.getConnection();
@@ -97,7 +100,7 @@ public class ReservationDAOImpl implements ReservationDAO {
 	
 	// reservation 테이블에 insert - 예약 테이블에 insert
 	@Override
-	public void insertReserve(String memId,int bookNum) {
+	public void insertReserve(int bookNum) {
 		String sql = "INSERT INTO reservation VALUES(reservation_seq.nextval,?,?)";
 		try (Connection conn = DBUtil.getConnection();
 			 PreparedStatement pstmt = conn.prepareStatement(sql);){
@@ -111,7 +114,7 @@ public class ReservationDAOImpl implements ReservationDAO {
 	
 	// 로그인한 유저의 예약 현황 출력
 	@Override
-	public void selectUserNowReserveInfo(String memId) {
+	public void selectUserNowReserveInfo() {
 		String sql = "SELECT RE_NUM, BOOK_TITLE FROM RESERVATION JOIN BOOK USING(BOOK_NUM) WHERE mem_id = ?";
 		try (Connection conn = DBUtil.getConnection();
 				PreparedStatement pstmt = conn.prepareStatement(sql);){
@@ -137,7 +140,7 @@ public class ReservationDAOImpl implements ReservationDAO {
 
 	// 예약번호가 해당 유저의 것이며, 예약테이블에 존재하는지 확인하는 함수 - 존재:true / 존재X 또는 에러:false 
 	@Override
-	public boolean checkReserveReNum(int reNum, String memId) {
+	public boolean checkReserveReNum(int reNum) {
 		String sql = "SELECT COUNT(*) FROM RESERVATION WHERE re_num=? AND mem_id=?";
 		int check = -1;
 		try (Connection conn = DBUtil.getConnection();
@@ -166,7 +169,7 @@ public class ReservationDAOImpl implements ReservationDAO {
 	
 	// 사용자의 현재 예약 개수 확인 (최대 2권 제한)
 	@Override
-	public int countUserReservations(String memId) {
+	public int countUserReservations() {
 	    String sql = "SELECT COUNT(*) FROM reservation WHERE mem_id = ?";
 	    try (Connection conn = DBUtil.getConnection();
 	         PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -264,4 +267,74 @@ public class ReservationDAOImpl implements ReservationDAO {
 			e.printStackTrace();
 		}
 	} // deleteReserveBookNum
+	
+	
+	// admin
+	// 예약정보 조회
+	@Override
+	public void selectRSVAdmin() {	
+		String sql = "SELECT * FROM reservation ORDER BY book_num, re_num"; // 1.책번호별 2.예약번호별 정렬 (test요망)
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);
+				ResultSet rs = pstmt.executeQuery();){
+			System.out.println("-".repeat(100));
+			if (rs.next()) {
+				System.out.println("예약번호\t회원아이디\t책번호");
+				System.out.println("-".repeat(100));
+				do {
+					System.out.print(rs.getInt("re_num")+"\t");							
+					System.out.print(rs.getString("mem_id")+"\t");
+					System.out.println(rs.getInt("book_num")+"\t");
+				} while (rs.next());
+			} else System.out.println("표시할 데이터가 없습니다.");	
+			System.out.println("-".repeat(100));
+		} catch (Exception e) {e.printStackTrace();} 	
+	} // selectRSV()
+	
+	//조회하는 예약 레코드 존재 여부 체크
+	@Override
+	public int checkRSVRecordAdmin(int reNum) { // re_num로 조회
+		String sql = "SELECT * FROM reservation WHERE re_num=?";	
+		int count = 0;		
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);) {
+			pstmt.setInt(1, reNum);
+			try(ResultSet rs = pstmt.executeQuery();) {
+				if (rs.next()) count = 1;	
+			}
+		} catch (Exception e) {count = -1;} //오류 발생
+		return count; 
+	} // checkRSVRecord	
+	
+	// 예약 정보 등록 (수정 필요)
+	@Override
+	public void InsertRSVAdmin(String memId, int bookNum) {
+		String sql = "INSERT INTO reservation (re_num, mem_id, book_num) "
+				+ "VALUES (reservation_seq.nextval,?,?)"; //전체를 넣을땐 컬럼명 생략 가능
+		int cnt = 0;
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(++cnt, memId);
+			pstmt.setInt(++cnt, bookNum); // 재고 있는 책 입력시 예약 못하도록 조건 추가해야함!!!			
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 예약정보를 등록했습니다.");
+		} catch (Exception e) {e.printStackTrace();} 
+	} // insertRSV()
+
+	// 예약정보 수정
+	@Override
+	public void updateRSV(int reNum, String memId, int bookNum) {
+		String sql = "UPDATE reservation SET mem_id=?,book_num=? WHERE re_num=?";
+		int cnt = 0;
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(++cnt, memId); // 유효성 검사 추가요망
+			pstmt.setInt(++cnt, bookNum);
+			pstmt.setInt(++cnt, reNum);			
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 예약정보를 수정했습니다.");
+		} catch (Exception e) {e.printStackTrace();}
+	} // updateRSV()
+
+	
 }

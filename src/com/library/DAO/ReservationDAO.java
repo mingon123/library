@@ -1,16 +1,22 @@
 package com.library.DAO;
 
 public interface ReservationDAO {
-	boolean isReservationNotification(String memId);
-	int canReservation(String memId, int bookNum);
-	boolean isDuplicatedReserve(int bookNum, String memId);
-	void insertReserve(String memId, int bookNum);
-	void selectUserNowReserveInfo(String memId);
-	boolean checkReserveReNum(int reNum, String memId);
+	boolean isReservationNotification();
+	int canReservation(int bookNum);
+	boolean isDuplicatedReserve(int bookNum);
+	void insertReserve(int bookNum);
+	void selectUserNowReserveInfo();
+	boolean checkReserveReNum(int reNum);
 	void deleteReserveReNum(int reNum);
-	int countUserReservations(String memId);
+	int countUserReservations();
 	boolean checkReserveBookNum(int bookNum);
 	int selectBookNumToReNum(int bookNum);
 	int calcReserveRank(int reNum, int num);
 	void deleteReserveBookNum(int bookNum);
+	
+	void selectRSVAdmin();
+	int checkRSVRecordAdmin(int reNum);
+	void InsertRSVAdmin(String memId, int bookNum);
+	void updateRSV(int reNum, String memId, int bookNum);
+	
 }

@@ -25,8 +25,11 @@ public class BookServiceImpl implements BookService {
 	private MemberDAO memberDAO; 
 	private BookOrderService bookOrderService;
 	
-	public BookServiceImpl(BufferedReader br,BookDAO bookDAO,String memId) {
-		this.bookDAO = bookDAO;
+	public BookServiceImpl(BufferedReader br) {
+		this.br = br;
+	}
+
+	public BookServiceImpl(BufferedReader br,String memId) {
 		this.br = br;
 		this.memId = memId;
 		this.memberDAO = new MemberDAOImpl(memId);
@@ -34,6 +37,7 @@ public class BookServiceImpl implements BookService {
 		this.bookDAO = new BookDAOImpl();
 	}
 	
+
 	// 카테고리별 책목록 표시
 	@Override
 	public void selectCategoryOfBook() {

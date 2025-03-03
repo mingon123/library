@@ -9,6 +9,13 @@ import com.library.DAO.ReviewDAO;
 import util.DBUtil;
 
 public class ReviewDAOImpl implements ReviewDAO {
+	private String memId;
+	
+	public ReviewDAOImpl() {}
+	
+	public ReviewDAOImpl(String memId) {
+		this.memId = memId;
+	}
 	
 	// 리뷰 화면
 	@Override
@@ -203,6 +210,102 @@ public class ReviewDAOImpl implements ReviewDAO {
 	}
 	
 	
+	// admin
+	@Override
+	public void selectReviewAdmin() { // 리뷰내용 제외 출력. 리뷰내용은 상세보기에서 확인
+		String sql = "SELECT r.*, (SELECT book_title FROM book WHERE book_num=r.book_num) 책제목 "
+				+ "FROM review r ORDER BY review_num";
+		try (Connection conn = DBUtil.getConnection();
+				PreparedStatement pstmt = conn.prepareStatement(sql);
+				ResultSet rs = pstmt.executeQuery();) {
+			System.out.println("-".repeat(100));
+			if (rs.next()) {
+				System.out.println("리뷰번호\t책번호\t책제목\t\t\t평점\t리뷰등록일\t\t회원아이디");	
+				System.out.println("-".repeat(100));
+				do {
+					System.out.print(rs.getInt("review_num")+"\t");
+					System.out.print(rs.getInt("book_num")+"\t");
+					String title=rs.getString("책제목");					
+					if (title.length()>=15) System.out.printf("%-15s..\t", title.substring(0, 15));
+					else System.out.printf("%-15s\t", title);					
+					System.out.print(rs.getInt("review_rate")+"\t");
+					System.out.print(rs.getDate("review_reg_date")+"\t");
+					System.out.println(rs.getString("mem_id")+"\t");					
+				} while (rs.next());
+			} else System.out.println("표시할 데이터가 없습니다.");	
+			System.out.println("-".repeat(100));
+		} catch (Exception e) {e.printStackTrace();}	
+	} // selectReview()		
 	
+	// 리뷰정보 등록
+	@Override
+	public void InsertReviewAdmin(int bookNum, String reviewContent, int reviewRate, String memId) {
+		String sql = "INSERT INTO review (review_num, book_num, review_content, review_rate, review_reg_date, mem_id)"
+				+ "VALUES (review_seq.nextval,?,?,?,SYSDATE,?)"; //전체를 넣을땐 컬럼명 생략 가능
+		int cnt = 0;
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(++cnt, bookNum);
+			pstmt.setString(++cnt, reviewContent);
+			pstmt.setInt(++cnt, reviewRate);
+			pstmt.setString(++cnt, memId);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 리뷰정보를 등록했습니다.");
+		} catch (Exception e) {e.printStackTrace();}
+	} // insertReview()
+	
+	// 리뷰정보 수정
+	@Override
+	public void updateReviewAdmin(int reviewNum, 
+			int bookNum, String reviewContent, int reviewRate, String memId) {
+		String sql = "UPDATE review SET book_num=?, review_content=?, review_rate=?, mem_id=? WHERE review_num=?";
+		int cnt = 0;
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);) {
+			pstmt.setInt(++cnt, bookNum);
+			pstmt.setString(++cnt, reviewContent);
+			pstmt.setInt(++cnt, reviewRate);
+			pstmt.setString(++cnt, memId);
+			pstmt.setInt(++cnt, reviewNum);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 리뷰정보를 수정했습니다.");
+		} catch (Exception e) {e.printStackTrace();}
+	} // updateReview()
+	
+	//회원별 리뷰 횟수
+	@Override
+	public void selectMemberReviewStatsAdmin() {
+		String sql = "SELECT mem_id, COUNT(*) 리뷰횟수 FROM review GROUP BY mem_id \r\n"
+				+ "ORDER BY 리뷰횟수 DESC, mem_id";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);
+			 ResultSet rs = pstmt.executeQuery();){
+			System.out.println("-".repeat(100));
+			if (rs.next()) {
+				System.out.println("누적리뷰횟수\t회원아이디");		
+				System.out.println("-".repeat(100));
+				do {
+					System.out.print(rs.getInt("리뷰횟수")+"\t\t");	
+					System.out.println(rs.getString("mem_id"));			
+				} while (rs.next());
+			} else System.out.println("표시할 데이터가 없습니다.");
+			System.out.println("-".repeat(100));
+		} catch (Exception e) {e.printStackTrace();}	
+	} // selectMemberReviewStats()
+	
+	//조회하는 리뷰 레코드 존재 여부 체크
+	@Override
+	public int checkReviewRecord(int reviewNum) {
+		String sql = "SELECT * FROM review WHERE review_num=?";
+		int count = 0;		
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);) {
+			pstmt.setInt(1, reviewNum);
+			try(ResultSet rs = pstmt.executeQuery();){
+				if (rs.next()) count = 1; //레코드가 존재할 때 1 저장		
+			}
+		} catch (Exception e) {count = -1;} //오류 발생	
+		return count; 
+	} // checkReviewRecord()
 	
 }

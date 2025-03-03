@@ -12,11 +12,16 @@ public class ReservationServiceImpl implements ReservationService {
 	private BufferedReader br;
 	private String memId;
 	
+	public ReservationServiceImpl(BufferedReader br) {
+		this.br = br;
+	}
+
 	public ReservationServiceImpl(BufferedReader br, String memId) {
 		this.br = br;
 		this.memId = memId;
 		this.reservationDAO = new ReservationDAOImpl(memId);
 	}
+
 
 	// 예약하기 처리
 	@Override
@@ -33,11 +38,11 @@ public class ReservationServiceImpl implements ReservationService {
 	            System.out.println("이전화면으로 돌아갑니다.");
 	            break;
 	        } else if (s.equalsIgnoreCase("Y")) {
-	            if (reservationDAO.isDuplicatedReserve(bookNum, memId)) {
+	            if (reservationDAO.isDuplicatedReserve(bookNum)) {
 	                System.out.println("\n이미 해당 책을 예약하신 기록이 존재합니다.");
 	            } else {
 	                System.out.println("\n예약을 진행합니다.");
-	                reservationDAO.insertReserve(memId, bookNum);
+	                reservationDAO.insertReserve(bookNum);
 	            }
 	            System.out.println("이전화면으로 돌아갑니다.");
 	            return;
@@ -56,7 +61,7 @@ public class ReservationServiceImpl implements ReservationService {
 	    System.out.println("-".repeat(90));
 
 	    // 회원의 예약 현황을 조회합니다.
-	    reservationDAO.selectUserNowReserveInfo(memId);
+	    reservationDAO.selectUserNowReserveInfo();
 
 	    System.out.println("-".repeat(90));
 	    System.out.println();
@@ -75,12 +80,12 @@ public class ReservationServiceImpl implements ReservationService {
 	            System.out.println("[숫자만 입력 가능]");
 	            continue;  // 잘못된 입력에 대해 다시 입력 받기
 	        }
-	        boolean isValid = reservationDAO.checkReserveReNum(sNum, memId);
+	        boolean isValid = reservationDAO.checkReserveReNum(sNum);
 	        if(!isValid) {
 	        	System.out.println("유효하지 않은 예약 번호입니다. 다시 입력해주세요.");
 	        	continue;
 	        }
-	        
+	   
 	        // 취소 여부 확인
 	        while (true) {
 	            System.out.print("\n" + sNum + "번을 선택하셨습니다. 정말 취소하시겠습니까?(Y/N): ");

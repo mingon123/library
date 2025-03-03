@@ -24,7 +24,6 @@ public class MainMenu {
 	private String memId;
 	
 	private BookDAO bookDAO;
-	private BookOrderDAO bookOrderDAO;
 	private MemberDAO memberDAO;
 	private NoticeDAO noticeDAO;
 	
@@ -37,15 +36,14 @@ public class MainMenu {
 
 	public MainMenu() {
 		try {
-			br = new BufferedReader(new InputStreamReader(System.in));			
-			this.bookService = new BookServiceImpl(br, new BookDAOImpl(), memId);
-			
-			this.bookOrderDAO = new BookOrderDAOImpl(memId);
-            this.memberDAO = new MemberDAOImpl(memId);
+			this.br = new BufferedReader(new InputStreamReader(System.in));
+			this.memId = memId;
+			this.memberDAO = new MemberDAOImpl(memId);
             this.noticeDAO = new NoticeDAOImpl();
             this.bookDAO = new BookDAOImpl();
             
-            this.memberService = new MemberServiceImpl(memberDAO, memId, br); 
+            this.bookService = new BookServiceImpl(br, memId);
+            this.memberService = new MemberServiceImpl(memId, br); 
 	        this.noticeService = new NoticeServiceImpl(noticeDAO, br);
 	        
 	        this.bookMenu = new BookMenu(br, bookService, bookDAO);
@@ -95,7 +93,6 @@ public class MainMenu {
                 case 5: // 로그인
                     if (memberService.login()) {
                         System.out.println("로그인 성공");
-                        new UserMenu(memId, br);
                     } else {
                         System.out.println("로그인 실패");
                     }

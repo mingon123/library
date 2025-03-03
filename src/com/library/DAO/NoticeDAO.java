@@ -9,4 +9,8 @@ public interface NoticeDAO {
 	int checkNoticeRecord(int num);
     Notice selectDetailNotice(int num);
 	void updateNoticeViewCount(int noticeNum);
+	
+	void InsertNoticeAdmin(String noticeTitle, String noticeContent);
+	void updateNoticeAdmin(int noticeNum, String noticeTitle, String noticeContent);
+	void deleteNoticeAdmin(int noticeNum);
 }

@@ -11,10 +11,13 @@ import util.DBUtil;
 public class BookReturnDAOImpl implements BookReturnDAO{
 	private String memId;
 	
+	public BookReturnDAOImpl() {}
+
 	public BookReturnDAOImpl(String memId) {
 		this.memId = memId;
 	}
 	
+
 	// 연체알림
 	@Override
 	public boolean isOverReturn() {
@@ -89,7 +92,7 @@ public class BookReturnDAOImpl implements BookReturnDAO{
 
 			if(count > 0 && count2 > 0) System.out.println("반납 진행중입니다.");
 		} catch (Exception e) {
-			System.out.println("에러발생");
+			e.printStackTrace();
 		} finally {
 			DBUtil.executeClose(null, pstmt, conn);
 		}

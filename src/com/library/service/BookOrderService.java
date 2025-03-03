@@ -8,12 +8,12 @@ public interface BookOrderService {
 
 
 	void handleBookOrder() throws IOException;
-	int getValidBookNumber(String memId, boolean isReturn) throws IOException;
-	void handleBookAction(String memId, int bookNum, int no) throws IOException;
+	int getValidBookNumber(boolean isReturn) throws IOException;
+	void handleBookAction(int bookNum, int no) throws IOException;
 	void viewOrderHistory() throws IOException;
-	void viewOrderAndReservationInfo(String memId);
+	void viewOrderAndReservationInfo();
 	boolean confirmReturn() throws IOException;
 	void processReturn(int orderNum);
-	void viewOrderHistoryByDate(String memId) throws IOException;
+	void viewOrderHistoryByDate() throws IOException;
 
 }

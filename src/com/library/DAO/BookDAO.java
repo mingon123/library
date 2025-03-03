@@ -11,5 +11,12 @@ public interface BookDAO {
 	void randomBookInfo(int num);
 	int selectBookCount(int bookNum);
 	void updateBookCount(int bookVolmCnt, int bookNum);
+	
+	void selectBookAdmin();
+	void insertBookAdmin(String bookTitle, String bookAuthor, String bookPublisher, int bookPYear, String bookCategory,
+			int bookVolmCnt);
+	void updateBookAdmin(int bookNum, String bookTitle, String bookAuthor, String bookPublisher, int bookPYear,
+			String bookCategory, int bookRank, int bookVolmCnt);
+	void deleteBookAdmin(int bookNum);
 
 }

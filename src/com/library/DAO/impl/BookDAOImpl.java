@@ -271,4 +271,97 @@ public class BookDAOImpl implements BookDAO {
 		} catch (Exception e) {e.printStackTrace();}
 	} // updateBookCount
 
+	
+	// admin
+	//도서 목록 조회
+	@Override
+	public void selectBookAdmin() {
+		String sql = "SELECT * FROM (SELECT * FROM book ORDER BY book_num DESC) WHERE ROWNUM <= 10"; 
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);
+			 ResultSet rs = pstmt.executeQuery();){
+			System.out.println("-".repeat(110));
+			if (rs.next()) {
+				// 출력항목 검토요망 - 추천순위 제외 출력
+				System.out.println("책번호\t제목\t\t\t저자\t\t\t출판사\t\t출판년도\t카테고리\t보유권수\t등록일");
+				System.out.println("-".repeat(110));
+				do {
+					System.out.print(rs.getInt("book_num")+"\t");
+					// 제목 길이 제한출력(20자)
+					String title=rs.getString("book_title");					
+					if (title.length()>=15) System.out.printf("%-15s..\t", title.substring(0, 15));
+					else System.out.printf("%-15s\t", title);
+					// 저자 길이 제한출력(10자)
+					String author=rs.getString("book_author");	
+					if (author.length()>=10) System.out.printf("%-10s..\t\t", author.substring(0, 10));
+					else System.out.printf("%-10s\t\t", author);
+					System.out.printf("%-10s\t", rs.getString("book_publisher"));			
+					System.out.print(rs.getInt("book_p_year")+"\t");					
+					System.out.print(rs.getString("book_category")+"\t");					
+					System.out.print(rs.getInt("book_volm_cnt")+"\t");					
+					System.out.println(rs.getDate("book_reg_date"));
+				} while (rs.next());
+			} else System.out.println("표시할 데이터가 없습니다.");	
+			System.out.println("-".repeat(110));
+		} catch (Exception e) {e.printStackTrace();}
+	} // selectBook()
+	
+	//책 정보 등록
+	//추천순위 정보 안받음.
+	@Override
+	public void insertBookAdmin(String bookTitle, String bookAuthor, String bookPublisher, 
+			int bookPYear, String bookCategory, int bookVolmCnt) {
+		String sql = "INSERT INTO book (book_num, book_title, book_author, book_publisher, "
+				+ "book_p_year, book_category, book_volm_cnt, book_reg_date) "
+				+ "VALUES (book_seq.nextval,?,?,?,?,?,?,SYSDATE)"; 
+		int cnt = 0;		
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(++cnt, bookTitle);
+			pstmt.setString(++cnt, bookAuthor);
+			pstmt.setString(++cnt, bookPublisher);
+			pstmt.setInt(++cnt, bookPYear);	
+			pstmt.setString(++cnt, bookCategory);			
+			pstmt.setInt(++cnt, bookVolmCnt);				
+			int count = pstmt.executeUpdate();			
+			System.out.println(count + "개의 행을 삽입했습니다.");			
+		} catch (Exception e) {e.printStackTrace();}		
+	} // insertBook()
+	
+	// 책 정보 수정
+	// 추천순위 정보까지 다 받음.??? book_rank
+	@Override
+	public void updateBookAdmin(int bookNum, String bookTitle, String bookAuthor, String bookPublisher, 
+			int bookPYear, String bookCategory, int bookRank, int bookVolmCnt) {
+		String sql = "UPDATE book SET book_title=?,book_author=?,book_publisher=?,book_p_year=?,book_category=?, book_rank=?, book_volm_cnt=? WHERE book_num=?";
+		int cnt = 0;
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(++cnt, bookTitle); // 유효성 검사 추가요망
+			pstmt.setString(++cnt, bookAuthor);
+			pstmt.setString(++cnt, bookPublisher);
+			pstmt.setInt(++cnt, bookPYear);	
+			pstmt.setString(++cnt, bookCategory);
+			pstmt.setInt(++cnt, bookRank); // 유효성 검사 필요...?
+			pstmt.setInt(++cnt, bookVolmCnt);
+			pstmt.setInt(++cnt, bookNum);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 도서정보를 수정했습니다.");
+		} catch (Exception e) {e.printStackTrace();}
+	} // updateBook()
+
+	// 책 정보 삭제
+	@Override
+	public void deleteBookAdmin(int bookNum) {
+		String sql = "DELETE FROM book WHERE book_num=?";
+		
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setInt(1, bookNum);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 도서정보를 삭제했습니다.");
+		} catch (Exception e) {e.printStackTrace();}
+	} // deleteBook()
+
+	
 }

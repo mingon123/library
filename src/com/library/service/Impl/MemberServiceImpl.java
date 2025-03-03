@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 import com.library.DAO.MemberDAO;
+import com.library.DAO.impl.MemberDAOImpl;
 import com.library.menu.AdminMenu;
 import com.library.menu.MainMenu;
 import com.library.menu.UserMenu;
@@ -15,12 +16,17 @@ public class MemberServiceImpl implements MemberService {
 	private BufferedReader br;
 	private String memId;
 	
-	public MemberServiceImpl(MemberDAO memberDAO, String memId, BufferedReader br) {
-		this.memberDAO = memberDAO;
-		this.memId = memId;
+	public MemberServiceImpl(BufferedReader br) {
 		this.br = br;
 	}
+
+	public MemberServiceImpl(String memId, BufferedReader br) {
+		this.memId = memId;
+		this.br = br;
+		this.memberDAO = new MemberDAOImpl();
+	}
 	
+
 	@Override
 	public boolean isValid(String fieldType, String value) {
 		switch (fieldType) {
@@ -108,19 +114,19 @@ public class MemberServiceImpl implements MemberService {
 	public boolean login() throws IOException {
 	    while (true) {
 	        System.out.print("아이디(입력취소:q): ");
-	        String mem_id = br.readLine().trim();
-	        if(util.Util.goBack(mem_id)) break;
+	        String memId = br.readLine().trim();
+	        if(util.Util.goBack(memId)) break;
 	        System.out.print("비밀번호: ");
 	        String passwd = br.readLine().trim();
-	        boolean flag = memberDAO.loginCheck(mem_id, passwd);
+	        boolean flag = memberDAO.loginCheck(memId, passwd);
 	        if (flag) {
-	            System.out.println(mem_id + "님 로그인 되었습니다.");
-	            if (mem_id.equals("admin")) {
-	                new AdminMenu(mem_id, br);
+	            System.out.println(memId + "님 로그인 되었습니다.");
+	            if (memId.equals("admin")) {
+	                new AdminMenu(br);
 	                return true;
 	            } else {
 	                // 일반 사용자 메인 메뉴 이동
-	                new UserMenu(mem_id, br);
+	                new UserMenu(memId, br);
 	                return true;
 	            }
 	        } else {

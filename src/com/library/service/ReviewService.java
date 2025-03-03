@@ -9,7 +9,7 @@ public interface ReviewService {
 	void updateMyReview() throws IOException;
 	void deleteMyReview() throws IOException;
 	
-	boolean confirmReview() throws IOException;
+	boolean confirmReview(int orderNum) throws IOException;
 	void processReview(int orderNum, String memId) throws IOException;
 
 }

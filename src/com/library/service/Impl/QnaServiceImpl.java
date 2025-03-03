@@ -12,12 +12,17 @@ public class QnaServiceImpl implements QnaService {
 	private BufferedReader br;
 	private QnaDAO qnaDAO;
 	
+	public QnaServiceImpl(BufferedReader br) {
+		this.br = br;
+	}
+
 	public QnaServiceImpl(BufferedReader br, String memId) {
 		this.br = br;
 		this.memId = memId;
-		this.qnaDAO = new QnaDAOImpl(); 
+		this.qnaDAO = new QnaDAOImpl(memId); 
 	}
 	
+
 	// qna관리
 	public void manageQNA() throws NumberFormatException, IOException {
 		System.out.print("1.질문등록 2.질문내역확인 3.질문삭제 4.뒤로가기\n > ");
@@ -42,13 +47,13 @@ public class QnaServiceImpl implements QnaService {
 		}
 		System.out.print("질문 내용을 입력하세요 : ");
 		String qnaContent = br.readLine();
-		qnaDAO.insertQNA(qnaTitle, qnaContent, memId);
+		qnaDAO.insertQNA(qnaTitle, qnaContent);
 	} // insertQNA
 	// qna목록확인
 
 	// qna 삭제
 	public void deleteQNA() throws IOException {
-		if(!qnaDAO.selectMyQNAInfo(memId)) {
+		if(!qnaDAO.selectMyQNAInfo()) {
 			System.out.println("등록한 Q&A가 없습니다.");
 			return;
 		}
@@ -58,8 +63,8 @@ public class QnaServiceImpl implements QnaService {
 				String del = br.readLine();
 				if(util.Util.goBack(del)) return;
 				int num = Integer.parseInt(del);
-				int count = qnaDAO.checkQnaRecordNumId(num, memId);
-				if(count==1) qnaDAO.deleteQNAInfo(memId, num);
+				int count = qnaDAO.checkQnaRecordMemId(num);
+				if(count==1) qnaDAO.deleteQNAInfo(num);
 				else if(count==0) System.out.println("번호를 잘못입력했습니다.");
 				else if(count==-1) System.out.println("정보 처리 중 오류 발생");
 				return;

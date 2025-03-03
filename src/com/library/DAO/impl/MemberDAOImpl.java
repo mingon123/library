@@ -12,10 +12,13 @@ import util.DBUtil;
 public class MemberDAOImpl implements MemberDAO {
 	private String memId;
 	
+	public MemberDAOImpl() {}
+
 	public MemberDAOImpl(String memId) {
 		this.memId = memId;
 	}
 	
+
 	// 정지상태
 	@Override
 	public Date checkMemStop(String memId) {
@@ -33,7 +36,7 @@ public class MemberDAOImpl implements MemberDAO {
 
 	// 로그인 검증
 	@Override
-	public boolean loginCheck(String memId, String memPw) {
+	public boolean loginCheck(String memId,String memPw) {
 		String sql = "SELECT mem_id FROM member WHERE mem_id=? AND mem_pw=?";
 		try (Connection conn = DBUtil.getConnection();
 			 PreparedStatement pstmt = conn.prepareStatement(sql);){
@@ -145,7 +148,7 @@ public class MemberDAOImpl implements MemberDAO {
 
 	// 회원정보 수정
 	@Override
-	public boolean updateMemberInfo(String memId,String password,String newName,String newEmail){
+	public boolean updateMemberInfo(String memId, String password,String newName,String newEmail){
 		String sql = "UPDATE member SET mem_name=?,mem_email=?,mem_mdate=SYSDATE WHERE mem_id=?";
 		int cnt = 0;
 		try (Connection conn = DBUtil.getConnection();
@@ -179,7 +182,7 @@ public class MemberDAOImpl implements MemberDAO {
 
 	// 정지일수 update - 이전에 정지일수가 있는 경우 + , 새로 생길경우 그대로
 	@Override
-	public void updateStopDate(int orderNum) {
+	public void updateStopDate(String memId, int orderNum) {
 		String sql = "UPDATE MEMBER SET MEM_STOP_DATE = "
 				+ "CASE "
 				+ "WHEN (SELECT RETURN_DATE FROM BOOK_ORDER WHERE ORDER_NUM = ?) >= SYSDATE THEN MEM_STOP_DATE "  
@@ -200,4 +203,76 @@ public class MemberDAOImpl implements MemberDAO {
 			e.printStackTrace();
 		}
 	} // updateStopDate
+	
+	
+	// admin메뉴
+	@Override
+	public void selectMemberAdmin() {
+		String sql = "SELECT * FROM member ORDER BY mem_name"; // 이름순으로 정렬
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);
+ 			 ResultSet rs = pstmt.executeQuery();){
+			System.out.println("-".repeat(100));
+			if (rs.next()) {
+				// 출력항목: ID,이름,전화번호,e-mail,대여정지기한 (나머지는 상세보기에서 확인)
+				System.out.printf("%-12s %s\t\t%s\t\t%-20s %s\n","ID","이름","전화번호","e-mail","대여정지기한");
+				System.out.println("-".repeat(100));
+				do {
+					System.out.printf("%-12s ", rs.getString("mem_id"));
+					System.out.print(rs.getString("mem_name")+"\t");
+					System.out.print(rs.getString("mem_cell")+"\t");	
+					System.out.printf("%-20s ", rs.getString("mem_email"));				
+					if(rs.getDate("mem_stop_date") == null) System.out.println("-");
+					else System.out.println(rs.getDate("mem_stop_date"));		
+				} while (rs.next());
+			} else {
+				System.out.println("표시할 데이터가 없습니다.");	
+			} //if-else
+			System.out.println("-".repeat(100));
+		} catch (Exception e) {e.printStackTrace();}
+	} // selectMember()
+	
+	//회원 상세정보 확인
+	@Override
+	public void selectDetailMemberAdmin(String memId) {
+		String sql = "SELECT * FROM member WHERE mem_id=?";
+		try (Connection conn = DBUtil.getConnection();
+			 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(1, memId);
+			try(ResultSet rs = pstmt.executeQuery();){
+			if (rs.next()) {
+				// 비밀번호만 미출력
+				System.out.println("회원ID : " + rs.getString("mem_id"));
+				System.out.println("이름 : " + rs.getString("mem_name"));	
+				System.out.println("전화번호 : " + rs.getString("mem_cell"));						
+				System.out.println("이메일 : " + rs.getString("mem_email"));
+				System.out.println("가입일 : " + rs.getDate("mem_date"));
+				System.out.print("마지막 정보수정일 : ");	
+				if(rs.getDate("mem_mdate") == null) System.out.println("-");
+				else System.out.println(rs.getDate("mem_mdate"));	
+				System.out.print("정지일 : ");
+				if(rs.getDate("mem_stop_date") == null) System.out.println("-");
+				else System.out.println(rs.getDate("mem_stop_date"));	
+			} else {System.out.println("검색된 정보가 없습니다.");	}			
+			}
+		} catch (Exception e) {e.printStackTrace();}
+	} // selectDetailMember
+	
+	// 회원 정보 수정
+	@Override
+	public void updateMember(String memId, String memPw,String memName, String memCell, String memEmail) {
+		String sql = "UPDATE member SET mem_pw=?,mem_name=?,mem_cell=?,mem_email=?,mem_mdate=SYSDATE WHERE mem_id=?"; //전체를 넣을땐 컬럼명 생략 가능
+		int cnt = 0;
+		try (Connection conn = DBUtil.getConnection();
+				 PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(++cnt, memPw); // 유효성 검사 추가요망
+			pstmt.setString(++cnt, memName);
+			pstmt.setString(++cnt, memCell);
+			pstmt.setString(++cnt, memEmail);	
+			pstmt.setString(++cnt, memId);
+			int count = pstmt.executeUpdate();
+			System.out.println(count + "개의 회원정보를 수정했습니다.");
+		} catch (Exception e) {e.printStackTrace();}
+	} // updateMember()
+	
 }

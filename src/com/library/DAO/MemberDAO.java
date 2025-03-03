@@ -9,11 +9,17 @@ public interface MemberDAO {
 	public int checkMemberRecord(String memId);
 	public void selectMemberInfo(String memId);
 	public int checkPassword(String memId, String password);
-	public boolean updateMemberInfo(String memId,String password,String newName,String newEmail);
-	public void deleteMemberInfo(String memId);
+	public boolean updateMemberInfo(String memId, String password,String newName,String newEmail);
+	void deleteMemberInfo(String memId);
 
 	Date checkMemStop(String memId); // 정지상태알림
-	void updateStopDate(int orderNum);
+	void updateStopDate(String memId, int orderNum);
+	
+	void selectMemberAdmin();
+	void selectDetailMemberAdmin(String memId);
+	void updateMember(String memId, String memPw, String memName, String memCell, String memEmail);
+
+	
 	
 	
 }

@@ -3,8 +3,10 @@ package com.library.service.Impl;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import com.library.DAO.BookDAO;
 import com.library.DAO.BookOrderDAO;
 import com.library.DAO.ReviewDAO;
+import com.library.DAO.impl.BookDAOImpl;
 import com.library.DAO.impl.BookOrderDAOImpl;
 import com.library.DAO.impl.ReviewDAOImpl;
 import com.library.service.ReviewService;
@@ -12,14 +14,20 @@ import com.library.service.ReviewService;
 public class ReviewServiceImpl implements ReviewService {
 	private BufferedReader br;
 	private String memId;
-	private int orderNum;
 	private ReviewDAO reviewDAO;
-	private BookOrderDAO bookOrderDAO = new BookOrderDAOImpl(memId);;
+	private BookOrderDAO bookOrderDAO;
 	
+	public ReviewServiceImpl(BufferedReader br) {
+		this.br = br;
+		this.reviewDAO = new ReviewDAOImpl();
+		this.bookOrderDAO = new BookOrderDAOImpl(memId);
+	}
+
 	public ReviewServiceImpl(BufferedReader br, String memId) {
 		this.br = br;
 		this.memId = memId;
-		this.reviewDAO = new ReviewDAOImpl();
+		this.reviewDAO = new ReviewDAOImpl(memId);
+		this.bookOrderDAO = new BookOrderDAOImpl(memId);
 	}
 
 	// 4.리뷰 상세정보 확인
@@ -135,7 +143,7 @@ public class ReviewServiceImpl implements ReviewService {
 	
 	// 리뷰 작성
 	@Override
-	public boolean confirmReview() throws IOException {
+	public boolean confirmReview(int orderNum) throws IOException {
 	    if (!util.Util.choiceYN(br, "반납하신 책에 대한 리뷰를 작성하시겠습니까?")) {
 	        System.out.println("\n리뷰작성을 취소하셨습니다.");
 	        return false; // 리뷰 작성 취소
@@ -148,10 +156,9 @@ public class ReviewServiceImpl implements ReviewService {
 	    System.out.println("-*".repeat(60));
 
 	    String rate = getValidReviewScore();  // 리뷰 점수 받기
+	    int rateInt = Integer.parseInt(rate);
 	    String content = getReviewContent();  // 리뷰 내용 받기
 	    int book_num = bookOrderDAO.selectOrderNumToBookNum(orderNum);
-	    int rateInt = Integer.parseInt(rate);
-
 	    System.out.println("리뷰 등록 중 입니다.");
 	    reviewDAO.insertReviewInfo(book_num, content, rateInt, memId);
 	    return true;

@@ -1,9 +1,14 @@
 package com.library.DAO;
 
 public interface QnaDAO {
-	void insertQNA(String qnaTitle, String qnaContent,String memId);
+	void insertQNA(String qnaTitle, String qnaContent);
 	void selectQNAInfo();
-	boolean selectMyQNAInfo(String memId);
-	void deleteQNAInfo(String memId, int QNANum);
-	int checkQnaRecordNumId(int qnaNum, String memId);
+	boolean selectMyQNAInfo();
+	void deleteQNAInfo(int QNANum);
+	int checkQnaRecordMemId(int qnaNum);
+	
+	void selectQnAAdmin();
+	void selectDetailQnA(int qna_num);
+	void updateQnA(int qnaNum, String qnaRe);
+
 }
